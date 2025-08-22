@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 
 const bookingSchema = z.object({
   date: z.string().min(1, 'Please select a date'),
+  timeSlot: z.string().min(1, 'Please select a time slot'),
   amount: z.number().min(1, 'Amount must be greater than 0'),
 });
 
@@ -104,6 +105,7 @@ export const Book: React.FC = () => {
 
   const handleSubmitDetails = (data: BookingFormData) => {
     bookingForm.setValue('date', data.date);
+    bookingForm.setValue('timeSlot', data.timeSlot);
     bookingForm.setValue('amount', data.amount);
     setStep('payment');
   };
@@ -120,6 +122,7 @@ export const Book: React.FC = () => {
         artist.id,
         currentUserId!,
         formData.date,
+        formData.timeSlot,
         formData.amount
       );
       
@@ -231,6 +234,28 @@ export const Book: React.FC = () => {
                     {bookingForm.formState.errors.date && (
                       <p className="mt-1 text-sm text-destructive">
                         {bookingForm.formState.errors.date.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Select Time Slot
+                    </label>
+                    <select
+                      {...bookingForm.register('timeSlot')}
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      <option value="">Choose a time</option>
+                      {artist.timeSlots?.map((time) => (
+                        <option key={time} value={time}>
+                          {time}
+                        </option>
+                      ))}
+                    </select>
+                    {bookingForm.formState.errors.timeSlot && (
+                      <p className="mt-1 text-sm text-destructive">
+                        {bookingForm.formState.errors.timeSlot.message}
                       </p>
                     )}
                   </div>

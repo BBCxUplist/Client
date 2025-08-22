@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 export const Explore: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
   const [minRating, setMinRating] = useState(0);
   const [selectedDate, setSelectedDate] = useState('');
@@ -20,6 +21,7 @@ export const Explore: React.FC = () => {
   const filters = {
     query: searchQuery,
     genre: selectedGenre,
+    category: selectedCategory,
     minPrice: priceRange.min,
     maxPrice: priceRange.max,
     minRating,
@@ -45,13 +47,14 @@ export const Explore: React.FC = () => {
   const clearFilters = () => {
     setSearchQuery('');
     setSelectedGenre('');
+    setSelectedCategory('');
     setPriceRange({ min: 0, max: 1000 });
     setMinRating(0);
     setSelectedDate('');
     setBookableOnly(false);
   };
 
-  const hasActiveFilters = searchQuery || selectedGenre || priceRange.min > 0 || priceRange.max < 1000 || minRating > 0 || selectedDate || bookableOnly;
+  const hasActiveFilters = searchQuery || selectedGenre || selectedCategory || priceRange.min > 0 || priceRange.max < 1000 || minRating > 0 || selectedDate || bookableOnly;
 
   return (
     <div className="min-h-screen bg-background">
@@ -100,6 +103,28 @@ export const Explore: React.FC = () => {
                     {genre.name}
                   </option>
                 ))}
+              </select>
+            </div>
+
+            {/* Category Filter */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Category
+              </label>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="">All Categories</option>
+                <option value="DJ">DJ</option>
+                <option value="Classical">Classical</option>
+                <option value="Jazz">Jazz</option>
+                <option value="Acoustic">Acoustic</option>
+                <option value="Blues">Blues</option>
+                <option value="Weddings">Weddings</option>
+                <option value="Corporate">Corporate</option>
+                <option value="Intimate">Intimate</option>
               </select>
             </div>
 

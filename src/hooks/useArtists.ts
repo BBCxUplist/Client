@@ -66,6 +66,7 @@ export const useSearchArtists = (query: string): Artist[] => {
 export const useFilteredArtists = (filters: {
   query?: string;
   genre?: string;
+  category?: string;
   minPrice?: number;
   maxPrice?: number;
   minRating?: number;
@@ -81,6 +82,12 @@ export const useFilteredArtists = (filters: {
   if (filters.genre) {
     filteredArtists = filteredArtists.filter((artist) => 
       artist.tags.some((tag) => tag.toLowerCase().includes(filters.genre!.toLowerCase()))
+    );
+  }
+  
+  if (filters.category) {
+    filteredArtists = filteredArtists.filter((artist) => 
+      artist.categories.some((category) => category.toLowerCase().includes(filters.category!.toLowerCase()))
     );
   }
   

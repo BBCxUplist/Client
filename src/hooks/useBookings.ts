@@ -24,7 +24,7 @@ export const useBookingById = (id: string): Booking | undefined => {
 export const useCurrentBookings = (userId: string): Booking[] => {
   const userBookings = useBookingsByUser(userId);
   return userBookings.filter((booking) => 
-    ['inquiry', 'pending', 'accepted'].includes(booking.status)
+    ['inquiry', 'pending', 'negotiating', 'confirmed'].includes(booking.status)
   );
 };
 
@@ -45,19 +45,24 @@ export const usePendingBookings = (userId: string): Booking[] => {
   return userBookings.filter((booking) => booking.status === 'pending');
 };
 
-export const useAcceptedBookings = (userId: string): Booking[] => {
+export const useConfirmedBookings = (userId: string): Booking[] => {
   const userBookings = useBookingsByUser(userId);
-  return userBookings.filter((booking) => booking.status === 'accepted');
+  return userBookings.filter((booking) => booking.status === 'confirmed');
+};
+
+export const useNegotiatingBookings = (userId: string): Booking[] => {
+  const userBookings = useBookingsByUser(userId);
+  return userBookings.filter((booking) => booking.status === 'negotiating');
 };
 
 export const useArtistRequests = (artistId: string): Booking[] => {
   const artistBookings = useBookingsByArtist(artistId);
-  return artistBookings.filter((booking) => booking.status === 'pending');
+  return artistBookings.filter((booking) => ['inquiry', 'pending'].includes(booking.status));
 };
 
 export const useArtistBookings = (artistId: string): Booking[] => {
   const artistBookings = useBookingsByArtist(artistId);
-  return artistBookings.filter((booking) => booking.status === 'accepted');
+  return artistBookings.filter((booking) => ['confirmed', 'completed'].includes(booking.status));
 };
 
 export const useBookingsByStatus = (status: BookingStatus): Booking[] => {
@@ -86,6 +91,9 @@ export const useBookingActions = () => {
   const {
     createBooking,
     setBookingStatus,
+    acceptBooking,
+    counterOffer,
+    confirmBooking,
     fundEscrow,
     releaseEscrow,
     refundEscrow,
@@ -95,6 +103,9 @@ export const useBookingActions = () => {
   return {
     createBooking,
     setBookingStatus,
+    acceptBooking,
+    counterOffer,
+    confirmBooking,
     fundEscrow,
     releaseEscrow,
     refundEscrow,

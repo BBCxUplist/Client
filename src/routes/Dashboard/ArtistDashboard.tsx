@@ -31,15 +31,17 @@ export const ArtistDashboard: React.FC = () => {
   const artist = useArtistById(currentUserId!);
 
   const tabs = [
-    { id: 'requests', label: 'Pending Requests', count: requests.length },
-    { id: 'bookings', label: 'Accepted Bookings', count: bookings.length },
+    { id: 'requests', label: 'Your Artist Requests', count: requests.length },
+    { id: 'bookings', label: 'Confirmed Bookings', count: bookings.length },
     { id: 'appeal', label: 'Appeal Status', count: appeals.length },
   ] as const;
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'accepted':
+      case 'confirmed':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'negotiating':
+        return <MessageCircle className="h-4 w-4 text-blue-500" />;
       case 'pending':
         return <Clock className="h-4 w-4 text-yellow-500" />;
       case 'declined':
@@ -52,8 +54,10 @@ export const ArtistDashboard: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'accepted':
+      case 'confirmed':
         return 'text-green-600 bg-green-50 border-green-200';
+      case 'negotiating':
+        return 'text-blue-600 bg-blue-50 border-blue-200';
       case 'pending':
         return 'text-yellow-600 bg-yellow-50 border-yellow-200';
       case 'declined':

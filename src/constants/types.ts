@@ -1,6 +1,6 @@
 export type Role = 'user' | 'artist' | 'admin';
 
-export type BookingStatus = 'inquiry' | 'pending' | 'accepted' | 'declined' | 'completed' | 'cancelled';
+export type BookingStatus = 'inquiry' | 'pending' | 'negotiating' | 'confirmed' | 'completed' | 'cancelled' | 'declined';
 
 export type EscrowStatus = 'none' | 'funded' | 'released' | 'refunded';
 
@@ -47,7 +47,9 @@ export interface Artist {
   price: number;
   rating: number;
   tags: string[];
+  categories: string[];
   availability: string[];
+  timeSlots: string[];
   isBookable: boolean;
   appealStatus: AppealStatus;
   featured?: boolean;
@@ -60,9 +62,14 @@ export interface Booking {
   userId: string;
   status: BookingStatus;
   date: string;
+  timeSlot?: string;
   amount: number;
+  originalAmount?: number;
+  counterOffer?: number;
+  counterNote?: string;
   escrowStatus: EscrowStatus;
   threadId?: string;
+  platformFee: number;
   createdAt: string;
   updatedAt: string;
 }

@@ -51,8 +51,11 @@ interface AppState {
   rejectAppeal: (appealId: string) => void;
   
   // Booking actions
-  createBooking: (artistId: string, userId: string, date: string, amount: number) => string;
+  createBooking: (artistId: string, userId: string, date: string, timeSlot: string, amount: number) => string;
   setBookingStatus: (id: string, status: BookingStatus) => void;
+  acceptBooking: (bookingId: string, acceptedAmount?: number) => void;
+  counterOffer: (bookingId: string, amount: number, note: string) => void;
+  confirmBooking: (bookingId: string) => void;
   fundEscrow: (bookingId: string, amount: number) => void;
   releaseEscrow: (bookingId: string) => void;
   refundEscrow: (bookingId: string) => void;
@@ -222,15 +225,19 @@ export const useAppStore = create<AppState>()(
       },
       
       // Booking actions
-      createBooking: (artistId: string, userId: string, date: string, amount: number) => {
+      createBooking: (artistId: string, userId: string, date: string, timeSlot: string, amount: number) => {
+        const platformFee = Math.round(amount * 0.05); // 5% platform fee
         const newBooking: Booking = {
           id: generateId('booking'),
           artistId,
           userId,
           status: 'inquiry',
           date,
+          timeSlot,
           amount,
+          originalAmount: amount,
           escrowStatus: 'none',
+          platformFee,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
@@ -247,6 +254,52 @@ export const useAppStore = create<AppState>()(
           bookings: state.bookings.map((booking) =>
             booking.id === id
               ? { ...booking, status, updatedAt: new Date().toISOString() }
+              : booking
+          ),
+        }));
+      },
+      
+      acceptBooking: (bookingId: string, acceptedAmount?: number) => {
+        set((state) => ({
+          bookings: state.bookings.map((booking) =>
+            booking.id === bookingId
+              ? { 
+                  ...booking, 
+                  status: 'confirmed',
+                  amount: acceptedAmount || booking.amount,
+                  updatedAt: new Date().toISOString() 
+                }
+              : booking
+          ),
+        }));
+      },
+      
+      counterOffer: (bookingId: string, amount: number, note: string) => {
+        set((state) => ({
+          bookings: state.bookings.map((booking) =>
+            booking.id === bookingId
+              ? { 
+                  ...booking, 
+                  status: 'negotiating',
+                  counterOffer: amount,
+                  counterNote: note,
+                  updatedAt: new Date().toISOString() 
+                }
+              : booking
+          ),
+        }));
+      },
+      
+      confirmBooking: (bookingId: string) => {
+        set((state) => ({
+          bookings: state.bookings.map((booking) =>
+            booking.id === bookingId
+              ? { 
+                  ...booking, 
+                  status: 'confirmed',
+                  amount: booking.counterOffer || booking.amount,
+                  updatedAt: new Date().toISOString() 
+                }
               : booking
           ),
         }));
