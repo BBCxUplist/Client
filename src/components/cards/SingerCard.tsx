@@ -1,7 +1,7 @@
 
 const SingerCard = () => {
   return (
-    <div className="w-1/3 p-2 border border-neutral-200 rounded-4xl inset-shadow-sm shadow-sm shadow-orange-500/5">
+    <div className="w-full p-2 border border-neutral-200 rounded-4xl inset-shadow-sm shadow-sm shadow-orange-500/5">
       <img
         src="/images/singer.jpeg"
         alt="artist"
