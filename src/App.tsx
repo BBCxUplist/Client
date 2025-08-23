@@ -46,7 +46,7 @@ function App() {
                 <Landing />
               </PageTransition>
             } />
-            
+
             <Route path="/login" element={
               <PageTransition>
                 <AuthLayout>
