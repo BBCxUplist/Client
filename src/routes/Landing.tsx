@@ -3,8 +3,20 @@ import FeatureCard from "@/components/cards/FeatureCard";
 import FAQ from "@/components/FAQ";
 import ContactSection from "@/components/ContactSection";
 import { MicVocal } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export const Landing = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setIsScrolled(scrollTop > 100);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   const features = [
     {
       icon: "/icons/search.svg",
@@ -28,19 +40,19 @@ export const Landing = () => {
 
   return (
     <div className="min-h-[100dvh] h-full w-full text-black">
-      <div className="p-4 fixed top-0 z-10 w-full">
-        <div className="border bg-white border-neutral-200 shadow-sm inset-shadow-sm shadow-orange-500/5 max-w-5xl mx-auto p-2 rounded-3xl flex justify-between items-center">
+      <div className={`p-4 fixed top-0 z-10 w-full transition-all duration-300 `}>
+        <div className={`border bg-white border-neutral-200 shadow-sm inset-shadow-sm shadow-orange-500/5 mx-auto rounded-3xl flex justify-between items-center transition-all duration-300 ${isScrolled ? 'max-w-3xl p-2 rounded-4xl' : 'max-w-5xl p-3 rounded-3xl'}`}>
           <div className="flex items-center gap-2">
-            <div className="h-full w-fit bg-black rounded-2xl aspect-square p-1">
-              <img src="/logo/logo.png" alt="uplist" className="w-10 h-10" />
+            <div className={`bg-black  aspect-square p-1 transition-all duration-300 ${isScrolled ? 'p-0.5 rounded-full' : 'p-1 rounded-2xl'}`}>
+              <img src="/logo/logo.png" alt="uplist" className={`transition-all duration-300 ${isScrolled ? 'w-8 h-8' : 'w-10 h-10'}`} />
             </div>
-            <p className="text-2xl font-bold font-dm-sans">Uplist</p>
+            <p className={`font-bold font-dm-sans transition-all duration-300 ${isScrolled ? 'text-xl' : 'text-2xl'}`}>Uplist</p>
           </div>
 
-          <div className="flex items-center gap-4 font-medium text-neutral-600">
-            <p>Explore</p>
-            <p>Featured Artists</p>
-            <p className="bg-orange-500 font-bold text-white px-4 py-2 rounded-2xl">
+          <div className={`flex items-center gap-4 font-medium text-neutral-600 transition-all duration-300 ${isScrolled ? 'gap-3' : 'gap-4'}`}>
+            <p className={`transition-all duration-300 ${isScrolled ? 'text-sm' : 'text-base'}`}>Explore</p>
+            <p className={`transition-all duration-300 ${isScrolled ? 'text-sm' : 'text-base'}`}>Featured Artists</p>
+            <p className={`bg-orange-500 font-bold text-white rounded-2xl transition-all duration-300 ${isScrolled ? 'px-3 py-1.5 text-sm' : 'px-4 py-2'}`}>
               Sign In
             </p>
           </div>
