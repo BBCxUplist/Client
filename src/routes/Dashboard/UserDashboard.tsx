@@ -122,7 +122,7 @@ export const UserDashboard: React.FC = () => {
             )}
             <Link
               to={`/artist/${artist.slug}`}
-              className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-input bg-background text-foreground rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
+              className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-input bg-white text-foreground rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
             >
               View Artist
             </Link>

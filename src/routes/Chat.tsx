@@ -29,7 +29,7 @@ export const Chat: React.FC = () => {
 
   if (!booking || !artist || !user) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <EmptyState
             icon={ArrowLeft}
@@ -66,7 +66,7 @@ export const Chat: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <div className="max-w-4xl mx-auto h-screen flex flex-col">
         {/* Header */}
         <div className="bg-card border-b border-border p-4">
@@ -144,7 +144,7 @@ export const Chat: React.FC = () => {
               onChange={(e) => setMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type your message..."
-              className="flex-1 px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="flex-1 px-3 py-2 border border-input rounded-md bg-white text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
             <button
               onClick={handleSendMessage}
