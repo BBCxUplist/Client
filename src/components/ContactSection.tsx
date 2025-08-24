@@ -1,6 +1,6 @@
 const ContactSection = () => {
   return (
-    <div className="w-full bg-neutral-50 py-16 mt-16 border-t border-orange-600 inset-shadow-sm inset-shadow-orange-600 rounded-t-[50%]">
+    <div className="w-full bg-neutral-50 py-16 mt-16 border-t border-orange-600 inset-shadow-sm inset-shadow-orange-600 md:rounded-t-[50%] rounded-t-[20%]">
       <div className="max-w-5xl mx-auto text-center px-4">
         <h3 className="text-3xl md:text-4xl font-bold font-dm-sans text-neutral-800 mb-4">
           Still have questions?

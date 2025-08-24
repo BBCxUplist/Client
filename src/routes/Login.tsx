@@ -1,74 +1,72 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Eye, EyeOff, AlertCircle } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { useAppStore } from '@/store';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { AlertCircle, ArrowLeft } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useAppStore } from "@/store";
+import { LoginForm } from "@/components/auth/LoginForm";
+import { RegisterForm } from "@/components/auth/RegisterForm";
 
-const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-});
+type LoginFormData = {
+  email: string;
+  password: string;
+};
 
-const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+type RegisterFormData = {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+};
 
-type LoginFormData = z.infer<typeof loginSchema>;
-type RegisterFormData = z.infer<typeof registerSchema>;
-
-export const Login: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+export const Login = () => {
+  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [isArtist, setIsArtist] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  
+  const [error, setError] = useState("");
+
   const { login } = useAuth();
   const { registerUser, registerArtist } = useAppStore();
   const navigate = useNavigate();
 
-  const loginForm = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-  });
-
-  const registerForm = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
-  });
-
   const onLoginSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
-    setError('');
-    
+    setError("");
+
     try {
       // Mock login - in real app, this would validate against backend
       const mockUsers = [
-        { id: 'user-1', email: 'user@example.com', password: 'password', role: 'user' as const },
-        { id: 'artist-1', email: 'artist@example.com', password: 'password', role: 'artist' as const },
-        { id: 'admin-1', email: 'admin@example.com', password: 'password', role: 'admin' as const },
+        {
+          id: "user-1",
+          email: "user@example.com",
+          password: "password",
+          role: "user" as const,
+        },
+        {
+          id: "artist-1",
+          email: "artist@example.com",
+          password: "password",
+          role: "artist" as const,
+        },
+        {
+          id: "admin-1",
+          email: "admin@example.com",
+          password: "password",
+          role: "admin" as const,
+        },
       ];
-      
-      const user = mockUsers.find(u => u.email === data.email && u.password === data.password);
-      
+
+      const user = mockUsers.find(
+        (u) => u.email === data.email && u.password === data.password
+      );
+
       if (user) {
         login(user.role, user.id);
-        navigate('/dashboard');
+        navigate("/dashboard");
       } else {
-        setError('Invalid email or password');
+        setError("Invalid email or password");
       }
-    } catch (err) {
-      setError('An error occurred during login');
+    } catch {
+      setError("An error occurred during login");
     } finally {
       setIsLoading(false);
     }
@@ -76,256 +74,185 @@ export const Login: React.FC = () => {
 
   const onRegisterSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
-    setError('');
-    
+    setError("");
+
     try {
       if (isArtist) {
         const artistId = registerArtist({
           name: data.name,
-          slug: data.name.toLowerCase().replace(/\s+/g, '-'),
+          slug: data.name.toLowerCase().replace(/\s+/g, "-"),
         });
-        login('artist', artistId);
+        login("artist", artistId);
       } else {
         const userId = registerUser({
           name: data.name,
         });
-        login('user', userId);
+        login("user", userId);
       }
-      navigate('/dashboard');
-    } catch (err) {
-      setError('An error occurred during registration');
+      navigate("/dashboard");
+    } catch {
+      setError("An error occurred during registration");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="w-full max-w-md mx-auto space-y-8">
-      {/* Tabs */}
-      <div className="flex bg-muted rounded-lg p-1">
-        <button
-          onClick={() => setActiveTab('login')}
-          className={cn(
-            'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors',
-            activeTab === 'login'
-              ? 'bg-background text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'
-          )}
-        >
-          Sign In
-        </button>
-        <button
-          onClick={() => setActiveTab('register')}
-          className={cn(
-            'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors',
-            activeTab === 'register'
-              ? 'bg-background text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'
-          )}
-        >
-          Register
-        </button>
+    <div className="min-h-screen w-full flex bg-white">
+      {/* Left Side - Form */}
+      <div className="w-full lg:w-1/2 overflow-y-auto">
+        <div className="min-h-screen flex flex-col p-6 lg:p-12">
+          {/* Back Button - Top Left */}
+          <div className="flex justify-start mb-6">
+            <button
+              onClick={() => navigate("/")}
+              className="inline-flex items-center gap-2 text-neutral-600 hover:text-orange-500 transition-colors duration-200 group"
+            >
+              <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform duration-200" />
+              <span className="text-sm font-medium">Back to Home</span>
+            </button>
+          </div>
+
+          {/* Centered Content */}
+          <div className="flex-1 flex items-center justify-center">
+            <div className="w-full max-w-md mx-auto">
+              {/* Header */}
+              <div className="text-center mb-8">
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <div className="bg-black p-2 rounded-2xl">
+                    <img src="/logo/logo.png" alt="uplist" className="w-8 h-8" />
+                  </div>
+                  <h1 className="text-2xl font-bold font-dm-sans text-neutral-800">
+                    Welcome to Uplist
+                  </h1>
+                </div>
+                <p className="text-neutral-600">
+                  Connect with amazing artists and book your next event
+                </p>
+              </div>
+
+              {/* Tab Navigation */}
+              <div className="flex bg-neutral-100 rounded-3xl p-1.5 mb-8">
+            <button
+              onClick={() => setActiveTab("login")}
+              className={`flex-1 py-3 px-6 rounded-2xl text-sm font-bold transition-all duration-300 ${
+                activeTab === "login"
+                  ? "bg-white text-neutral-800 shadow-lg"
+                  : "text-neutral-500 hover:text-neutral-700"
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              onClick={() => setActiveTab("register")}
+              className={`flex-1 py-3 px-6 rounded-2xl text-sm font-bold transition-all duration-300 ${
+                activeTab === "register"
+                  ? "bg-white text-neutral-800 shadow-lg"
+                  : "text-neutral-500 hover:text-neutral-700"
+              }`}
+            >
+              Register
+                </button>
+              </div>
+
+              {/* Error Message */}
+              {error && (
+                <div className="flex items-center space-x-3 p-4 mb-6 bg-red-50 border border-red-200 rounded-2xl text-red-600">
+                  <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                  <span className="text-sm font-medium">{error}</span>
+                </div>
+              )}
+
+              {/* Forms */}
+              <div>
+                {activeTab === "login" ? (
+                  <LoginForm onSubmit={onLoginSubmit} isLoading={isLoading} />
+                ) : (
+                  <RegisterForm
+                    onSubmit={onRegisterSubmit}
+                    isLoading={isLoading}
+                    isArtist={isArtist}
+                    onToggleRole={() => setIsArtist(!isArtist)}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Role Toggle */}
-      <div className="text-center">
-        <button
-          onClick={() => setIsArtist(!isArtist)}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {isArtist ? 'Login as user' : 'Login as artist'}
-        </button>
+      {/* Right Side - Image with Overlay (Hidden on mobile) */}
+      <div className="hidden lg:block w-1/2 h-screen sticky top-0">
+        <img
+          src="/images/artistOnStage.jpeg"
+          alt="Artist performing"
+          className="w-full h-full object-cover opacity-70"
+        />
+        <div className="absolute inset-0 bg-black/20"></div>
+        
+        {/* Dynamic Content Overlay */}
+        <div className="absolute inset-0 flex items-center justify-center p-12">
+          <div className="text-center text-white max-w-lg">
+            {(activeTab === "register" && isArtist) ? (
+              /* Artist Content */
+              <>
+                <h2 className="text-4xl font-bold font-dm-sans mb-6">
+                  Share Your Talent
+                </h2>
+                <p className="text-xl mb-8 text-white/90">
+                  Join thousands of artists earning from their passion. Get booked for events, build your fanbase, and turn your music into a sustainable career.
+                </p>
+                <div className="space-y-4 text-left">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                    <span>Get discovered by event organizers</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                    <span>Secure payments & verified bookings</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                    <span>Build your professional profile</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                    <span>Connect directly with clients</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              /* User/Client Content */
+              <>
+                <h2 className="text-4xl font-bold font-dm-sans mb-6">
+                  Book Amazing Live Music
+                </h2>
+                <p className="text-xl mb-8 text-white/90">
+                  Discover talented musicians, book secure performances, and create unforgettable experiences for your events.
+                </p>
+                <div className="space-y-4 text-left">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                    <span>Browse verified artists with reviews</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                    <span>Secure escrow payments</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                    <span>Direct messaging and coordination</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                    <span>Easy booking management</span>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
-
-      {/* Error Message */}
-      {error && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center space-x-2 p-3 bg-destructive/10 border border-destructive/20 rounded-md text-destructive text-sm"
-        >
-          <AlertCircle className="h-4 w-4" />
-          <span>{error}</span>
-        </motion.div>
-      )}
-
-      {/* Login Form */}
-      {activeTab === 'login' && (
-        <motion.form
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          onSubmit={loginForm.handleSubmit(onLoginSubmit)}
-          className="space-y-6"
-        >
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
-              Email
-            </label>
-            <input
-              {...loginForm.register('email')}
-              type="email"
-              id="email"
-              placeholder="Enter your email"
-              className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-            {loginForm.formState.errors.email && (
-              <p className="mt-1 text-sm text-destructive">
-                {loginForm.formState.errors.email.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                {...loginForm.register('password')}
-                type={showPassword ? 'text' : 'password'}
-                id="password"
-                placeholder="Enter your password"
-                className="w-full px-3 py-2 pr-10 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-            {loginForm.formState.errors.password && (
-              <p className="mt-1 text-sm text-destructive">
-                {loginForm.formState.errors.password.message}
-              </p>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-2 px-4 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {isLoading ? 'Signing in...' : 'Sign In'}
-          </button>
-
-          <div className="text-center text-sm text-muted-foreground">
-            <p>Demo credentials:</p>
-            <p>User: user@example.com / password</p>
-            <p>Artist: artist@example.com / password</p>
-            <p>Admin: admin@example.com / password</p>
-          </div>
-        </motion.form>
-      )}
-
-      {/* Register Form */}
-      {activeTab === 'register' && (
-        <motion.form
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          onSubmit={registerForm.handleSubmit(onRegisterSubmit)}
-          className="space-y-6"
-        >
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
-              Full Name
-            </label>
-            <input
-              {...registerForm.register('name')}
-              type="text"
-              id="name"
-              placeholder="Enter your full name"
-              className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-            {registerForm.formState.errors.name && (
-              <p className="mt-1 text-sm text-destructive">
-                {registerForm.formState.errors.name.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label htmlFor="reg-email" className="block text-sm font-medium text-foreground mb-2">
-              Email
-            </label>
-            <input
-              {...registerForm.register('email')}
-              type="email"
-              id="reg-email"
-              placeholder="Enter your email"
-              className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-            {registerForm.formState.errors.email && (
-              <p className="mt-1 text-sm text-destructive">
-                {registerForm.formState.errors.email.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label htmlFor="reg-password" className="block text-sm font-medium text-foreground mb-2">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                {...registerForm.register('password')}
-                type={showPassword ? 'text' : 'password'}
-                id="reg-password"
-                placeholder="Create a password"
-                className="w-full px-3 py-2 pr-10 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-            {registerForm.formState.errors.password && (
-              <p className="mt-1 text-sm text-destructive">
-                {registerForm.formState.errors.password.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label htmlFor="confirm-password" className="block text-sm font-medium text-foreground mb-2">
-              Confirm Password
-            </label>
-            <div className="relative">
-              <input
-                {...registerForm.register('confirmPassword')}
-                type={showConfirmPassword ? 'text' : 'password'}
-                id="confirm-password"
-                placeholder="Confirm your password"
-                className="w-full px-3 py-2 pr-10 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-            {registerForm.formState.errors.confirmPassword && (
-              <p className="mt-1 text-sm text-destructive">
-                {registerForm.formState.errors.confirmPassword.message}
-              </p>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-2 px-4 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {isLoading ? 'Creating account...' : `Create ${isArtist ? 'Artist' : 'User'} Account`}
-          </button>
-        </motion.form>
-      )}
     </div>
   );
 };

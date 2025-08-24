@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { PageTransition } from '@/components/common/PageTransition';
@@ -6,7 +5,6 @@ import { useIsBanned } from '@/hooks/useAuth';
 
 // Layouts
 import { AppLayout } from '@/components/layout/AppLayout';
-import { AuthLayout } from '@/components/layout/AuthLayout';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 
 // Pages
@@ -49,9 +47,7 @@ function App() {
 
             <Route path="/login" element={
               <PageTransition>
-                <AuthLayout>
-                  <Login />
-                </AuthLayout>
+                <Login />
               </PageTransition>
             } />
             
