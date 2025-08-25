@@ -67,10 +67,36 @@ function App() {
               </PageTransition>
             } />
             
+            {/* Profile routes */}
+            <Route path="/profile" element={
+              <PageTransition>
+                <AppLayout>
+                  <Profile />
+                </AppLayout>
+              </PageTransition>
+            } />
+            
             <Route path="/profile/:userId" element={
               <PageTransition>
                 <AppLayout>
                   <Profile />
+                </AppLayout>
+              </PageTransition>
+            } />
+            
+            {/* Chat routes */}
+            <Route path="/chat" element={
+              <PageTransition>
+                <AppLayout>
+                  <Chat />
+                </AppLayout>
+              </PageTransition>
+            } />
+            
+            <Route path="/chat/:threadId" element={
+              <PageTransition>
+                <AppLayout>
+                  <Chat />
                 </AppLayout>
               </PageTransition>
             } />
@@ -80,14 +106,6 @@ function App() {
               <PageTransition>
                 <AppLayout>
                   <Book />
-                </AppLayout>
-              </PageTransition>
-            } />
-            
-            <Route path="/chat/:threadId" element={
-              <PageTransition>
-                <AppLayout>
-                  <Chat />
                 </AppLayout>
               </PageTransition>
             } />

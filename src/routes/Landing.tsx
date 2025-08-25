@@ -56,8 +56,6 @@ export const Landing = () => {
     transition: { duration: 0.6, ease: "easeOut" }
   };
 
-
-
   const staggerContainer = {
     initial: {},
     animate: {

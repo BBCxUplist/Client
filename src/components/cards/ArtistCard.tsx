@@ -1,129 +1,104 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Star, Calendar, Music } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import type { Artist } from '@/constants/types';
-import { formatPrice } from '@/lib/utils';
-import { cn } from '@/lib/utils';
+import { MessageCircle, Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+interface Artist {
+  id: string;
+  name: string;
+  slug: string;
+  avatar?: string;
+  photos?: string[];
+  rating: number;
+  price: number;
+  tags?: string[];
+  isBookable?: boolean;
+  featured?: boolean;
+  description?: string;
+}
 
 interface ArtistCardProps {
   artist: Artist;
-  className?: string;
 }
 
-export const ArtistCard: React.FC<ArtistCardProps> = ({ artist, className }) => {
-  const ratingStars = Array.from({ length: 5 }, (_, i) => (
-    <Star
-      key={i}
-      className={cn(
-        'h-4 w-4',
-        i < Math.floor(artist.rating) 
-          ? 'fill-yellow-400 text-yellow-400' 
-          : 'text-gray-300'
-      )}
-    />
-  ));
+const ArtistCard = ({ artist }: ArtistCardProps) => {
+  const navigate = useNavigate();
+
+  const handleMessageClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Handle message functionality
+    console.log('Message artist:', artist.name);
+  };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4 }}
-      transition={{ duration: 0.3 }}
-      className={cn(
-        'group relative bg-card border border-border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300',
-        className
-      )}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.2 }}
+      onClick={() => navigate(`/artist/${artist.slug}`)}
+      className="cursor-pointer"
     >
-      {/* Image */}
-      <div className="relative h-48 overflow-hidden">
-        <img
-          src={artist.avatar || `https://ui-avatars.com/api/?name=${artist.name}&size=200&background=random`}
-          alt={artist.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        
-        {/* Price badge */}
-        <div className="absolute top-3 right-3 bg-primary text-primary-foreground px-2 py-1 rounded-md text-sm font-semibold">
-          {formatPrice(artist.price)}
-        </div>
-        
-        {/* Bookable status */}
-        {!artist.isBookable && (
-          <div className="absolute top-3 left-3 bg-muted/80 backdrop-blur-sm text-muted-foreground px-2 py-1 rounded-md text-xs">
-            Not Available
+      <div className="w-full p-2 border border-neutral-200 rounded-3xl inset-shadow-sm shadow-sm shadow-orange-600/5 bg-white hover:shadow-lg transition-all duration-300">
+        {/* Artist Image - Large Square */}
+        <div className="relative">
+          <div className="aspect-square rounded-2xl overflow-hidden shadow-sm">
+            <img
+              src={
+                artist.avatar ||
+                artist.photos?.[0] ||
+                `https://ui-avatars.com/api/?name=${artist.name}&size=400&background=random`
+              }
+              alt={artist.name}
+              className="w-full h-full object-cover"
+            />
           </div>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="p-4">
-        {/* Name and rating */}
-        <div className="flex items-start justify-between mb-2">
-          <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">
-            {artist.name}
-          </h3>
-          <div className="flex items-center gap-1">
-            {ratingStars}
-            <span className="text-sm text-muted-foreground ml-1">
+          
+          {/* Rating Badge */}
+          <div className="absolute top-2 right-2 flex items-center space-x-1 px-2 py-1 bg-white rounded-xl shadow-sm border border-neutral-200">
+            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+            <span className="text-xs font-bold text-neutral-700">
               {artist.rating.toFixed(1)}
             </span>
           </div>
         </div>
 
-        {/* Tags */}
-        <div className="flex flex-wrap gap-1 mb-3">
-          {artist.tags.slice(0, 3).map((tag, index) => (
-            <span
-              key={index}
-              className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-secondary text-secondary-foreground"
-            >
-              <Music className="h-3 w-3 mr-1" />
-              {tag}
-            </span>
-          ))}
-          {artist.tags.length > 3 && (
-            <span className="text-xs text-muted-foreground">
-              +{artist.tags.length - 3} more
-            </span>
-          )}
-        </div>
+        {/* Content */}
+        <div className="flex flex-col gap-3 p-2">
+          {/* Name */}
+          <h3 className="text-lg font-bold font-dm-sans text-neutral-800 truncate">
+            {artist.name}
+          </h3>
 
-        {/* Bio preview */}
-        {artist.bio && (
-          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-            {artist.bio}
+          {/* Description */}
+          <p className="text-sm text-neutral-600 line-clamp-2">
+            {artist.description || `Professional ${artist.tags?.[0] || 'musician'} with ${artist.rating} star rating. Available for bookings and events.`}
           </p>
-        )}
 
-        {/* Availability */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-          <Calendar className="h-4 w-4" />
-          <span>
-            {artist.availability.length} available date{artist.availability.length !== 1 ? 's' : ''}
-          </span>
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-2">
-          <Link
-            to={`/artist/${artist.slug}`}
-            className="flex-1 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
-          >
-            View Profile
-          </Link>
-          
-          {artist.isBookable && (
-            <Link
-              to={`/book/${artist.id}`}
-              className="flex-1 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3"
-            >
-              Book Now
-            </Link>
+          {/* Genre Tag and Message Button */}
+          {artist.tags?.[0] && (
+            <div className="flex items-center justify-between">
+              <span className="inline-block px-3 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-xl">
+                {artist.tags[0]}
+              </span>
+              
+              {/* Message Button */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleMessageClick}
+                className="flex items-center space-x-1 px-3 py-1 bg-neutral-100 hover:bg-orange-100 text-neutral-600 hover:text-orange-600 rounded-xl transition-all duration-200"
+              >
+                <MessageCircle className="h-3 w-3" />
+                <span className="text-xs font-medium">Message</span>
+              </motion.button>
+            </div>
           )}
         </div>
       </div>
     </motion.div>
   );
 };
+
+export default ArtistCard;

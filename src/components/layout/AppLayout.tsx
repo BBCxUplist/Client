@@ -6,12 +6,12 @@ interface AppLayoutProps {
   children: React.ReactNode;
 }
 
-export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
+export const AppLayout = ({ children }: AppLayoutProps) => {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-[100vh] flex flex-col">
       <Header />
       
-      <main className="flex-1 pt-24">
+      <main className="flex-1">
         {children}
       </main>
 

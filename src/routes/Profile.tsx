@@ -3,14 +3,20 @@ import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { User, ExternalLink } from 'lucide-react';
 import { useArtistById } from '@/hooks/useArtists';
+import { useAuth, useCurrentUser } from '@/hooks/useAuth';
 import { EmptyState } from '@/components/common/EmptyState';
 
 export const Profile: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();
+  const { currentUserId } = useAuth();
+  const currentUser = useCurrentUser();
+  
+  // If no userId is provided, show current user's profile
+  const targetUserId = userId || currentUserId;
   
   // For demo purposes, we'll use artist data as user data
   // In a real app, this would be getUserById
-  const user = useArtistById(userId || '');
+  const user = useArtistById(targetUserId || '');
 
   if (!user) {
     return (
@@ -26,6 +32,8 @@ export const Profile: React.FC = () => {
     );
   }
 
+  const isOwnProfile = !userId || userId === currentUserId;
+
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -40,7 +48,7 @@ export const Profile: React.FC = () => {
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-foreground mb-2">{user.name}</h1>
               <p className="text-muted-foreground mb-4">
-                {user.description || 'No description available'}
+                {user.bio || 'No bio available'}
               </p>
               
               {/* Social Links */}
@@ -103,57 +111,77 @@ export const Profile: React.FC = () => {
                 <h2 className="text-2xl font-bold text-foreground mb-4">Photos</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {user.photos.map((photo, index) => (
-                    <motion.div
+                    <motion.img
                       key={index}
+                      src={photo}
+                      alt={`${user.name} photo ${index + 1}`}
+                      className="w-full h-32 object-cover rounded-lg"
                       whileHover={{ scale: 1.05 }}
-                      className="aspect-square rounded-lg overflow-hidden"
-                    >
-                      <img
-                        src={photo}
-                        alt={`${user.name} photo ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </motion.div>
+                      transition={{ duration: 0.2 }}
+                    />
                   ))}
                 </div>
               </div>
             )}
+
+            {/* Reviews */}
+            <div className="bg-card border border-border rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-foreground mb-4">Reviews</h2>
+              <p className="text-muted-foreground">
+                Reviews feature coming soon. Users will be able to leave reviews after completed bookings.
+              </p>
+            </div>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* User Info */}
+            {/* Stats */}
             <div className="bg-card border border-border rounded-lg p-6">
-              <h3 className="text-lg font-bold text-foreground mb-4">User Information</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-4">Stats</h3>
               <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Member since:</span>
-                  <span className="text-foreground">
-                    {new Date(user.createdAt).toLocaleDateString()}
-                  </span>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Rating</span>
+                  <span className="font-semibold">{user.rating.toFixed(1)}/5</span>
                 </div>
-                {user.role && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Role:</span>
-                    <span className="text-foreground capitalize">{user.role}</span>
-                  </div>
-                )}
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Price</span>
+                  <span className="font-semibold">${user.price}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Available</span>
+                  <span className="font-semibold">{user.isBookable ? 'Yes' : 'No'}</span>
+                </div>
               </div>
             </div>
 
             {/* Tags */}
             {user.tags && user.tags.length > 0 && (
               <div className="bg-card border border-border rounded-lg p-6">
-                <h3 className="text-lg font-bold text-foreground mb-4">Interests</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-4">Genres</h3>
                 <div className="flex flex-wrap gap-2">
                   {user.tags.map((tag, index) => (
                     <span
                       key={index}
-                      className="px-3 py-1 bg-muted text-muted-foreground rounded-full text-sm"
+                      className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
                     >
                       {tag}
                     </span>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            {!isOwnProfile && (
+              <div className="bg-card border border-border rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-foreground mb-4">Actions</h3>
+                <div className="space-y-3">
+                  <button className="w-full bg-primary text-primary-foreground py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors">
+                    Book Now
+                  </button>
+                  <button className="w-full bg-secondary text-secondary-foreground py-2 px-4 rounded-lg hover:bg-secondary/90 transition-colors">
+                    Send Message
+                  </button>
                 </div>
               </div>
             )}
