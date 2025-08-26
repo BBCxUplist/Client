@@ -1,244 +1,323 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Send, ArrowLeft, MessageCircle, User } from 'lucide-react';
+import { Link, useParams } from 'react-router-dom';
+import { 
+  MessageCircle, 
+  Search, 
+  Send, 
+  MoreVertical,
+  Phone,
+  Video,
+  Image,
+  Paperclip,
+  Smile,
+  ArrowLeft
+} from 'lucide-react';
 import { useAuth, useCurrentUser } from '@/hooks/useAuth';
-import { useBookingById } from '@/hooks/useBookings';
 import { useArtistById } from '@/hooks/useArtists';
 import { EmptyState } from '@/components/common/EmptyState';
-import { formatDate } from '@/lib/utils';
 
 export const Chat = () => {
   const { threadId } = useParams<{ threadId: string }>();
-  const { currentUserId } = useAuth();
+  const { isAuthenticated, currentUserId } = useAuth();
   const currentUser = useCurrentUser();
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState([
-    {
-      id: '1',
-      senderId: 'system',
-      text: 'Chat thread created. You can now communicate about your booking.',
-      timestamp: new Date().toISOString(),
-    },
-  ]);
+  const [activeThread, setActiveThread] = useState(threadId || 'thread1');
 
-  // Mock chat threads - in real app, this would come from an API
-  const chatThreads = [
+  // Dummy conversations data
+  const conversations = [
     {
-      id: 'thread-1',
-      artistId: 'artist-1',
-      userId: 'user-1',
-      bookingId: 'booking-1',
-      lastMessage: 'Looking forward to the event!',
-      lastMessageTime: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
+      id: 'thread1',
+      artistId: '1',
+      lastMessage: 'Looking forward to our event!',
+      lastMessageTime: '2 hours ago',
+      unreadCount: 2,
+      status: 'confirmed'
     },
     {
-      id: 'thread-2',
-      artistId: 'artist-2',
-      userId: 'user-1',
-      bookingId: 'booking-2',
-      lastMessage: 'What time should I arrive?',
-      lastMessageTime: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+      id: 'thread2',
+      artistId: '2',
+      lastMessage: 'What time works best for you?',
+      lastMessageTime: '1 day ago',
+      unreadCount: 0,
+      status: 'negotiating'
     },
+    {
+      id: 'thread3',
+      artistId: '3',
+      lastMessage: 'Thanks for the great performance!',
+      lastMessageTime: '3 days ago',
+      unreadCount: 0,
+      status: 'completed'
+    },
+    {
+      id: 'thread4',
+      artistId: '4',
+      lastMessage: 'I can do that date, no problem.',
+      lastMessageTime: '1 week ago',
+      unreadCount: 0,
+      status: 'completed'
+    },
+    {
+      id: 'thread5',
+      artistId: '5',
+      lastMessage: 'Let me check my availability...',
+      lastMessageTime: '1 week ago',
+      unreadCount: 1,
+      status: 'pending'
+    }
   ];
 
-  // If no threadId is provided, show chat list
-  if (!threadId) {
-    return (
-      <div className="min-h-screen bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-3xl font-bold text-foreground mb-8">Messages</h1>
-          
-          {chatThreads.length > 0 ? (
-            <div className="space-y-4">
-              {chatThreads.map((thread) => {
-                const booking = useBookingById(thread.bookingId);
-                const artist = booking ? useArtistById(booking.artistId) : null;
-                const user = booking ? useArtistById(booking.userId) : null;
-                
-                if (!booking || !artist || !user) return null;
-                
-                const otherParty = currentUser?.role === 'artist' ? user : artist;
-                
-                return (
-                  <motion.div
-                    key={thread.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    whileHover={{ scale: 1.02 }}
-                    className="bg-card border border-border rounded-lg p-4 cursor-pointer hover:shadow-md transition-all duration-200"
-                    onClick={() => window.location.href = `/chat/${thread.id}`}
-                  >
-                    <div className="flex items-center space-x-4">
-                      <img
-                        src={otherParty.avatar || `https://ui-avatars.com/api/?name=${otherParty.name}&size=40&background=random`}
-                        alt={otherParty.name}
-                        className="w-12 h-12 rounded-full"
-                      />
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-foreground">{otherParty.name}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Booking for {formatDate(booking.date)} • ${booking.amount}
-                        </p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {thread.lastMessage}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(thread.lastMessageTime).toLocaleTimeString([], { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          ) : (
-            <EmptyState
-              icon={MessageCircle}
-              title="No messages yet"
-              description="You don't have any active chat threads. Start booking artists to begin conversations."
-            />
-          )}
-        </div>
-      </div>
-    );
-  }
+  // Dummy messages for the active thread
+  const messages = [
+    {
+      id: '1',
+      senderId: '1',
+      text: 'Hi! I\'m interested in booking you for my event.',
+      timestamp: '2024-02-10T10:00:00Z',
+      isUser: false
+    },
+    {
+      id: '2',
+      senderId: currentUserId,
+      text: 'Great! What kind of event are you planning?',
+      timestamp: '2024-02-10T10:05:00Z',
+      isUser: true
+    },
+    {
+      id: '3',
+      senderId: '1',
+      text: 'It\'s a corporate party, about 50 people. Looking for some live music.',
+      timestamp: '2024-02-10T10:10:00Z',
+      isUser: false
+    },
+    {
+      id: '4',
+      senderId: currentUserId,
+      text: 'Perfect! I can definitely help with that. What date are you thinking?',
+      timestamp: '2024-02-10T10:15:00Z',
+      isUser: true
+    },
+    {
+      id: '5',
+      senderId: '1',
+      text: 'Looking forward to our event!',
+      timestamp: '2024-02-10T12:00:00Z',
+      isUser: false
+    }
+  ];
 
-  // Mock booking data - in real app, this would come from the threadId
-  const booking = useBookingById('booking-1');
-  const artist = booking ? useArtistById(booking.artistId) : null;
-  const user = booking ? useArtistById(booking.userId) : null; // This should be getUserById
+  const currentConversation = conversations.find(c => c.id === activeThread);
+  const currentArtist = useArtistById(currentConversation?.artistId || '');
 
-  if (!booking || !artist || !user) {
+  if (!isAuthenticated || !currentUser) {
     return (
       <div className="min-h-screen bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <EmptyState
-            icon={ArrowLeft}
-            title="Chat not found"
-            description="The chat thread you're looking for doesn't exist."
+            icon={MessageCircle}
+            title="Authentication Required"
+            description="Please sign in to view your messages."
           />
         </div>
       </div>
     );
   }
 
-  const isArtist = currentUser?.role === 'artist';
-  const otherParty = isArtist ? user : artist;
-
   const handleSendMessage = () => {
-    if (!message.trim()) return;
-
-    const newMessage = {
-      id: Date.now().toString(),
-      senderId: currentUserId!,
-      text: message.trim(),
-      timestamp: new Date().toISOString(),
-    };
-
-    setMessages([...messages, newMessage]);
-    setMessage('');
+    if (message.trim()) {
+      // In a real app, this would send the message
+      console.log('Sending message:', message);
+      setMessage('');
+    }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
+  const formatTime = (timestamp: string) => {
+    return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'confirmed':
+        return 'text-green-600 bg-green-50 border-green-200';
+      case 'negotiating':
+        return 'text-blue-600 bg-blue-50 border-blue-200';
+      case 'pending':
+        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+      case 'completed':
+        return 'text-gray-600 bg-gray-50 border-gray-200';
+      default:
+        return 'text-neutral-600 bg-neutral-50 border-neutral-200';
     }
   };
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-4xl mx-auto h-screen flex flex-col">
-        {/* Header */}
-        <div className="bg-card border-b border-border p-4">
-          <div className="flex items-center space-x-4">
-            <img
-              src={otherParty.avatar || `https://ui-avatars.com/api/?name=${otherParty.name}&size=40&background=random`}
-              alt={otherParty.name}
-              className="w-10 h-10 rounded-full"
-            />
-            <div>
-              <h1 className="font-semibold text-foreground">{otherParty.name}</h1>
-              <p className="text-sm text-muted-foreground">
-                Booking for {formatDate(booking.date)} • ${booking.amount}
-              </p>
+      <div className="max-w-6xl mx-auto h-screen flex">
+        {/* Sidebar - Conversations List */}
+        <div className="w-80 border-r border-neutral-200 bg-neutral-50">
+          {/* Header */}
+          <div className="p-4 border-b border-neutral-200">
+            <h1 className="text-xl font-bold text-neutral-800 mb-4">Messages</h1>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
+              <input
+                type="text"
+                placeholder="Search conversations..."
+                className="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-xl bg-white text-neutral-800 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+              />
             </div>
           </div>
-        </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.map((msg) => {
-            const isOwnMessage = msg.senderId === currentUserId;
-            const isSystemMessage = msg.senderId === 'system';
+          {/* Conversations List */}
+          <div className="overflow-y-auto h-[calc(100vh-120px)]">
+            {conversations.map((conversation) => {
+              const artist = useArtistById(conversation.artistId);
+              if (!artist) return null;
 
-            if (isSystemMessage) {
               return (
                 <motion.div
-                  key={msg.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex justify-center"
+                  key={conversation.id}
+                  whileHover={{ backgroundColor: '#f8f9fa' }}
+                  className={`p-4 border-b border-neutral-200 cursor-pointer transition-colors ${
+                    activeThread === conversation.id ? 'bg-orange-50 border-r-2 border-r-orange-500' : ''
+                  }`}
+                  onClick={() => setActiveThread(conversation.id)}
                 >
-                  <div className="bg-muted text-muted-foreground px-4 py-2 rounded-full text-sm">
-                    {msg.text}
+                  <div className="flex items-start space-x-3">
+                    <img
+                      src={artist.avatar || `https://ui-avatars.com/api/?name=${artist.name}&size=50&background=random`}
+                      alt={artist.name}
+                      className="w-12 h-12 rounded-xl object-cover"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className="font-semibold text-neutral-800 truncate">{artist.name}</h3>
+                        <span className="text-xs text-neutral-500">{conversation.lastMessageTime}</span>
+                      </div>
+                      <p className="text-sm text-neutral-600 truncate mb-2">{conversation.lastMessage}</p>
+                      <div className="flex items-center justify-between">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(conversation.status)}`}>
+                          {conversation.status.charAt(0).toUpperCase() + conversation.status.slice(1)}
+                        </span>
+                        {conversation.unreadCount > 0 && (
+                          <span className="bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            {conversation.unreadCount}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </motion.div>
               );
-            }
-
-            return (
-              <motion.div
-                key={msg.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                    isOwnMessage
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-foreground'
-                  }`}
-                >
-                  <p className="text-sm">{msg.text}</p>
-                  <p className="text-xs opacity-70 mt-1">
-                    {new Date(msg.timestamp).toLocaleTimeString([], { 
-                      hour: '2-digit', 
-                      minute: '2-digit' 
-                    })}
-                  </p>
-                </div>
-              </motion.div>
-            );
-          })}
+            })}
+          </div>
         </div>
 
-        {/* Message Input */}
-        <div className="bg-card border-t border-border p-4">
-          <div className="flex space-x-2">
-            <input
-              type="text"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Type your message..."
-              className="flex-1 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            <button
-              onClick={handleSendMessage}
-              disabled={!message.trim()}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <Send className="h-4 w-4" />
-            </button>
-          </div>
+        {/* Main Chat Area */}
+        <div className="flex-1 flex flex-col">
+          {currentConversation && currentArtist ? (
+            <>
+              {/* Chat Header */}
+              <div className="p-4 border-b border-neutral-200 bg-white">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Link
+                      to="/dashboard"
+                      className="lg:hidden p-2 hover:bg-neutral-100 rounded-xl transition-colors"
+                    >
+                      <ArrowLeft className="h-5 w-5 text-neutral-600" />
+                    </Link>
+                    <img
+                      src={currentArtist.avatar || `https://ui-avatars.com/api/?name=${currentArtist.name}&size=50&background=random`}
+                      alt={currentArtist.name}
+                      className="w-10 h-10 rounded-xl object-cover"
+                    />
+                    <div>
+                      <h2 className="font-semibold text-neutral-800">{currentArtist.name}</h2>
+                      <p className="text-sm text-neutral-600">Online</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <button className="p-2 hover:bg-neutral-100 rounded-xl transition-colors">
+                      <Phone className="h-5 w-5 text-neutral-600" />
+                    </button>
+                    <button className="p-2 hover:bg-neutral-100 rounded-xl transition-colors">
+                      <Video className="h-5 w-5 text-neutral-600" />
+                    </button>
+                    <button className="p-2 hover:bg-neutral-100 rounded-xl transition-colors">
+                      <MoreVertical className="h-5 w-5 text-neutral-600" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-neutral-50">
+                {messages.map((msg) => (
+                  <motion.div
+                    key={msg.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+                      msg.isUser 
+                        ? 'bg-orange-500 text-white' 
+                        : 'bg-white text-neutral-800 border border-neutral-200'
+                    }`}>
+                      <p className="text-sm">{msg.text}</p>
+                      <p className={`text-xs mt-1 ${
+                        msg.isUser ? 'text-orange-100' : 'text-neutral-500'
+                      }`}>
+                        {formatTime(msg.timestamp)}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Message Input */}
+              <div className="p-4 border-t border-neutral-200 bg-white">
+                <div className="flex items-center space-x-3">
+                  <button className="p-2 hover:bg-neutral-100 rounded-xl transition-colors">
+                    <Paperclip className="h-5 w-5 text-neutral-600" />
+                  </button>
+                  <button className="p-2 hover:bg-neutral-100 rounded-xl transition-colors">
+                    <Image className="h-5 w-5 text-neutral-600" />
+                  </button>
+                  <div className="flex-1 relative">
+                    <input
+                      type="text"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder="Type a message..."
+                      className="w-full px-4 py-3 border border-neutral-200 rounded-2xl bg-white text-neutral-800 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                    />
+                    <button className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-neutral-100 rounded-lg transition-colors">
+                      <Smile className="h-5 w-5 text-neutral-600" />
+                    </button>
+                  </div>
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!message.trim()}
+                    className="p-3 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Send className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <EmptyState
+                icon={MessageCircle}
+                title="No conversation selected"
+                description="Choose a conversation from the sidebar to start messaging."
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

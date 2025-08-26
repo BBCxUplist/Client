@@ -1,190 +1,308 @@
-import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, ExternalLink } from 'lucide-react';
-import { useArtistById } from '@/hooks/useArtists';
+import { 
+  User, 
+  Mail, 
+  Phone, 
+  MapPin, 
+  Calendar, 
+  Edit, 
+  Save, 
+  X,
+  Camera,
+  Star
+} from 'lucide-react';
 import { useAuth, useCurrentUser } from '@/hooks/useAuth';
 import { EmptyState } from '@/components/common/EmptyState';
 
 export const Profile = () => {
-  const { userId } = useParams<{ userId: string }>();
-  const { currentUserId } = useAuth();
+  const { isAuthenticated, currentUserId } = useAuth();
   const currentUser = useCurrentUser();
-  
-  // If no userId is provided, show current user's profile
-  const targetUserId = userId || currentUserId;
-  
-  // For demo purposes, we'll use artist data as user data
-  // In a real app, this would be getUserById
-  const user = useArtistById(targetUserId || '');
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    name: currentUser?.name || '',
+    email: currentUser?.email || '',
+    phone: currentUser?.phone || '',
+    location: currentUser?.location || '',
+    bio: currentUser?.bio || '',
+  });
 
-  if (!user) {
+  if (!isAuthenticated || !currentUser) {
     return (
       <div className="min-h-screen bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <EmptyState
             icon={User}
-            title="User not found"
-            description="The user profile you're looking for doesn't exist."
+            title="Authentication Required"
+            description="Please sign in to view your profile."
           />
         </div>
       </div>
     );
   }
 
-  const isOwnProfile = !userId || userId === currentUserId;
+  const handleSave = () => {
+    // In a real app, this would update the user profile
+    console.log('Saving profile:', formData);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setFormData({
+      name: currentUser?.name || '',
+      email: currentUser?.email || '',
+      phone: currentUser?.phone || '',
+      location: currentUser?.location || '',
+      bio: currentUser?.bio || '',
+    });
+    setIsEditing(false);
+  };
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Profile Header */}
-        <div className="bg-card border border-border rounded-lg p-8 mb-8">
-          <div className="flex items-center space-x-6">
-            <img
-              src={user.avatar || `https://ui-avatars.com/api/?name=${user.name}&size=150&background=random`}
-              alt={user.name}
-              className="w-24 h-24 rounded-full"
-            />
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-foreground mb-2">{user.name}</h1>
-              <p className="text-muted-foreground mb-4">
-                {user.bio || 'No bio available'}
-              </p>
-              
-              {/* Social Links */}
-              {user.socials && Object.keys(user.socials).length > 0 && (
-                <div className="flex space-x-4">
-                  {user.socials.instagram && (
-                    <a
-                      href={user.socials.instagram}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      <span>Instagram</span>
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
-                  )}
-                  {user.socials.twitter && (
-                    <a
-                      href={user.socials.twitter}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      <span>Twitter</span>
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
-                  )}
-                  {user.socials.youtube && (
-                    <a
-                      href={user.socials.youtube}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      <span>YouTube</span>
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
-                  )}
-                </div>
-              )}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Header */}
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-neutral-800">Profile</h1>
+              <p className="text-neutral-600 mt-1">Manage your account information</p>
             </div>
+            <button
+              onClick={() => setIsEditing(!isEditing)}
+              className="flex items-center space-x-2 px-4 py-2 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 transition-colors"
+            >
+              {isEditing ? (
+                <>
+                  <X className="h-4 w-4" />
+                  <span>Cancel</span>
+                </>
+              ) : (
+                <>
+                  <Edit className="h-4 w-4" />
+                  <span>Edit</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
 
-        {/* Profile Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* About */}
-            <div className="bg-card border border-border rounded-lg p-6">
-              <h2 className="text-2xl font-bold text-foreground mb-4">About</h2>
-              <p className="text-muted-foreground leading-relaxed">
-                {user.bio || 'No bio available for this user.'}
-              </p>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+          {/* Left Column - Profile Info */}
+          <div className="lg:col-span-2 space-y-6 sm:space-y-8">
+            {/* Profile Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white border border-neutral-200 rounded-2xl p-6 sm:p-8 shadow-sm"
+            >
+              <div className="flex items-start space-x-6">
+                {/* Avatar */}
+                <div className="relative">
+                  <img
+                    src={currentUser.avatar || `https://ui-avatars.com/api/?name=${currentUser.name}&size=120&background=random`}
+                    alt={currentUser.name}
+                    className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl object-cover shadow-lg"
+                  />
+                  {isEditing && (
+                    <button className="absolute -bottom-2 -right-2 w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center hover:bg-orange-600 transition-colors">
+                      <Camera className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
 
-            {/* Photos */}
-            {user.photos && user.photos.length > 0 && (
-              <div className="bg-card border border-border rounded-lg p-6">
-                <h2 className="text-2xl font-bold text-foreground mb-4">Photos</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {user.photos.map((photo, index) => (
-                    <motion.img
-                      key={index}
-                      src={photo}
-                      alt={`${user.name} photo ${index + 1}`}
-                      className="w-full h-32 object-cover rounded-lg"
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ duration: 0.2 }}
-                    />
-                  ))}
+                {/* Basic Info */}
+                <div className="flex-1">
+                  <div className="mb-4">
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className="text-2xl sm:text-3xl font-bold text-neutral-800 bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 w-full focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                      />
+                    ) : (
+                      <h2 className="text-2xl sm:text-3xl font-bold text-neutral-800">{currentUser.name}</h2>
+                    )}
+                    <p className="text-neutral-600 mt-1">Member since {new Date().getFullYear()}</p>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="flex space-x-6">
+                    <div className="text-center">
+                      <div className="text-xl font-bold text-neutral-800">12</div>
+                      <div className="text-sm text-neutral-600">Bookings</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xl font-bold text-neutral-800">4.8</div>
+                      <div className="text-sm text-neutral-600 flex items-center justify-center">
+                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
+                        Rating
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xl font-bold text-neutral-800">8</div>
+                      <div className="text-sm text-neutral-600">Reviews</div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
+            </motion.div>
 
-            {/* Reviews */}
-            <div className="bg-card border border-border rounded-lg p-6">
-              <h2 className="text-2xl font-bold text-foreground mb-4">Reviews</h2>
-              <p className="text-muted-foreground">
-                Reviews feature coming soon. Users will be able to leave reviews after completed bookings.
-              </p>
-            </div>
+            {/* Contact Information */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-white border border-neutral-200 rounded-2xl p-6 sm:p-8 shadow-sm"
+            >
+              <h3 className="text-xl font-bold text-neutral-800 mb-4 sm:mb-6">Contact Information</h3>
+              <div className="space-y-4 sm:space-y-6">
+                <div className="flex items-center space-x-3">
+                  <Mail className="h-5 w-5 text-neutral-400" />
+                  {isEditing ? (
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="flex-1 bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                    />
+                  ) : (
+                    <span className="text-neutral-700">{currentUser.email}</span>
+                  )}
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Phone className="h-5 w-5 text-neutral-400" />
+                  {isEditing ? (
+                    <input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      placeholder="Add phone number"
+                      className="flex-1 bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                    />
+                  ) : (
+                    <span className="text-neutral-700">{currentUser.phone || 'Not provided'}</span>
+                  )}
+                </div>
+                <div className="flex items-center space-x-3">
+                  <MapPin className="h-5 w-5 text-neutral-400" />
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={formData.location}
+                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      placeholder="Add location"
+                      className="flex-1 bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                    />
+                  ) : (
+                    <span className="text-neutral-700">{currentUser.location || 'Not provided'}</span>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Bio */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white border border-neutral-200 rounded-2xl p-6 sm:p-8 shadow-sm"
+            >
+              <h3 className="text-xl font-bold text-neutral-800 mb-4 sm:mb-6">About</h3>
+              {isEditing ? (
+                <textarea
+                  value={formData.bio}
+                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                  placeholder="Tell us about yourself..."
+                  rows={4}
+                  className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 resize-none"
+                />
+              ) : (
+                <p className="text-neutral-700 leading-relaxed">
+                  {currentUser.bio || 'No bio available. Click edit to add one.'}
+                </p>
+              )}
+            </motion.div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Stats */}
-            <div className="bg-card border border-border rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-foreground mb-4">Stats</h3>
+          {/* Right Column - Actions */}
+          <div className="space-y-6 sm:space-y-8">
+            {/* Save Button */}
+            {isEditing && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm"
+              >
+                <button
+                  onClick={handleSave}
+                  className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 transition-colors"
+                >
+                  <Save className="h-4 w-4" />
+                  <span>Save Changes</span>
+                </button>
+                <button
+                  onClick={handleCancel}
+                  className="w-full flex items-center justify-center space-x-2 px-4 py-3 border border-neutral-300 text-neutral-700 rounded-xl font-medium hover:bg-neutral-50 transition-colors mt-3"
+                >
+                  <X className="h-4 w-4" />
+                  <span>Cancel</span>
+                </button>
+              </motion.div>
+            )}
+
+            {/* Quick Stats */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm"
+            >
+              <h3 className="text-lg font-bold text-neutral-800 mb-4">Account Stats</h3>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-neutral-600">Total Spent</span>
+                  <span className="font-semibold text-neutral-800">$2,450</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-neutral-600">Favorite Artists</span>
+                  <span className="font-semibold text-neutral-800">5</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-neutral-600">Events Attended</span>
+                  <span className="font-semibold text-neutral-800">8</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-neutral-600">Reviews Given</span>
+                  <span className="font-semibold text-neutral-800">6</span>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Recent Activity */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm"
+            >
+              <h3 className="text-lg font-bold text-neutral-800 mb-4">Recent Activity</h3>
               <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Rating</span>
-                  <span className="font-semibold">{user.rating.toFixed(1)}/5</span>
+                <div className="flex items-center space-x-3 text-sm">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                  <span className="text-neutral-600">Booked Sarah Johnson</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Price</span>
-                  <span className="font-semibold">${user.price}</span>
+                <div className="flex items-center space-x-3 text-sm">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-neutral-600">Completed event with Mike Davis</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Available</span>
-                  <span className="font-semibold">{user.isBookable ? 'Yes' : 'No'}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Tags */}
-            {user.tags && user.tags.length > 0 && (
-              <div className="bg-card border border-border rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4">Genres</h3>
-                <div className="flex flex-wrap gap-2">
-                  {user.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
-                    >
-                      {tag}
-                    </span>
-                  ))}
+                <div className="flex items-center space-x-3 text-sm">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span className="text-neutral-600">Left review for Alex Wilson</span>
                 </div>
               </div>
-            )}
-
-            {/* Actions */}
-            {!isOwnProfile && (
-              <div className="bg-card border border-border rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4">Actions</h3>
-                <div className="space-y-3">
-                  <button className="w-full bg-primary text-primary-foreground py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors">
-                    Book Now
-                  </button>
-                  <button className="w-full bg-secondary text-secondary-foreground py-2 px-4 rounded-lg hover:bg-secondary/90 transition-colors">
-                    Send Message
-                  </button>
-                </div>
-              </div>
-            )}
+            </motion.div>
           </div>
         </div>
       </div>

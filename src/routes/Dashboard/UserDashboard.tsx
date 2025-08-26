@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
@@ -8,7 +8,10 @@ import {
   XCircle, 
   MessageCircle,
   Plus,
-  Star
+  Star,
+  DollarSign,
+  TrendingUp,
+  Users
 } from 'lucide-react';
 import { useAuth, useCurrentUser } from '@/hooks/useAuth';
 import { useCurrentBookings, usePreviousBookings, useInquiries } from '@/hooks/useBookings';
@@ -26,15 +29,71 @@ export const UserDashboard = () => {
   const previousBookings = usePreviousBookings(currentUserId!);
   const inquiries = useInquiries(currentUserId!);
 
+  // Dummy data for better demo
+  const dummyCurrentBookings = [
+    {
+      id: '1',
+      artistId: '1',
+      date: '2024-02-15',
+      amount: 500,
+      status: 'confirmed',
+      escrowStatus: 'Funded',
+      threadId: 'thread1'
+    },
+    {
+      id: '2',
+      artistId: '2',
+      date: '2024-02-20',
+      amount: 750,
+      status: 'negotiating',
+      escrowStatus: 'Pending',
+      threadId: 'thread2'
+    }
+  ];
+
+  const dummyPreviousBookings = [
+    {
+      id: '3',
+      artistId: '3',
+      date: '2024-01-15',
+      amount: 400,
+      status: 'completed',
+      escrowStatus: 'Released',
+      threadId: 'thread3'
+    },
+    {
+      id: '4',
+      artistId: '4',
+      date: '2024-01-10',
+      amount: 600,
+      status: 'completed',
+      escrowStatus: 'Released',
+      threadId: 'thread4'
+    }
+  ];
+
+  const dummyInquiries = [
+    {
+      id: '5',
+      artistId: '5',
+      date: '2024-02-25',
+      amount: 800,
+      status: 'pending',
+      escrowStatus: 'Not Started',
+      threadId: 'thread5'
+    }
+  ];
+
   const tabs = [
-    { id: 'current', label: 'Current Bookings', count: currentBookings.length },
-    { id: 'previous', label: 'Previous Bookings', count: previousBookings.length },
-    { id: 'inquiries', label: 'Inquiries', count: inquiries.length },
+    { id: 'current', label: 'Current Bookings', count: dummyCurrentBookings.length },
+    { id: 'previous', label: 'Previous Bookings', count: dummyPreviousBookings.length },
+    { id: 'inquiries', label: 'Inquiries', count: dummyInquiries.length },
   ] as const;
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'confirmed':
+      case 'completed':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
       case 'negotiating':
         return <MessageCircle className="h-4 w-4 text-blue-500" />;
@@ -44,13 +103,14 @@ export const UserDashboard = () => {
       case 'cancelled':
         return <XCircle className="h-4 w-4 text-red-500" />;
       default:
-        return <Calendar className="h-4 w-4 text-muted-foreground" />;
+        return <Calendar className="h-4 w-4 text-neutral-400" />;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'confirmed':
+      case 'completed':
         return 'text-green-600 bg-green-50 border-green-200';
       case 'negotiating':
         return 'text-blue-600 bg-blue-50 border-blue-200';
@@ -60,7 +120,7 @@ export const UserDashboard = () => {
       case 'cancelled':
         return 'text-red-600 bg-red-50 border-red-200';
       default:
-        return 'text-muted-foreground bg-muted border-border';
+        return 'text-neutral-600 bg-neutral-50 border-neutral-200';
     }
   };
 
@@ -73,24 +133,24 @@ export const UserDashboard = () => {
         key={booking.id}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card border border-border rounded-lg p-6 hover:shadow-md transition-shadow"
+        className="bg-white border border-neutral-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-200"
       >
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-4">
             <img
               src={artist.avatar || `https://ui-avatars.com/api/?name=${artist.name}&size=60&background=random`}
               alt={artist.name}
-              className="w-12 h-12 rounded-full"
+              className="w-12 h-12 rounded-xl object-cover"
             />
             <div>
-              <h3 className="font-semibold text-foreground">{artist.name}</h3>
-              <p className="text-sm text-muted-foreground">{formatDate(booking.date)}</p>
+              <h3 className="font-semibold text-neutral-800">{artist.name}</h3>
+              <p className="text-sm text-neutral-600">{formatDate(booking.date)}</p>
             </div>
           </div>
           <div className="flex items-center space-x-2">
             {getStatusIcon(booking.status)}
             <span className={cn(
-              'px-2 py-1 rounded-full text-xs font-medium border',
+              'px-3 py-1 rounded-full text-xs font-medium border',
               getStatusColor(booking.status)
             )}>
               {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
@@ -98,23 +158,23 @@ export const UserDashboard = () => {
           </div>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-3 mb-4">
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Amount:</span>
-            <span className="font-semibold text-foreground">{formatPrice(booking.amount)}</span>
+            <span className="text-neutral-600">Amount:</span>
+            <span className="font-semibold text-neutral-800">{formatPrice(booking.amount)}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Escrow Status:</span>
-            <span className="font-medium text-foreground">{booking.escrowStatus}</span>
+            <span className="text-neutral-600">Escrow Status:</span>
+            <span className="font-medium text-neutral-800">{booking.escrowStatus}</span>
           </div>
         </div>
 
-        <div className="mt-4 pt-4 border-t border-border">
-          <div className="flex space-x-2">
+        <div className="pt-4 border-t border-neutral-200">
+          <div className="flex space-x-3">
             {booking.threadId && (
               <Link
                 to={`/chat/${booking.threadId}`}
-                className="flex-1 inline-flex items-center justify-center space-x-2 px-3 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
+                className="flex-1 inline-flex items-center justify-center space-x-2 px-4 py-2 bg-orange-500 text-white rounded-xl text-sm font-medium hover:bg-orange-600 transition-colors"
               >
                 <MessageCircle className="h-4 w-4" />
                 <span>Chat</span>
@@ -122,7 +182,7 @@ export const UserDashboard = () => {
             )}
             <Link
               to={`/artist/${artist.slug}`}
-              className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-input bg-white text-foreground rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
+              className="flex-1 inline-flex items-center justify-center px-4 py-2 border border-neutral-300 bg-white text-neutral-800 rounded-xl text-sm font-medium hover:bg-neutral-50 transition-colors"
             >
               View Artist
             </Link>
@@ -135,9 +195,9 @@ export const UserDashboard = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'current':
-        return currentBookings.length > 0 ? (
+        return dummyCurrentBookings.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {currentBookings.map(renderBookingCard)}
+            {dummyCurrentBookings.map(renderBookingCard)}
           </div>
         ) : (
           <EmptyState
@@ -153,9 +213,9 @@ export const UserDashboard = () => {
         );
 
       case 'previous':
-        return previousBookings.length > 0 ? (
+        return dummyPreviousBookings.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {previousBookings.map(renderBookingCard)}
+            {dummyPreviousBookings.map(renderBookingCard)}
           </div>
         ) : (
           <EmptyState
@@ -171,9 +231,9 @@ export const UserDashboard = () => {
         );
 
       case 'inquiries':
-        return inquiries.length > 0 ? (
+        return dummyInquiries.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {inquiries.map(renderBookingCard)}
+            {dummyInquiries.map(renderBookingCard)}
           </div>
         ) : (
           <EmptyState
@@ -196,47 +256,78 @@ export const UserDashboard = () => {
   return (
     <div>
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-card border border-border rounded-lg p-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm"
+        >
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-              <Calendar className="h-5 w-5 text-primary" />
+            <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+              <Calendar className="h-6 w-6 text-orange-500" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Current Bookings</p>
-              <p className="text-2xl font-bold text-foreground">{currentBookings.length}</p>
+              <p className="text-sm text-neutral-600">Current Bookings</p>
+              <p className="text-2xl font-bold text-neutral-800">{dummyCurrentBookings.length}</p>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="bg-card border border-border rounded-lg p-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm"
+        >
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
-              <CheckCircle className="h-5 w-5 text-green-500" />
+            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+              <CheckCircle className="h-6 w-6 text-green-500" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Completed</p>
-              <p className="text-2xl font-bold text-foreground">{previousBookings.length}</p>
+              <p className="text-sm text-neutral-600">Completed</p>
+              <p className="text-2xl font-bold text-neutral-800">{dummyPreviousBookings.length}</p>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="bg-card border border-border rounded-lg p-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm"
+        >
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-yellow-500/10 rounded-lg flex items-center justify-center">
-              <MessageCircle className="h-5 w-5 text-yellow-500" />
+            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+              <MessageCircle className="h-6 w-6 text-blue-500" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Inquiries</p>
-              <p className="text-2xl font-bold text-foreground">{inquiries.length}</p>
+              <p className="text-sm text-neutral-600">Inquiries</p>
+              <p className="text-2xl font-bold text-neutral-800">{dummyInquiries.length}</p>
             </div>
           </div>
-        </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm"
+        >
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+              <DollarSign className="h-6 w-6 text-purple-500" />
+            </div>
+            <div>
+              <p className="text-sm text-neutral-600">Total Spent</p>
+              <p className="text-2xl font-bold text-neutral-800">$2,450</p>
+            </div>
+          </div>
+        </motion.div>
       </div>
 
       {/* Tabs */}
-      <div className="bg-card border border-border rounded-lg">
-        <div className="border-b border-border">
+      <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm mb-8">
+        <div className="border-b border-neutral-200">
           <nav className="flex space-x-8 px-6">
             {tabs.map((tab) => (
               <button
@@ -245,8 +336,8 @@ export const UserDashboard = () => {
                 className={cn(
                   'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
                   activeTab === tab.id
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                    ? 'border-orange-500 text-orange-600'
+                    : 'border-transparent text-neutral-600 hover:text-neutral-800 hover:border-neutral-300'
                 )}
               >
                 {tab.label}
@@ -254,8 +345,8 @@ export const UserDashboard = () => {
                   <span className={cn(
                     'ml-2 px-2 py-0.5 rounded-full text-xs font-medium',
                     activeTab === tab.id
-                      ? 'bg-primary/10 text-primary'
-                      : 'bg-muted text-muted-foreground'
+                      ? 'bg-orange-100 text-orange-600'
+                      : 'bg-neutral-100 text-neutral-600'
                   )}>
                     {tab.count}
                   </span>
@@ -271,32 +362,45 @@ export const UserDashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="mt-8">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="mb-8">
+        <h3 className="text-xl font-bold text-neutral-800 mb-6">Quick Actions</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Link
             to="/explore"
-            className="flex items-center space-x-3 p-4 bg-card border border-border rounded-lg hover:shadow-md transition-shadow"
+            className="flex items-center space-x-4 p-6 bg-white border border-neutral-200 rounded-2xl hover:shadow-lg transition-all duration-200"
           >
-            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-              <Plus className="h-5 w-5 text-primary" />
+            <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+              <Plus className="h-6 w-6 text-orange-500" />
             </div>
             <div>
-              <p className="font-medium text-foreground">Browse Artists</p>
-              <p className="text-sm text-muted-foreground">Find and book new artists</p>
+              <p className="font-semibold text-neutral-800">Browse Artists</p>
+              <p className="text-sm text-neutral-600">Find and book new artists</p>
             </div>
           </Link>
 
           <Link
             to="/profile"
-            className="flex items-center space-x-3 p-4 bg-card border border-border rounded-lg hover:shadow-md transition-shadow"
+            className="flex items-center space-x-4 p-6 bg-white border border-neutral-200 rounded-2xl hover:shadow-lg transition-all duration-200"
           >
-            <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
-              <Star className="h-5 w-5 text-secondary-foreground" />
+            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+              <Users className="h-6 w-6 text-blue-500" />
             </div>
             <div>
-              <p className="font-medium text-foreground">View Profile</p>
-              <p className="text-sm text-muted-foreground">Manage your public profile</p>
+              <p className="font-semibold text-neutral-800">View Profile</p>
+              <p className="text-sm text-neutral-600">Manage your public profile</p>
+            </div>
+          </Link>
+
+          <Link
+            to="/chat"
+            className="flex items-center space-x-4 p-6 bg-white border border-neutral-200 rounded-2xl hover:shadow-lg transition-all duration-200"
+          >
+            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+              <MessageCircle className="h-6 w-6 text-green-500" />
+            </div>
+            <div>
+              <p className="font-semibold text-neutral-800">Messages</p>
+              <p className="text-sm text-neutral-600">View your conversations</p>
             </div>
           </Link>
         </div>
