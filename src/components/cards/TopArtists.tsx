@@ -15,14 +15,14 @@ interface TopArtistsProps {
   artists: Artist[];
 }
 
-const TopArtists: React.FC<TopArtistsProps> = ({ artists }) => {
+const TopArtists = ({ artists }: TopArtistsProps) => {
   const navigate = useNavigate();
 
   return (
     <div className="mb-12">
       {/* Section Header */}
       <div className="">
-        <h2 className="text-2xl font-bold font-dm-sans text-neutral-800">
+        <h2 className="text-2xl sm:text-3xl font-bold font-dm-sans text-neutral-800">
           Top <span className="text-orange-500">Artists</span>
         </h2>
       </div>
@@ -37,9 +37,9 @@ const TopArtists: React.FC<TopArtistsProps> = ({ artists }) => {
         }}
         className="w-full"
       >
-        <CarouselContent className="px-6">
+        <CarouselContent className="px-2 sm:px-4 lg:px-6">
           {artists.map((artist, index) => (
-            <CarouselItem key={artist.id} className="basis-[30%] rounded-2xl pt-6">
+            <CarouselItem key={artist.id} className="basis-[60%] sm:basis-[40%] md:basis-[30%] rounded-2xl pt-2 sm:pt-4 lg:pt-6">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -61,7 +61,7 @@ const TopArtists: React.FC<TopArtistsProps> = ({ artists }) => {
                     />
                     
                     {/* Rank Badge */}
-                    <div className="absolute -top-3 -left-3 w-14 h-14 bg-neutral-800 border-4 text-white rounded-full flex items-center justify-center text-lg font-bold shadow-lg">
+                    <div className="absolute -top-2 -left-2 sm:-top-3 sm:-left-3 w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-neutral-800 border-2 sm:border-4 text-white rounded-full flex items-center justify-center text-sm sm:text-base lg:text-lg font-bold shadow-lg">
                       {index + 1}
                     </div>
                   </div>
@@ -82,8 +82,8 @@ const TopArtists: React.FC<TopArtistsProps> = ({ artists }) => {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="left-2 hidden" />
-        <CarouselNext className="right-2 hidden" />
+        <CarouselPrevious className="left-1 sm:left-2 hidden sm:flex" />
+        <CarouselNext className="right-1 sm:right-2 hidden sm:flex" />
       </Carousel>
     </div>
   );

@@ -9,11 +9,11 @@ interface LoadingStateProps {
   className?: string;
 }
 
-export const LoadingState: React.FC<LoadingStateProps> = ({
+export const LoadingState = ({
   text = 'Loading...',
   size = 'md',
   className,
-}) => {
+}: LoadingStateProps) => {
   const sizeClasses = {
     sm: 'h-4 w-4',
     md: 'h-6 w-6',

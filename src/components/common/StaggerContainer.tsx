@@ -8,12 +8,12 @@ interface StaggerContainerProps {
   containerDelay?: number;
 }
 
-export const StaggerContainer: React.FC<StaggerContainerProps> = ({
+export const StaggerContainer = ({
   children,
   className,
   staggerDelay = 0.1,
   containerDelay = 0,
-}) => {
+}: StaggerContainerProps) => {
   return (
     <motion.div
       initial="hidden"

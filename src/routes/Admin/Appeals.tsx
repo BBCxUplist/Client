@@ -15,7 +15,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { formatDate } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
-export const Appeals: React.FC = () => {
+export const Appeals = () => {
   const isAdmin = useIsAdmin();
   const { approveAppeal, rejectAppeal } = useAppStore();
   const [activeTab, setActiveTab] = useState<'pending' | 'approved' | 'rejected'>('pending');

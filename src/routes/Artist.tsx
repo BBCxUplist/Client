@@ -4,29 +4,27 @@ import { motion } from 'framer-motion';
 import { 
   Star, 
   Calendar, 
-  MapPin, 
   Music, 
   Play, 
   Instagram, 
   Youtube, 
-  MessageCircle,
   Flag,
   AlertTriangle,
   ExternalLink
 } from 'lucide-react';
-import { useArtistBySlug, useArtistById } from '@/hooks/useArtists';
+import { useArtistBySlug } from '@/hooks/useArtists';
 import { useAuth, useCurrentUser } from '@/hooks/useAuth';
-import { useAppStore } from '@/store';
+
 import { EmptyState } from '@/components/common/EmptyState';
 import { InformationIcon } from '@/components/common/InformationIcon';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
-export const Artist: React.FC = () => {
+export const Artist = () => {
   const { slug } = useParams<{ slug: string }>();
   const { isAuthenticated, currentUserId } = useAuth();
   const currentUser = useCurrentUser();
-  const { createBooking } = useAppStore();
+
   const navigate = useNavigate();
   
   const [selectedDate, setSelectedDate] = useState('');
@@ -351,7 +349,7 @@ export const Artist: React.FC = () => {
                       rel="noopener noreferrer"
                       className="flex items-center space-x-3 text-neutral-600 hover:text-orange-500 transition-colors duration-200"
                     >
-                      <Spotify className="h-5 w-5" />
+                      <Music className="h-5 w-5" />
                       <span>Spotify</span>
                       <ExternalLink className="h-4 w-4 ml-auto" />
                     </a>

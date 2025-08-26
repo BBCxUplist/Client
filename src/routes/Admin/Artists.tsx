@@ -15,7 +15,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { formatDate, formatPrice } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
-export const Artists: React.FC = () => {
+export const Artists = () => {
   const isAdmin = useIsAdmin();
   const { toggleBan } = useAppStore();
   const [activeTab, setActiveTab] = useState<'all' | 'approved' | 'pending' | 'banned'>('all');

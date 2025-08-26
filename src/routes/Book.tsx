@@ -29,7 +29,7 @@ const bookingSchema = z.object({
 
 type BookingFormData = z.infer<typeof bookingSchema>;
 
-export const Book: React.FC = () => {
+export const Book = () => {
   const { artistId } = useParams<{ artistId: string }>();
   const { isAuthenticated, currentUserId } = useAuth();
   const currentUser = useCurrentUser();

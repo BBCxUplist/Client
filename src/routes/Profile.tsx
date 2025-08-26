@@ -6,7 +6,7 @@ import { useArtistById } from '@/hooks/useArtists';
 import { useAuth, useCurrentUser } from '@/hooks/useAuth';
 import { EmptyState } from '@/components/common/EmptyState';
 
-export const Profile: React.FC = () => {
+export const Profile = () => {
   const { userId } = useParams<{ userId: string }>();
   const { currentUserId } = useAuth();
   const currentUser = useCurrentUser();

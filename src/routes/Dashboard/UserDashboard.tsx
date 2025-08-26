@@ -17,7 +17,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
-export const UserDashboard: React.FC = () => {
+export const UserDashboard = () => {
   const { currentUserId } = useAuth();
   const currentUser = useCurrentUser();
   const [activeTab, setActiveTab] = useState<'current' | 'previous' | 'inquiries'>('current');

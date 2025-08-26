@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export const Footer: React.FC = () => {
+export const Footer = () => {
   const [email, setEmail] = useState('');
 
   const handleEmailSubmit = (e: React.FormEvent) => {

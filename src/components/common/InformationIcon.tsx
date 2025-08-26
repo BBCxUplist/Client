@@ -10,12 +10,12 @@ interface InformationIconProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-export const InformationIcon: React.FC<InformationIconProps> = ({
+export const InformationIcon = ({
   text,
   icon = 'info',
   className,
   size = 'md',
-}) => {
+}: InformationIconProps) => {
   const IconComponent = icon === 'info' ? Info : HelpCircle;
   
   const sizeClasses = {

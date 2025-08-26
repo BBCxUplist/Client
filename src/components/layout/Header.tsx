@@ -11,7 +11,7 @@ import {
 import { useAuth, useCurrentUser } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
-export const Header: React.FC = () => {
+export const Header = () => {
   const { isAuthenticated } = useAuth();
   const currentUser = useCurrentUser();
   const location = useLocation();

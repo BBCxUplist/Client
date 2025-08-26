@@ -1,13 +1,13 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Music } from 'lucide-react';
+import React from "react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Music } from "lucide-react";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
 }
 
-export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
+export const AuthLayout = ({ children }: AuthLayoutProps) => {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Left side - Form */}
@@ -47,9 +47,10 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
               Book Amazing Live Music
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              Discover talented musicians, book secure performances, and create unforgettable experiences for your events.
+              Discover talented musicians, book secure performances, and create
+              unforgettable experiences for your events.
             </p>
-            
+
             <div className="grid grid-cols-1 gap-4 text-sm text-muted-foreground">
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-primary rounded-full"></div>

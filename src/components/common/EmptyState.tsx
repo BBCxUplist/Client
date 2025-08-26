@@ -15,13 +15,13 @@ interface EmptyStateProps {
   className?: string;
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({
+export const EmptyState = ({
   icon: Icon,
   title,
   description,
   action,
   className,
-}) => {
+}: EmptyStateProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}

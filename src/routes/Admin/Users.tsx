@@ -13,7 +13,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { formatDate } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
-export const Users: React.FC = () => {
+export const Users = () => {
   const isAdmin = useIsAdmin();
   const { toggleBan } = useAppStore();
   const [activeTab, setActiveTab] = useState<'all' | 'banned'>('all');

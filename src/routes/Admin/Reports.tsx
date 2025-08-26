@@ -16,7 +16,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { formatDate } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
-export const Reports: React.FC = () => {
+export const Reports = () => {
   const isAdmin = useIsAdmin();
   const { closeReport } = useAppStore();
   const [activeTab, setActiveTab] = useState<'open' | 'closed'>('open');

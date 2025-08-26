@@ -6,7 +6,7 @@ import { ArtistDashboard } from './Dashboard/ArtistDashboard';
 import { EmptyState } from '@/components/common/EmptyState';
 import { User, Music } from 'lucide-react';
 
-export const Dashboard: React.FC = () => {
+export const Dashboard = () => {
   const { isAuthenticated, currentUserId } = useAuth();
   const currentUser = useCurrentUser();
 

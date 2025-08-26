@@ -13,7 +13,7 @@ import { useOpenReports } from '@/hooks/useReports';
 import { useIsAdmin } from '@/hooks/useAuth';
 import { EmptyState } from '@/components/common/EmptyState';
 
-export const Admin: React.FC = () => {
+export const Admin = () => {
   const isAdmin = useIsAdmin();
   const pendingAppeals = usePendingAppeals();
   const openReports = useOpenReports();

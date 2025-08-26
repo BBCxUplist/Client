@@ -19,7 +19,7 @@ interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
-export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
+export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { logout } = useAuth();
   const currentUser = useCurrentUser();
   const location = useLocation();

@@ -20,7 +20,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
-export const ArtistDashboard: React.FC = () => {
+export const ArtistDashboard = () => {
   const { currentUserId } = useAuth();
   const currentUser = useCurrentUser();
   const [activeTab, setActiveTab] = useState<'requests' | 'bookings' | 'appeal'>('requests');

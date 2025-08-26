@@ -8,7 +8,7 @@ import { useArtistById } from '@/hooks/useArtists';
 import { EmptyState } from '@/components/common/EmptyState';
 import { formatDate } from '@/lib/utils';
 
-export const Chat: React.FC = () => {
+export const Chat = () => {
   const { threadId } = useParams<{ threadId: string }>();
   const { currentUserId } = useAuth();
   const currentUser = useCurrentUser();

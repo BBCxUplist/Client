@@ -1,7 +1,7 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { MessageCircle, Star } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { motion } from "framer-motion";
+import { MessageCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface Artist {
   id: string;
@@ -27,7 +27,7 @@ const ArtistCard = ({ artist }: ArtistCardProps) => {
   const handleMessageClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     // Handle message functionality
-    console.log('Message artist:', artist.name);
+    console.log("Message artist:", artist.name);
   };
 
   return (
@@ -48,20 +48,20 @@ const ArtistCard = ({ artist }: ArtistCardProps) => {
               src={
                 artist.avatar ||
                 artist.photos?.[0] ||
-                `https://ui-avatars.com/api/?name=${artist.name}&size=400&background=random`
+`/images/userNotFound.jpeg`
               }
               alt={artist.name}
               className="w-full h-full object-cover"
             />
           </div>
-          
+
           {/* Rating Badge */}
-          <div className="absolute top-2 right-2 flex items-center space-x-1 px-2 py-1 bg-white rounded-xl shadow-sm border border-neutral-200">
+          {/* <div className="absolute top-2 right-2 flex items-center space-x-1 px-2 py-1 bg-white rounded-xl shadow-sm border border-neutral-200">
             <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
             <span className="text-xs font-bold text-neutral-700">
               {artist.rating.toFixed(1)}
             </span>
-          </div>
+          </div> */}
         </div>
 
         {/* Content */}
@@ -73,7 +73,10 @@ const ArtistCard = ({ artist }: ArtistCardProps) => {
 
           {/* Description */}
           <p className="text-sm text-neutral-600 line-clamp-2">
-            {artist.description || `Professional ${artist.tags?.[0] || 'musician'} with ${artist.rating} star rating. Available for bookings and events.`}
+            {artist.description ||
+              `Professional ${artist.tags?.[0] || "musician"} with ${
+                artist.rating
+              } star rating. Available for bookings and events.`}
           </p>
 
           {/* Genre Tag and Message Button */}
@@ -82,7 +85,7 @@ const ArtistCard = ({ artist }: ArtistCardProps) => {
               <span className="inline-block px-3 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-xl">
                 {artist.tags[0]}
               </span>
-              
+
               {/* Message Button */}
               <motion.button
                 whileHover={{ scale: 1.05 }}

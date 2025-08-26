@@ -10,12 +10,12 @@ interface ErrorStateProps {
   className?: string;
 }
 
-export const ErrorState: React.FC<ErrorStateProps> = ({
+export const ErrorState = ({
   title = 'Something went wrong',
   message = 'An error occurred while loading this content. Please try again.',
   onRetry,
   className,
-}) => {
+}: ErrorStateProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
