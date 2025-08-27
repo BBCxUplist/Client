@@ -23,75 +23,93 @@ export const Login = () => {
   const [isArtist, setIsArtist] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
-  const { login } = useAuth();
+  const { login, register, resetPassword, loginWithGoogle } = useAuth();
   const { registerUser, registerArtist } = useAppStore();
   const navigate = useNavigate();
 
   const onLoginSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     setError("");
+    setSuccessMessage("");
 
     try {
-      // Mock login - in real app, this would validate against backend
-      const mockUsers = [
-        {
-          id: "user-1",
-          email: "user@example.com",
-          password: "password",
-          role: "user" as const,
-        },
-        {
-          id: "artist-1",
-          email: "artist@example.com",
-          password: "password",
-          role: "artist" as const,
-        },
-        {
-          id: "admin-1",
-          email: "admin@example.com",
-          password: "password",
-          role: "admin" as const,
-        },
-      ];
-
-      const user = mockUsers.find(
-        (u) => u.email === data.email && u.password === data.password
-      );
-
-      if (user) {
-        login(user.role, user.id);
-        navigate("/dashboard");
-      } else {
-        setError("Invalid email or password");
-      }
-    } catch {
-      setError("An error occurred during login");
+      await login(data.email, data.password);
+      navigate("/dashboard");
+    } catch (error: any) {
+      console.error("Login error:", error);
+      setError(error.message || "An error occurred during login");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const onGoogleLogin = async () => {
+    setError("");
+    setSuccessMessage("");
+
+    try {
+      await loginWithGoogle();
+      // Note: Google OAuth will redirect to the dashboard automatically
+      // The AuthProvider will handle the session update
+    } catch (error: any) {
+      console.error("Google login error:", error);
+      setError(error.message || "An error occurred during Google login");
     }
   };
 
   const onRegisterSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
     setError("");
+    setSuccessMessage("");
 
     try {
-      if (isArtist) {
-        const artistId = registerArtist({
-          name: data.name,
-          slug: data.name.toLowerCase().replace(/\s+/g, "-"),
-        });
-        login("artist", artistId);
+      const role = isArtist ? "artist" : "user";
+      const result = await register(data.email, data.password, {
+        name: data.name,
+        role,
+      });
+
+      if (result && 'needsConfirmation' in result) {
+        setSuccessMessage("Please check your email to confirm your account before signing in.");
+        setActiveTab("login");
       } else {
-        const userId = registerUser({
-          name: data.name,
-        });
-        login("user", userId);
+        // User was automatically logged in
+        if (isArtist) {
+          const artistId = registerArtist({
+            name: data.name,
+            slug: data.name.toLowerCase().replace(/\s+/g, "-"),
+          });
+        } else {
+          const userId = registerUser({
+            name: data.name,
+          });
+        }
+        navigate("/dashboard");
       }
-      navigate("/dashboard");
-    } catch {
-      setError("An error occurred during registration");
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      setError(error.message || "An error occurred during registration");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const onForgotPassword = async () => {
+    const email = prompt("Enter your email address to reset your password:");
+    if (!email) return;
+
+    setIsLoading(true);
+    setError("");
+    setSuccessMessage("");
+
+    try {
+      await resetPassword(email);
+      setSuccessMessage("Password reset email sent! Please check your inbox.");
+    } catch (error: any) {
+      console.error("Password reset error:", error);
+      setError(error.message || "An error occurred while sending the reset email");
     } finally {
       setIsLoading(false);
     }
@@ -163,10 +181,23 @@ export const Login = () => {
                 </div>
               )}
 
+              {/* Success Message */}
+              {successMessage && (
+                <div className="flex items-center space-x-3 p-4 mb-6 bg-green-50 border border-green-200 rounded-2xl text-green-600">
+                  <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                  <span className="text-sm font-medium">{successMessage}</span>
+                </div>
+              )}
+
               {/* Forms */}
               <div>
                 {activeTab === "login" ? (
-                  <LoginForm onSubmit={onLoginSubmit} isLoading={isLoading} />
+                  <LoginForm 
+                    onSubmit={onLoginSubmit} 
+                    onGoogleLogin={onGoogleLogin}
+                    onForgotPassword={onForgotPassword}
+                    isLoading={isLoading} 
+                  />
                 ) : (
                   <RegisterForm
                     onSubmit={onRegisterSubmit}

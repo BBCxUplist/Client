@@ -1,69 +1,125 @@
-# React + TypeScript + Vite
+# Uplist - Artist Booking Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React-based platform for connecting artists with event organizers and clients.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Supabase Authentication**: Secure user authentication with email/password and Google OAuth
+- **Role-based Access**: Support for users, artists, and admin roles
+- **Artist Profiles**: Comprehensive artist profiles with booking capabilities
+- **Booking System**: Secure booking and payment management
+- **Admin Dashboard**: User and content moderation tools
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prerequisites
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Node.js (v18 or higher)
+- npm or yarn
+- Supabase account
+- Google Cloud Console account (for OAuth)
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+### Installation
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd frontend
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+2. Install dependencies:
+```bash
+npm install
 ```
+
+3. Set up environment variables:
+Create a `.env` file in the root directory with your Supabase credentials:
+
+```env
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+4. Start the development server:
+```bash
+npm run dev
+```
+
+### Supabase Setup
+
+1. Create a new project in the [Supabase Dashboard](https://supabase.com/dashboard)
+2. Go to Settings > API to find your project URL and anon key
+3. Add these to your `.env` file
+4. Configure authentication settings in your Supabase dashboard:
+   - Enable email authentication
+   - Enable Google OAuth (see detailed setup in `docs/supabase-setup.md`)
+   - Set up email templates (optional)
+   - Configure redirect URLs if needed
+
+## Authentication
+
+The app uses Supabase Auth with the following features:
+
+- **Email/Password Authentication**: Standard login and registration
+- **Google OAuth**: One-click login with Google accounts
+- **Role-based Access Control**: Users can register as regular users or artists
+- **Email Confirmation**: New accounts require email verification
+- **Password Reset**: Users can reset their passwords via email
+- **Session Management**: Automatic session handling and persistence
+
+### User Roles
+
+- **User**: Can browse artists and make bookings
+- **Artist**: Can create profiles and receive booking requests
+- **Admin**: Can moderate users and content
+
+## Development
+
+### Project Structure
+
+```
+src/
+├── components/     # Reusable UI components
+├── hooks/         # Custom React hooks
+├── lib/           # Utility libraries (Supabase client)
+├── routes/        # Page components
+├── store/         # Zustand state management
+└── constants/     # Type definitions and constants
+```
+
+### Key Files
+
+- `src/lib/supabase.ts` - Supabase client configuration
+- `src/hooks/useAuth.ts` - Authentication hook
+- `src/routes/Login.tsx` - Login/Register page
+- `src/store/index.ts` - Global state management
+
+## Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run lint` - Run ESLint
+- `npm run preview` - Preview production build
+
+## Technologies Used
+
+- **React 19** - UI framework
+- **TypeScript** - Type safety
+- **Vite** - Build tool
+- **Supabase** - Backend and authentication
+- **Zustand** - State management
+- **Tailwind CSS** - Styling
+- **React Router** - Navigation
+- **React Hook Form** - Form handling
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License.
