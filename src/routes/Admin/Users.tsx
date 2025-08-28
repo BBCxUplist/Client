@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Users as UsersIcon, 
   UserCheck, 
   UserX, 
   Shield,
-  Calendar
+
 } from 'lucide-react';
 import { useIsAdmin } from '@/hooks/useAuth';
 import { useAppStore } from '@/store';

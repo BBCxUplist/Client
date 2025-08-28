@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+
+
 import { useAuth, useCurrentUser } from '@/hooks/useAuth';
 import { UserDashboard } from './Dashboard/UserDashboard';
 import { ArtistDashboard } from './Dashboard/ArtistDashboard';
@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { User, Music } from 'lucide-react';
 
 export const Dashboard = () => {
-  const { isAuthenticated, currentUserId } = useAuth();
+  const { isAuthenticated } = useAuth();
   const currentUser = useCurrentUser();
 
   if (!isAuthenticated || !currentUser) {

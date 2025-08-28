@@ -1,4 +1,4 @@
-import { Tag } from './types';
+import type { Tag } from './types';
 
 export const tags: Tag[] = [
   { id: 'tag-1', name: 'DJ', color: 'bg-purple-500' },

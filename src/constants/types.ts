@@ -29,6 +29,10 @@ export interface User {
   name: string;
   avatar?: string;
   description?: string;
+  email?: string;
+  phone?: string;
+  location?: string;
+  bio?: string;
   socials?: Socials;
   role: Role;
   banned?: boolean;
@@ -53,6 +57,7 @@ export interface Artist {
   isBookable: boolean;
   appealStatus: AppealStatus;
   featured?: boolean;
+  banned?: boolean;
   createdAt: string;
 }
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Music, 
@@ -6,7 +6,7 @@ import {
   UserX, 
   Shield,
   Star,
-  DollarSign
+
 } from 'lucide-react';
 import { useIsAdmin } from '@/hooks/useAuth';
 import { useAppStore } from '@/store';

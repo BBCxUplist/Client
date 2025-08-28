@@ -77,12 +77,12 @@ export const Login = () => {
       } else {
         // User was automatically logged in
         if (isArtist) {
-          const artistId = registerArtist({
+          registerArtist({
             name: data.name,
             slug: data.name.toLowerCase().replace(/\s+/g, "-"),
           });
         } else {
-          const userId = registerUser({
+          registerUser({
             name: data.name,
           });
         }

@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { motion } from 'framer-motion';
 import { Info, HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';

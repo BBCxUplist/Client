@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
@@ -12,7 +12,7 @@ import {
   Users,
   FileText
 } from 'lucide-react';
-import { useAuth, useCurrentUser } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { useArtistRequests, useArtistBookings } from '@/hooks/useBookings';
 import { useAppealsByArtist } from '@/hooks/useAppeals';
 import { useArtistById } from '@/hooks/useArtists';
@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 
 export const ArtistDashboard = () => {
   const { currentUserId } = useAuth();
-  const currentUser = useCurrentUser();
+
   const [activeTab, setActiveTab] = useState<'requests' | 'bookings' | 'appeal'>('requests');
 
   const requests = useArtistRequests(currentUserId!);

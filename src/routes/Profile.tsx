@@ -5,7 +5,7 @@ import {
   Mail, 
   Phone, 
   MapPin, 
-  Calendar, 
+ 
   Edit, 
   Save, 
   X,
@@ -16,7 +16,7 @@ import { useAuth, useCurrentUser } from '@/hooks/useAuth';
 import { EmptyState } from '@/components/common/EmptyState';
 
 export const Profile = () => {
-  const { isAuthenticated, currentUserId } = useAuth();
+  const { isAuthenticated } = useAuth();
   const currentUser = useCurrentUser();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({

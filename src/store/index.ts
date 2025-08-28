@@ -3,9 +3,6 @@ import { persist } from 'zustand/middleware';
 import type { 
   Role, 
   BookingStatus, 
-  EscrowStatus, 
-  AppealStatus, 
-  ReportStatus, 
   ReportTargetType,
   User, 
   Artist, 
@@ -77,7 +74,7 @@ const generateId = (prefix: string) => `${prefix}-${Date.now()}-${Math.random().
 
 export const useAppStore = create<AppState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       // Initial state
       auth: {},
       users,
@@ -88,7 +85,7 @@ export const useAppStore = create<AppState>()(
       
       // Auth actions
       login: (role: Role, userId: string) => {
-        set((state) => ({
+        set(() => ({
           auth: {
             currentUserId: userId,
             role,
@@ -97,7 +94,7 @@ export const useAppStore = create<AppState>()(
       },
       
       logout: () => {
-        set((state) => ({
+        set(() => ({
           auth: {},
         }));
       },
@@ -134,7 +131,9 @@ export const useAppStore = create<AppState>()(
           price: artistData.price || 0,
           rating: 0,
           tags: artistData.tags || [],
+          categories: artistData.categories || [],
           availability: artistData.availability || [],
+          timeSlots: artistData.timeSlots || [],
           isBookable: false,
           appealStatus: 'pending',
           createdAt: new Date().toISOString(),

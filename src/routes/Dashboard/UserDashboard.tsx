@@ -8,26 +8,24 @@ import {
   XCircle, 
   MessageCircle,
   Plus,
-  Star,
+
   DollarSign,
-  TrendingUp,
+
   Users
 } from 'lucide-react';
-import { useAuth, useCurrentUser } from '@/hooks/useAuth';
-import { useCurrentBookings, usePreviousBookings, useInquiries } from '@/hooks/useBookings';
+
+
 import { useArtistById } from '@/hooks/useArtists';
 import { EmptyState } from '@/components/common/EmptyState';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
 export const UserDashboard = () => {
-  const { currentUserId } = useAuth();
-  const currentUser = useCurrentUser();
+
+
   const [activeTab, setActiveTab] = useState<'current' | 'previous' | 'inquiries'>('current');
 
-  const currentBookings = useCurrentBookings(currentUserId!);
-  const previousBookings = usePreviousBookings(currentUserId!);
-  const inquiries = useInquiries(currentUserId!);
+
 
   // Dummy data for better demo
   const dummyCurrentBookings = [

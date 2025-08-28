@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
@@ -6,18 +6,18 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { 
   Star, 
-  Calendar, 
-  CreditCard, 
+ 
+ 
   Shield, 
   CheckCircle,
   ArrowLeft,
   AlertCircle
 } from 'lucide-react';
 import { useArtistById } from '@/hooks/useArtists';
-import { useAuth, useCurrentUser } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { useAppStore } from '@/store';
 import { EmptyState } from '@/components/common/EmptyState';
-import { InformationIcon } from '@/components/common/InformationIcon';
+
 import { formatPrice, formatDate } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
@@ -32,7 +32,7 @@ type BookingFormData = z.infer<typeof bookingSchema>;
 export const Book = () => {
   const { artistId } = useParams<{ artistId: string }>();
   const { isAuthenticated, currentUserId } = useAuth();
-  const currentUser = useCurrentUser();
+
   const { createBooking, fundEscrow } = useAppStore();
   const navigate = useNavigate();
   

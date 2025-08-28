@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Search, X, SlidersHorizontal, ChevronDown } from "lucide-react";
 import { artists } from "@/constants/artists";
 import { EmptyState } from "@/components/common/EmptyState";
