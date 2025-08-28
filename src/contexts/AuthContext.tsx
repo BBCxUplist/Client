@@ -1,5 +1,5 @@
-import { createContext } from 'react';
-import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
+import { createContext } from "react";
+import type { User as SupabaseUser, Session } from "@supabase/supabase-js";
 
 interface AuthContextType {
   user: SupabaseUser | null;
@@ -8,4 +8,6 @@ interface AuthContextType {
   isAuthenticated: boolean;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined
+);

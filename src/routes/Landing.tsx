@@ -97,7 +97,9 @@ export const Landing = () => {
   return (
     <div className="min-h-[100dvh] h-full w-full text-black">
       <motion.div
-        className={`p-2 sm:p-4 fixed top-0 z-10 w-full transition-all duration-300 `}
+        className={
+          "p-2 sm:p-4 fixed top-0 z-10 w-full transition-all duration-300 "
+        }
         initial={{ opacity: 0, y: -100 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}

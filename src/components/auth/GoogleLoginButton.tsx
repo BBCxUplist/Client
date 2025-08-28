@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Chrome } from 'lucide-react';
+import { useState } from "react";
+import { Chrome } from "lucide-react";
 
 interface GoogleLoginButtonProps {
   onLogin: () => Promise<void>;
@@ -7,7 +7,11 @@ interface GoogleLoginButtonProps {
   className?: string;
 }
 
-export const GoogleLoginButton = ({ onLogin, isLoading = false, className = '' }: GoogleLoginButtonProps) => {
+export const GoogleLoginButton = ({
+  onLogin,
+  isLoading = false,
+  className = "",
+}: GoogleLoginButtonProps) => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const handleGoogleLogin = async () => {
@@ -15,7 +19,7 @@ export const GoogleLoginButton = ({ onLogin, isLoading = false, className = '' }
     try {
       await onLogin();
     } catch (error) {
-      console.error('Google login error:', error);
+      console.error("Google login error:", error);
     } finally {
       setIsGoogleLoading(false);
     }
@@ -35,9 +39,7 @@ export const GoogleLoginButton = ({ onLogin, isLoading = false, className = '' }
       ) : (
         <Chrome className="h-5 w-5 text-red-500" />
       )}
-      <span>
-        {isButtonLoading ? 'Signing in...' : 'Continue with Google'}
-      </span>
+      <span>{isButtonLoading ? "Signing in..." : "Continue with Google"}</span>
     </button>
   );
 };

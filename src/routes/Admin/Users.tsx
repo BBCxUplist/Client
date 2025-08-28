@@ -1,48 +1,42 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  Users as UsersIcon, 
-  UserCheck, 
-  UserX, 
-  Shield,
-
-} from 'lucide-react';
-import { useIsAdmin } from '@/hooks/useAuth';
-import { useAppStore } from '@/store';
-import { EmptyState } from '@/components/common/EmptyState';
-import { formatDate } from '@/lib/utils';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Users as UsersIcon, UserCheck, UserX, Shield } from "lucide-react";
+import { useIsAdmin } from "@/hooks/useAuth";
+import { useAppStore } from "@/store";
+import { EmptyState } from "@/components/common/EmptyState";
+import { formatDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 export const Users = () => {
   const isAdmin = useIsAdmin();
   const { toggleBan } = useAppStore();
-  const [activeTab, setActiveTab] = useState<'all' | 'banned'>('all');
-  
+  const [activeTab, setActiveTab] = useState<"all" | "banned">("all");
+
   // Mock user data - in real app, this would come from the store
   const users = [
     {
-      id: 'user-1',
-      name: 'John Doe',
-      email: 'john@example.com',
-      role: 'user',
+      id: "user-1",
+      name: "John Doe",
+      email: "john@example.com",
+      role: "user",
       banned: false,
-      createdAt: '2024-01-15T10:00:00Z',
+      createdAt: "2024-01-15T10:00:00Z",
     },
     {
-      id: 'user-2',
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-      role: 'user',
+      id: "user-2",
+      name: "Jane Smith",
+      email: "jane@example.com",
+      role: "user",
       banned: false,
-      createdAt: '2024-01-20T14:30:00Z',
+      createdAt: "2024-01-20T14:30:00Z",
     },
     {
-      id: 'user-3',
-      name: 'Bob Johnson',
-      email: 'bob@example.com',
-      role: 'user',
+      id: "user-3",
+      name: "Bob Johnson",
+      email: "bob@example.com",
+      role: "user",
       banned: true,
-      createdAt: '2024-01-10T09:15:00Z',
+      createdAt: "2024-01-10T09:15:00Z",
     },
   ];
 
@@ -60,17 +54,20 @@ export const Users = () => {
     );
   }
 
-  const filteredUsers = activeTab === 'banned' 
-    ? users.filter(user => user.banned)
-    : users;
+  const filteredUsers =
+    activeTab === "banned" ? users.filter(user => user.banned) : users;
 
   const tabs = [
-    { id: 'all', label: 'All Users', count: users.length },
-    { id: 'banned', label: 'Banned Users', count: users.filter(u => u.banned).length },
+    { id: "all", label: "All Users", count: users.length },
+    {
+      id: "banned",
+      label: "Banned Users",
+      count: users.filter(u => u.banned).length,
+    },
   ] as const;
 
   const handleToggleBan = (userId: string) => {
-    toggleBan(userId, 'user');
+    toggleBan(userId, "user");
   };
 
   const renderUserCard = (user: any) => {
@@ -102,13 +99,15 @@ export const Users = () => {
             ) : (
               <UserCheck className="h-4 w-4 text-green-500" />
             )}
-            <span className={cn(
-              'px-2 py-1 rounded-full text-xs font-medium border',
-              user.banned
-                ? 'text-red-600 bg-red-50 border-red-200'
-                : 'text-green-600 bg-green-50 border-green-200'
-            )}>
-              {user.banned ? 'Banned' : 'Active'}
+            <span
+              className={cn(
+                "px-2 py-1 rounded-full text-xs font-medium border",
+                user.banned
+                  ? "text-red-600 bg-red-50 border-red-200"
+                  : "text-green-600 bg-green-50 border-green-200"
+              )}
+            >
+              {user.banned ? "Banned" : "Active"}
             </span>
           </div>
         </div>
@@ -117,10 +116,10 @@ export const Users = () => {
           <button
             onClick={() => handleToggleBan(user.id)}
             className={cn(
-              'flex-1 inline-flex items-center justify-center space-x-2 px-4 py-2 rounded-md font-medium transition-colors',
+              "flex-1 inline-flex items-center justify-center space-x-2 px-4 py-2 rounded-md font-medium transition-colors",
               user.banned
-                ? 'bg-green-500 text-white hover:bg-green-600'
-                : 'bg-red-500 text-white hover:bg-red-600'
+                ? "bg-green-500 text-white hover:bg-green-600"
+                : "bg-red-500 text-white hover:bg-red-600"
             )}
           >
             {user.banned ? (
@@ -144,11 +143,12 @@ export const Users = () => {
     if (filteredUsers.length === 0) {
       return (
         <EmptyState
-          icon={activeTab === 'banned' ? UserX : UsersIcon}
-          title={`No ${activeTab === 'banned' ? 'banned' : ''} users`}
-          description={activeTab === 'banned' 
-            ? 'No users are currently banned.'
-            : 'No users found.'
+          icon={activeTab === "banned" ? UserX : UsersIcon}
+          title={`No ${activeTab === "banned" ? "banned" : ""} users`}
+          description={
+            activeTab === "banned"
+              ? "No users are currently banned."
+              : "No users found."
           }
         />
       );
@@ -166,7 +166,9 @@ export const Users = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">User Management</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            User Management
+          </h1>
           <p className="text-muted-foreground">
             Manage user accounts and permissions
           </p>
@@ -176,12 +178,14 @@ export const Users = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-card border border-border rounded-lg p-6">
             <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
-            <UsersIcon className="h-5 w-5 text-blue-500" />
-          </div>
+              <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                <UsersIcon className="h-5 w-5 text-blue-500" />
+              </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Users</p>
-                <p className="text-2xl font-bold text-foreground">{users.length}</p>
+                <p className="text-2xl font-bold text-foreground">
+                  {users.length}
+                </p>
               </div>
             </div>
           </div>
@@ -219,25 +223,27 @@ export const Users = () => {
         <div className="bg-card border border-border rounded-lg">
           <div className="border-b border-border">
             <nav className="flex space-x-8 px-6">
-              {tabs.map((tab) => (
+              {tabs.map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                    "py-4 px-1 border-b-2 font-medium text-sm transition-colors",
                     activeTab === tab.id
-                      ? 'border-primary text-primary'
-                      : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                      ? "border-primary text-primary"
+                      : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
                   )}
                 >
                   {tab.label}
                   {tab.count > 0 && (
-                    <span className={cn(
-                      'ml-2 px-2 py-0.5 rounded-full text-xs font-medium',
-                      activeTab === tab.id
-                        ? 'bg-primary/10 text-primary'
-                        : 'bg-muted text-muted-foreground'
-                    )}>
+                    <span
+                      className={cn(
+                        "ml-2 px-2 py-0.5 rounded-full text-xs font-medium",
+                        activeTab === tab.id
+                          ? "bg-primary/10 text-primary"
+                          : "bg-muted text-muted-foreground"
+                      )}
+                    >
                       {tab.count}
                     </span>
                   )}
@@ -246,9 +252,7 @@ export const Users = () => {
             </nav>
           </div>
 
-          <div className="p-6">
-            {renderTabContent()}
-          </div>
+          <div className="p-6">{renderTabContent()}</div>
         </div>
       </div>
     </div>

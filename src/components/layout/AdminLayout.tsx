@@ -1,19 +1,19 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { 
-  LayoutDashboard, 
-  Users, 
-  Music, 
-  AlertTriangle, 
-  Flag, 
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
+import {
+  LayoutDashboard,
+  Users,
+  Music,
+  AlertTriangle,
+  Flag,
   LogOut,
   Menu,
   X,
-  Shield
-} from 'lucide-react';
-import { useAuth, useCurrentUser } from '@/hooks/useAuth';
-import { cn } from '@/lib/utils';
+  Shield,
+} from "lucide-react";
+import { useAuth, useCurrentUser } from "@/hooks/useAuth";
+import { cn } from "@/lib/utils";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -26,11 +26,11 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   const navigation = [
-    { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-    { name: 'Appeals', href: '/admin/appeals', icon: AlertTriangle },
-    { name: 'Reports', href: '/admin/reports', icon: Flag },
-    { name: 'Users', href: '/admin/users', icon: Users },
-    { name: 'Artists', href: '/admin/artists', icon: Music },
+    { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
+    { name: "Appeals", href: "/admin/appeals", icon: AlertTriangle },
+    { name: "Reports", href: "/admin/reports", icon: Flag },
+    { name: "Users", href: "/admin/users", icon: Users },
+    { name: "Artists", href: "/admin/artists", icon: Music },
   ];
 
   const handleLogout = () => {
@@ -42,17 +42,19 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     <div className="min-h-screen bg-background">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-40 bg-black/50 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <div className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      )}>
+      <div
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between h-16 px-6 border-b border-border">
@@ -70,7 +72,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-2">
-            {navigation.map((item) => {
+            {navigation.map(item => {
               const isActive = location.pathname === item.href;
               return (
                 <Link
@@ -78,10 +80,10 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
                   to={item.href}
                   onClick={() => setSidebarOpen(false)}
                   className={cn(
-                    'flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                    "flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
                     isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
                   )}
                 >
                   <item.icon className="h-5 w-5" />
@@ -95,7 +97,10 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           <div className="p-4 border-t border-border">
             <div className="flex items-center space-x-3 mb-4">
               <img
-                src={currentUser?.avatar || `https://ui-avatars.com/api/?name=${currentUser?.name}&size=32&background=random`}
+                src={
+                  currentUser?.avatar ||
+                  `https://ui-avatars.com/api/?name=${currentUser?.name}&size=32&background=random`
+                }
                 alt={currentUser?.name}
                 className="h-8 w-8 rounded-full"
               />
@@ -106,7 +111,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
                 <p className="text-xs text-muted-foreground">Administrator</p>
               </div>
             </div>
-            
+
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -131,21 +136,20 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             >
               <Menu className="h-6 w-6" />
             </button>
-            
+
             <div className="flex-1 lg:hidden" />
-            
+
             <div className="flex items-center space-x-4">
               <h1 className="text-lg font-semibold text-foreground">
-                {navigation.find(item => item.href === location.pathname)?.name || 'Admin'}
+                {navigation.find(item => item.href === location.pathname)
+                  ?.name || "Admin"}
               </h1>
             </div>
           </div>
         </div>
 
         {/* Page content */}
-        <main className="p-4 sm:p-6 lg:p-8">
-          {children}
-        </main>
+        <main className="p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
   );

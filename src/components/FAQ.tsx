@@ -17,7 +17,7 @@ const FAQ = () => {
 
       <div className=" mt-6 border border-neutral-200 rounded-3xl shadow-sm shadow-orange-600/5 divide-y divide-neutral-200 ">
         {/* All FAQs in one section */}
-        {faqs.map((faq) => (
+        {faqs.map(faq => (
           <FAQCard
             key={faq.id}
             question={faq.question}
@@ -28,8 +28,6 @@ const FAQ = () => {
           />
         ))}
       </div>
-
-
     </div>
   );
 };

@@ -6,7 +6,8 @@ const ContactSection = () => {
           Still have questions?
         </h3>
         <p className="text-neutral-100 text-lg mb-8 max-w-2xl mx-auto">
-          Our support team is here to help. Get in touch with us and we'll respond within 24 hours.
+          Our support team is here to help. Get in touch with us and we'll
+          respond within 24 hours.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button className="px-8 py-4 bg-neutral-100 text-neutral-900 font-bold rounded-2xl hover:bg-neutral-200 transition-colors duration-200 shadow-sm shadow-neutral-800/20">

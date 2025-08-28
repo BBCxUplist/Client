@@ -48,7 +48,7 @@ const ArtistCard = ({ artist }: ArtistCardProps) => {
               src={
                 artist.avatar ||
                 artist.photos?.[0] ||
-`/images/userNotFound.jpeg`
+                "/images/userNotFound.jpeg"
               }
               alt={artist.name}
               className="w-full h-full object-cover"

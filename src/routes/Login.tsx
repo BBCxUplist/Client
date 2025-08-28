@@ -71,8 +71,10 @@ export const Login = () => {
         role,
       });
 
-      if (result && 'needsConfirmation' in result) {
-        setSuccessMessage("Please check your email to confirm your account before signing in.");
+      if (result && "needsConfirmation" in result) {
+        setSuccessMessage(
+          "Please check your email to confirm your account before signing in."
+        );
         setActiveTab("login");
       } else {
         // User was automatically logged in
@@ -109,7 +111,9 @@ export const Login = () => {
       setSuccessMessage("Password reset email sent! Please check your inbox.");
     } catch (error: any) {
       console.error("Password reset error:", error);
-      setError(error.message || "An error occurred while sending the reset email");
+      setError(
+        error.message || "An error occurred while sending the reset email"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -138,7 +142,11 @@ export const Login = () => {
               <div className="text-center mb-8">
                 <div className="flex items-center justify-center gap-3 mb-4">
                   <div className="bg-black p-2 rounded-2xl">
-                    <img src="/logo/logo.png" alt="uplist" className="w-8 h-8" />
+                    <img
+                      src="/logo/logo.png"
+                      alt="uplist"
+                      className="w-8 h-8"
+                    />
                   </div>
                   <h1 className="text-2xl font-bold font-dm-sans text-neutral-800">
                     Welcome to Uplist
@@ -151,25 +159,25 @@ export const Login = () => {
 
               {/* Tab Navigation */}
               <div className="flex bg-neutral-100 rounded-3xl p-1.5 mb-8">
-            <button
-              onClick={() => setActiveTab("login")}
-              className={`flex-1 py-3 px-6 rounded-2xl text-sm font-bold transition-all duration-300 ${
-                activeTab === "login"
-                  ? "bg-white text-neutral-800 shadow-lg"
-                  : "text-neutral-500 hover:text-neutral-700"
-              }`}
-            >
-              Sign In
-            </button>
-            <button
-              onClick={() => setActiveTab("register")}
-              className={`flex-1 py-3 px-6 rounded-2xl text-sm font-bold transition-all duration-300 ${
-                activeTab === "register"
-                  ? "bg-white text-neutral-800 shadow-lg"
-                  : "text-neutral-500 hover:text-neutral-700"
-              }`}
-            >
-              Register
+                <button
+                  onClick={() => setActiveTab("login")}
+                  className={`flex-1 py-3 px-6 rounded-2xl text-sm font-bold transition-all duration-300 ${
+                    activeTab === "login"
+                      ? "bg-white text-neutral-800 shadow-lg"
+                      : "text-neutral-500 hover:text-neutral-700"
+                  }`}
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => setActiveTab("register")}
+                  className={`flex-1 py-3 px-6 rounded-2xl text-sm font-bold transition-all duration-300 ${
+                    activeTab === "register"
+                      ? "bg-white text-neutral-800 shadow-lg"
+                      : "text-neutral-500 hover:text-neutral-700"
+                  }`}
+                >
+                  Register
                 </button>
               </div>
 
@@ -192,11 +200,11 @@ export const Login = () => {
               {/* Forms */}
               <div>
                 {activeTab === "login" ? (
-                  <LoginForm 
-                    onSubmit={onLoginSubmit} 
+                  <LoginForm
+                    onSubmit={onLoginSubmit}
                     onGoogleLogin={onGoogleLogin}
                     onForgotPassword={onForgotPassword}
-                    isLoading={isLoading} 
+                    isLoading={isLoading}
                   />
                 ) : (
                   <RegisterForm
@@ -220,18 +228,20 @@ export const Login = () => {
           className="w-full h-full object-cover opacity-70"
         />
         <div className="absolute inset-0 bg-black/20"></div>
-        
+
         {/* Dynamic Content Overlay */}
         <div className="absolute inset-0 flex items-center justify-center p-12">
           <div className="text-center text-white max-w-lg">
-            {(activeTab === "register" && isArtist) ? (
+            {activeTab === "register" && isArtist ? (
               /* Artist Content */
               <>
                 <h2 className="text-4xl font-bold font-dm-sans mb-6">
                   Share Your Talent
                 </h2>
                 <p className="text-xl mb-8 text-white/90">
-                  Join thousands of artists earning from their passion. Get booked for events, build your fanbase, and turn your music into a sustainable career.
+                  Join thousands of artists earning from their passion. Get
+                  booked for events, build your fanbase, and turn your music
+                  into a sustainable career.
                 </p>
                 <div className="space-y-4 text-left">
                   <div className="flex items-center space-x-3">
@@ -259,7 +269,8 @@ export const Login = () => {
                   Book Amazing Live Music
                 </h2>
                 <p className="text-xl mb-8 text-white/90">
-                  Discover talented musicians, book secure performances, and create unforgettable experiences for your events.
+                  Discover talented musicians, book secure performances, and
+                  create unforgettable experiences for your events.
                 </p>
                 <div className="space-y-4 text-left">
                   <div className="flex items-center space-x-3">

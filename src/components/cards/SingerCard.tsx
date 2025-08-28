@@ -1,4 +1,3 @@
-
 const SingerCard = () => {
   return (
     <div className="w-full p-2 border border-neutral-200 rounded-4xl inset-shadow-sm shadow-sm shadow-orange-500/5">

@@ -91,6 +91,7 @@ If you want to use redirect-based authentication:
 ## Step 5: Test the Setup
 
 1. Start the development server:
+
    ```bash
    npm run dev
    ```
@@ -158,30 +159,35 @@ The Supabase authentication implementation includes:
 ## Usage Examples
 
 ### Email/Password Login
+
 ```typescript
 const { login } = useAuth();
 await login(email, password);
 ```
 
 ### Google OAuth Login
+
 ```typescript
 const { loginWithGoogle } = useAuth();
 await loginWithGoogle();
 ```
 
 ### Register
+
 ```typescript
 const { register } = useAuth();
-await register(email, password, { name: 'John Doe', role: 'user' });
+await register(email, password, { name: "John Doe", role: "user" });
 ```
 
 ### Logout
+
 ```typescript
 const { logout } = useAuth();
 await logout();
 ```
 
 ### Password Reset
+
 ```typescript
 const { resetPassword } = useAuth();
 await resetPassword(email);

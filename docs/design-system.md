@@ -5,10 +5,12 @@ A comprehensive guide to the visual design language and component patterns used 
 ## 🎨 Color Palette
 
 ### Primary Background
+
 - **Base**: `bg-white` - Clean white background as the primary foundation
 - **Usage**: Main page backgrounds, card backgrounds, form elements
 
 ### Neutral Shades (Functional Grays)
+
 Our neutral palette uses Tailwind's neutral scale strategically:
 
 ```css
@@ -30,7 +32,9 @@ text-neutral-950  /* Ultra-high contrast for critical emphasis */
 ```
 
 ### Orange Accent (Brand Color)
+
 Orange is used **minimally** and strategically for:
+
 - Primary action buttons: `bg-orange-500`
 - Hover states: `hover:bg-orange-600`
 - Focus rings: `focus:ring-orange-200`
@@ -42,11 +46,13 @@ Orange is used **minimally** and strategically for:
 ## 🔲 Border Philosophy
 
 ### Border Strategy
+
 - **Primary Borders**: `border-neutral-200` for most elements
 - **Thickness**: Predominantly `border-2` for form elements and important containers
 - **Usage**: Subtle definition without heavy visual weight
 
 ### Border Applications
+
 ```css
 /* Form Elements */
 border-2 border-neutral-200  /* Input fields, containers */
@@ -62,7 +68,9 @@ hover:border-orange-100      /* Subtle orange hover */
 ## 🎯 Border Radius (Rounded Design Language)
 
 ### Primary Radius: `rounded-3xl`
+
 Our signature rounded aesthetic uses `rounded-3xl` (24px) as the primary radius for:
+
 - Major containers and cards
 - Navigation elements
 - Primary buttons
@@ -70,20 +78,26 @@ Our signature rounded aesthetic uses `rounded-3xl` (24px) as the primary radius 
 - Modal and overlay elements
 
 ### Secondary Radius: `rounded-2xl`
+
 Used for:
+
 - Form input fields
 - Secondary buttons
 - Smaller cards and components
 - Tab navigation elements
 
 ### Accent Radius: `rounded-xl`
+
 For smaller elements:
+
 - Icons containers
 - Small badges
 - Compact buttons
 
 ### Full Rounded: `rounded-full`
+
 Reserved for:
+
 - Profile images
 - Icon buttons
 - Decorative dots and indicators
@@ -91,6 +105,7 @@ Reserved for:
 ## 🌟 Shadow System
 
 ### Standard Shadows
+
 ```css
 /* Subtle Elevation */
 shadow-sm     /* Minimal shadow for slight elevation */
@@ -101,17 +116,23 @@ shadow-2xl    /* Maximum elevation for critical overlays */
 ```
 
 ### Inset Shadows
+
 Used sparingly for **depth and texture**:
+
 ```css
 inset-shadow-sm   /* Subtle inner depth */
 ```
-**Applications**: 
+
+**Applications**:
+
 - Navigation bars for subtle depth
 - Active/pressed button states
 - Input field focus states
 
 ### Colored Shadows
+
 Orange shadows for brand consistency:
+
 ```css
 shadow-orange-500/10   /* Subtle orange glow */
 shadow-orange-500/5    /* Very light orange shadow */
@@ -120,11 +141,13 @@ shadow-orange-500/5    /* Very light orange shadow */
 ## 🚫 What We Don't Use
 
 ### No Gradients Policy
+
 - **Strict Rule**: No `bg-gradient-*` classes anywhere
 - **Rationale**: Maintains clean, professional appearance
 - **Alternative**: Use solid colors with subtle shadows for depth
 
 ### Minimal Color Usage
+
 - Avoid colorful backgrounds
 - No heavy use of blues, greens, or other brand colors
 - Keep color palette restricted to white, neutrals, and orange accents
@@ -132,19 +155,21 @@ shadow-orange-500/5    /* Very light orange shadow */
 ## 📐 Component Patterns
 
 ### Form Elements
+
 ```tsx
 // Standard Input Pattern
-<input 
+<input
   className="w-full px-4 py-3 border-2 border-neutral-200 rounded-2xl bg-white text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all duration-200"
 />
 
 // Primary Button Pattern
-<button 
+<button
   className="w-full py-4 px-6 bg-orange-500 text-white font-bold rounded-2xl hover:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-200 transition-all duration-200 shadow-lg hover:shadow-xl"
 />
 ```
 
 ### Card Components
+
 ```tsx
 // Standard Card Container
 <div className="bg-white rounded-3xl p-6 border border-neutral-200 shadow-md">
@@ -158,6 +183,7 @@ shadow-orange-500/5    /* Very light orange shadow */
 ```
 
 ### Navigation Elements
+
 ```tsx
 // Tab Navigation
 <div className="flex bg-neutral-100 rounded-3xl p-1.5">
@@ -173,18 +199,21 @@ shadow-orange-500/5    /* Very light orange shadow */
 ## 🎨 Landing Page Reference Patterns
 
 ### Hero Section
+
 - Large rounded containers: `rounded-3xl`
 - White backgrounds with subtle shadows
 - Orange accent buttons for CTAs
 - Neutral text hierarchy (600, 700, 800)
 
 ### Feature Cards
+
 - Consistent `rounded-2xl` or `rounded-3xl`
 - `border border-neutral-200`
 - White backgrounds
 - Hover states with shadow elevation
 
 ### Navigation Bar
+
 - Floating rounded navigation: `rounded-2xl sm:rounded-3xl`
 - White background with subtle border
 - Inset shadows for depth: `inset-shadow-sm`
@@ -193,6 +222,7 @@ shadow-orange-500/5    /* Very light orange shadow */
 ## 🔧 Implementation Guidelines
 
 ### CSS Class Patterns
+
 1. **Start with base**: `bg-white`
 2. **Add borders**: `border-2 border-neutral-200`
 3. **Apply radius**: `rounded-3xl` (primary) or `rounded-2xl` (secondary)
@@ -201,6 +231,7 @@ shadow-orange-500/5    /* Very light orange shadow */
 6. **Orange accents**: Only for focus, hover, and primary actions
 
 ### Typography Hierarchy
+
 ```css
 /* Headers */
 text-neutral-800 font-bold font-dm-sans  /* Primary headings */
@@ -213,6 +244,7 @@ text-neutral-400  /* Placeholder text */
 ```
 
 ### Spacing & Layout
+
 - Consistent padding: `p-4`, `p-6`, `p-8` for different container sizes
 - Generous white space for breathing room
 - `gap-4`, `gap-6` for flex/grid layouts

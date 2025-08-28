@@ -22,18 +22,20 @@ A React-based platform for connecting artists with event organizers and clients.
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd frontend
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Set up environment variables:
-Create a `.env` file in the root directory with your Supabase credentials:
+   Create a `.env` file in the root directory with your Supabase credentials:
 
 ```env
 VITE_SUPABASE_URL=your_supabase_project_url
@@ -41,6 +43,7 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 4. Start the development server:
+
 ```bash
 npm run dev
 ```

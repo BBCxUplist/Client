@@ -42,10 +42,7 @@ export const ArtistHero = ({ artist }: ArtistHeroProps) => {
           {/* Artist Avatar */}
           <div className="flex-shrink-0">
             <img
-              src={
-                artist.avatar ||
-                `/images/userNotFound.jpeg`
-              }
+              src={artist.avatar || "/images/userNotFound.jpeg"}
               alt={artist.name}
               className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 object-cover rounded-xl shadow-lg"
             />

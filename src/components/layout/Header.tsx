@@ -1,15 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { 
-  Search, 
-  User, 
-  Menu, 
-  X,
-  MessageCircle,
-} from 'lucide-react';
-import { useAuth, useCurrentUser } from '@/hooks/useAuth';
-import { cn } from '@/lib/utils';
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Search, User, Menu, X, MessageCircle } from "lucide-react";
+import { useAuth, useCurrentUser } from "@/hooks/useAuth";
+import { cn } from "@/lib/utils";
 
 export const Header = () => {
   const { isAuthenticated } = useAuth();
@@ -32,7 +26,9 @@ export const Header = () => {
     <>
       {/* Beautiful Header */}
       <motion.div
-        className={`p-2 sm:p-4 sticky top-0 z-20 w-full transition-all duration-300`}
+        className={
+          "p-2 sm:p-4 sticky top-0 z-20 w-full transition-all duration-300"
+        }
         initial={{ opacity: 0, y: -100 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
@@ -120,7 +116,10 @@ export const Header = () => {
             {isAuthenticated ? (
               <div className="hidden md:flex items-center space-x-2">
                 <img
-                  src={currentUser?.avatar || `https://ui-avatars.com/api/?name=${currentUser?.name}&size=32&background=random`}
+                  src={
+                    currentUser?.avatar ||
+                    `https://ui-avatars.com/api/?name=${currentUser?.name}&size=32&background=random`
+                  }
                   alt={currentUser?.name}
                   className="h-8 w-8 rounded-full"
                 />
@@ -156,7 +155,7 @@ export const Header = () => {
       {mobileMenuOpen && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
+          animate={{ opacity: 1, height: "auto" }}
           exit={{ opacity: 0, height: 0 }}
           className="md:hidden fixed top-20 left-4 right-4 z-10 bg-white border-2 border-neutral-200 rounded-2xl shadow-lg"
         >
@@ -165,40 +164,40 @@ export const Header = () => {
               to="/explore"
               onClick={() => setMobileMenuOpen(false)}
               className={cn(
-                'flex items-center space-x-2 px-3 py-2 rounded-xl text-base font-medium transition-all duration-200',
+                "flex items-center space-x-2 px-3 py-2 rounded-xl text-base font-medium transition-all duration-200",
                 location.pathname === "/explore"
-                  ? 'bg-orange-50 text-orange-500'
-                  : 'text-neutral-600 hover:text-orange-500 hover:bg-orange-50'
+                  ? "bg-orange-50 text-orange-500"
+                  : "text-neutral-600 hover:text-orange-500 hover:bg-orange-50"
               )}
             >
               <Search className="h-5 w-5" />
               <span>Explore</span>
             </Link>
-            
+
             {isAuthenticated && (
               <>
                 <Link
                   to="/chat"
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
-                    'flex items-center space-x-2 px-3 py-2 rounded-xl text-base font-medium transition-all duration-200',
+                    "flex items-center space-x-2 px-3 py-2 rounded-xl text-base font-medium transition-all duration-200",
                     location.pathname === "/chat"
-                      ? 'bg-orange-50 text-orange-500'
-                      : 'text-neutral-600 hover:text-orange-500 hover:bg-orange-50'
+                      ? "bg-orange-50 text-orange-500"
+                      : "text-neutral-600 hover:text-orange-500 hover:bg-orange-50"
                   )}
                 >
                   <MessageCircle className="h-5 w-5" />
                   <span>Messages</span>
                 </Link>
-                
+
                 <Link
                   to="/profile"
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
-                    'flex items-center space-x-2 px-3 py-2 rounded-xl text-base font-medium transition-all duration-200',
+                    "flex items-center space-x-2 px-3 py-2 rounded-xl text-base font-medium transition-all duration-200",
                     location.pathname === "/profile"
-                      ? 'bg-orange-50 text-orange-500'
-                      : 'text-neutral-600 hover:text-orange-500 hover:bg-orange-50'
+                      ? "bg-orange-50 text-orange-500"
+                      : "text-neutral-600 hover:text-orange-500 hover:bg-orange-50"
                   )}
                 >
                   <User className="h-5 w-5" />

@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React from "react";
+import { motion } from "framer-motion";
 
 interface ReportModalProps {
   isOpen: boolean;
@@ -29,7 +29,9 @@ export const ReportModal: React.FC<ReportModalProps> = ({
         animate={{ opacity: 1, scale: 1 }}
         className="bg-white border-2 border-neutral-200 rounded-2xl sm:rounded-3xl shadow-md p-4 sm:p-6 max-w-md w-full"
       >
-        <h3 className="text-base sm:text-lg font-bold text-neutral-800 mb-3 sm:mb-4">Report Artist</h3>
+        <h3 className="text-base sm:text-lg font-bold text-neutral-800 mb-3 sm:mb-4">
+          Report Artist
+        </h3>
         <div className="space-y-3 sm:space-y-4">
           <div>
             <label className="block text-sm font-medium text-neutral-800 mb-2">
@@ -37,7 +39,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
             </label>
             <select
               value={reportReason}
-              onChange={(e) => onReasonChange(e.target.value)}
+              onChange={e => onReasonChange(e.target.value)}
               className="w-full px-3 py-2 border-2 border-neutral-200 rounded-xl sm:rounded-2xl bg-white text-neutral-800 focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all duration-200 text-sm sm:text-base"
             >
               <option value="">Select a reason</option>
@@ -54,7 +56,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
             </label>
             <textarea
               value={reportDetails}
-              onChange={(e) => onDetailsChange(e.target.value)}
+              onChange={e => onDetailsChange(e.target.value)}
               rows={3}
               placeholder="Please provide additional details..."
               className="w-full px-3 py-2 border-2 border-neutral-200 rounded-xl sm:rounded-2xl bg-white text-neutral-800 placeholder:text-neutral-600 focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all duration-200 text-sm sm:text-base"

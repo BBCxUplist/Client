@@ -1,30 +1,29 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
- 
-  Edit, 
-  Save, 
+import { useState } from "react";
+import { motion } from "framer-motion";
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Edit,
+  Save,
   X,
   Camera,
-  Star
-} from 'lucide-react';
-import { useAuth, useCurrentUser } from '@/hooks/useAuth';
-import { EmptyState } from '@/components/common/EmptyState';
+  Star,
+} from "lucide-react";
+import { useAuth, useCurrentUser } from "@/hooks/useAuth";
+import { EmptyState } from "@/components/common/EmptyState";
 
 export const Profile = () => {
   const { isAuthenticated } = useAuth();
   const currentUser = useCurrentUser();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    name: currentUser?.name || '',
-    email: currentUser?.email || '',
-    phone: currentUser?.phone || '',
-    location: currentUser?.location || '',
-    bio: currentUser?.bio || '',
+    name: currentUser?.name || "",
+    email: currentUser?.email || "",
+    phone: currentUser?.phone || "",
+    location: currentUser?.location || "",
+    bio: currentUser?.bio || "",
   });
 
   if (!isAuthenticated || !currentUser) {
@@ -43,17 +42,17 @@ export const Profile = () => {
 
   const handleSave = () => {
     // In a real app, this would update the user profile
-    console.log('Saving profile:', formData);
+    console.log("Saving profile:", formData);
     setIsEditing(false);
   };
 
   const handleCancel = () => {
     setFormData({
-      name: currentUser?.name || '',
-      email: currentUser?.email || '',
-      phone: currentUser?.phone || '',
-      location: currentUser?.location || '',
-      bio: currentUser?.bio || '',
+      name: currentUser?.name || "",
+      email: currentUser?.email || "",
+      phone: currentUser?.phone || "",
+      location: currentUser?.location || "",
+      bio: currentUser?.bio || "",
     });
     setIsEditing(false);
   };
@@ -65,8 +64,12 @@ export const Profile = () => {
         <div className="mb-6 sm:mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-neutral-800">Profile</h1>
-              <p className="text-neutral-600 mt-1">Manage your account information</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-neutral-800">
+                Profile
+              </h1>
+              <p className="text-neutral-600 mt-1">
+                Manage your account information
+              </p>
             </div>
             <button
               onClick={() => setIsEditing(!isEditing)}
@@ -100,7 +103,10 @@ export const Profile = () => {
                 {/* Avatar */}
                 <div className="relative">
                   <img
-                    src={currentUser.avatar || `https://ui-avatars.com/api/?name=${currentUser.name}&size=120&background=random`}
+                    src={
+                      currentUser.avatar ||
+                      `https://ui-avatars.com/api/?name=${currentUser.name}&size=120&background=random`
+                    }
                     alt={currentUser.name}
                     className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl object-cover shadow-lg"
                   />
@@ -118,30 +124,42 @@ export const Profile = () => {
                       <input
                         type="text"
                         value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        onChange={e =>
+                          setFormData({ ...formData, name: e.target.value })
+                        }
                         className="text-2xl sm:text-3xl font-bold text-neutral-800 bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 w-full focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
                       />
                     ) : (
-                      <h2 className="text-2xl sm:text-3xl font-bold text-neutral-800">{currentUser.name}</h2>
+                      <h2 className="text-2xl sm:text-3xl font-bold text-neutral-800">
+                        {currentUser.name}
+                      </h2>
                     )}
-                    <p className="text-neutral-600 mt-1">Member since {new Date().getFullYear()}</p>
+                    <p className="text-neutral-600 mt-1">
+                      Member since {new Date().getFullYear()}
+                    </p>
                   </div>
 
                   {/* Stats */}
                   <div className="flex space-x-6">
                     <div className="text-center">
-                      <div className="text-xl font-bold text-neutral-800">12</div>
+                      <div className="text-xl font-bold text-neutral-800">
+                        12
+                      </div>
                       <div className="text-sm text-neutral-600">Bookings</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-xl font-bold text-neutral-800">4.8</div>
+                      <div className="text-xl font-bold text-neutral-800">
+                        4.8
+                      </div>
                       <div className="text-sm text-neutral-600 flex items-center justify-center">
                         <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
                         Rating
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-xl font-bold text-neutral-800">8</div>
+                      <div className="text-xl font-bold text-neutral-800">
+                        8
+                      </div>
                       <div className="text-sm text-neutral-600">Reviews</div>
                     </div>
                   </div>
@@ -156,7 +174,9 @@ export const Profile = () => {
               transition={{ delay: 0.1 }}
               className="bg-white border border-neutral-200 rounded-2xl p-6 sm:p-8 shadow-sm"
             >
-              <h3 className="text-xl font-bold text-neutral-800 mb-4 sm:mb-6">Contact Information</h3>
+              <h3 className="text-xl font-bold text-neutral-800 mb-4 sm:mb-6">
+                Contact Information
+              </h3>
               <div className="space-y-4 sm:space-y-6">
                 <div className="flex items-center space-x-3">
                   <Mail className="h-5 w-5 text-neutral-400" />
@@ -164,11 +184,15 @@ export const Profile = () => {
                     <input
                       type="email"
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onChange={e =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
                       className="flex-1 bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
                     />
                   ) : (
-                    <span className="text-neutral-700">{currentUser.email}</span>
+                    <span className="text-neutral-700">
+                      {currentUser.email}
+                    </span>
                   )}
                 </div>
                 <div className="flex items-center space-x-3">
@@ -177,12 +201,16 @@ export const Profile = () => {
                     <input
                       type="tel"
                       value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      onChange={e =>
+                        setFormData({ ...formData, phone: e.target.value })
+                      }
                       placeholder="Add phone number"
                       className="flex-1 bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
                     />
                   ) : (
-                    <span className="text-neutral-700">{currentUser.phone || 'Not provided'}</span>
+                    <span className="text-neutral-700">
+                      {currentUser.phone || "Not provided"}
+                    </span>
                   )}
                 </div>
                 <div className="flex items-center space-x-3">
@@ -191,12 +219,16 @@ export const Profile = () => {
                     <input
                       type="text"
                       value={formData.location}
-                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      onChange={e =>
+                        setFormData({ ...formData, location: e.target.value })
+                      }
                       placeholder="Add location"
                       className="flex-1 bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
                     />
                   ) : (
-                    <span className="text-neutral-700">{currentUser.location || 'Not provided'}</span>
+                    <span className="text-neutral-700">
+                      {currentUser.location || "Not provided"}
+                    </span>
                   )}
                 </div>
               </div>
@@ -209,18 +241,23 @@ export const Profile = () => {
               transition={{ delay: 0.2 }}
               className="bg-white border border-neutral-200 rounded-2xl p-6 sm:p-8 shadow-sm"
             >
-              <h3 className="text-xl font-bold text-neutral-800 mb-4 sm:mb-6">About</h3>
+              <h3 className="text-xl font-bold text-neutral-800 mb-4 sm:mb-6">
+                About
+              </h3>
               {isEditing ? (
                 <textarea
                   value={formData.bio}
-                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                  onChange={e =>
+                    setFormData({ ...formData, bio: e.target.value })
+                  }
                   placeholder="Tell us about yourself..."
                   rows={4}
                   className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 resize-none"
                 />
               ) : (
                 <p className="text-neutral-700 leading-relaxed">
-                  {currentUser.bio || 'No bio available. Click edit to add one.'}
+                  {currentUser.bio ||
+                    "No bio available. Click edit to add one."}
                 </p>
               )}
             </motion.div>
@@ -259,7 +296,9 @@ export const Profile = () => {
               transition={{ delay: 0.1 }}
               className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm"
             >
-              <h3 className="text-lg font-bold text-neutral-800 mb-4">Account Stats</h3>
+              <h3 className="text-lg font-bold text-neutral-800 mb-4">
+                Account Stats
+              </h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-neutral-600">Total Spent</span>
@@ -287,7 +326,9 @@ export const Profile = () => {
               transition={{ delay: 0.2 }}
               className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm"
             >
-              <h3 className="text-lg font-bold text-neutral-800 mb-4">Recent Activity</h3>
+              <h3 className="text-lg font-bold text-neutral-800 mb-4">
+                Recent Activity
+              </h3>
               <div className="space-y-3">
                 <div className="flex items-center space-x-3 text-sm">
                   <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
@@ -295,11 +336,15 @@ export const Profile = () => {
                 </div>
                 <div className="flex items-center space-x-3 text-sm">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-neutral-600">Completed event with Mike Davis</span>
+                  <span className="text-neutral-600">
+                    Completed event with Mike Davis
+                  </span>
                 </div>
                 <div className="flex items-center space-x-3 text-sm">
                   <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <span className="text-neutral-600">Left review for Alex Wilson</span>
+                  <span className="text-neutral-600">
+                    Left review for Alex Wilson
+                  </span>
                 </div>
               </div>
             </motion.div>

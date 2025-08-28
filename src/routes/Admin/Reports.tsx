@@ -1,28 +1,24 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  Flag, 
-  CheckCircle, 
- 
-  Clock,
-  User,
-  Music
-} from 'lucide-react';
-import { useOpenReports, useClosedReports } from '@/hooks/useReports';
-import { useArtistById } from '@/hooks/useArtists';
-import { useIsAdmin } from '@/hooks/useAuth';
-import { useAppStore } from '@/store';
-import { EmptyState } from '@/components/common/EmptyState';
-import { formatDate } from '@/lib/utils';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Flag, CheckCircle, Clock, User, Music } from "lucide-react";
+import { useOpenReports, useClosedReports } from "@/hooks/useReports";
+import { useArtists } from "@/hooks/useArtists";
+import { useUsers } from "@/store";
+import { useIsAdmin } from "@/hooks/useAuth";
+import { useAppStore } from "@/store";
+import { EmptyState } from "@/components/common/EmptyState";
+import { formatDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 export const Reports = () => {
   const isAdmin = useIsAdmin();
   const { closeReport } = useAppStore();
-  const [activeTab, setActiveTab] = useState<'open' | 'closed'>('open');
-  
+  const [activeTab, setActiveTab] = useState<"open" | "closed">("open");
+
   const openReports = useOpenReports();
   const closedReports = useClosedReports();
+  const allArtists = useArtists();
+  const allUsers = useUsers();
 
   if (!isAdmin) {
     return (
@@ -39,15 +35,15 @@ export const Reports = () => {
   }
 
   const tabs = [
-    { id: 'open', label: 'Open Reports', count: openReports.length },
-    { id: 'closed', label: 'Closed Reports', count: closedReports.length },
+    { id: "open", label: "Open Reports", count: openReports.length },
+    { id: "closed", label: "Closed Reports", count: closedReports.length },
   ] as const;
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'closed':
+      case "closed":
         return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'open':
+      case "open":
         return <Clock className="h-4 w-4 text-yellow-500" />;
       default:
         return <Flag className="h-4 w-4 text-muted-foreground" />;
@@ -56,20 +52,20 @@ export const Reports = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'closed':
-        return 'text-green-600 bg-green-50 border-green-200';
-      case 'open':
-        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+      case "closed":
+        return "text-green-600 bg-green-50 border-green-200";
+      case "open":
+        return "text-yellow-600 bg-yellow-50 border-yellow-200";
       default:
-        return 'text-muted-foreground bg-muted border-border';
+        return "text-muted-foreground bg-muted border-border";
     }
   };
 
   const getTargetIcon = (targetType: string) => {
     switch (targetType) {
-      case 'artist':
+      case "artist":
         return <Music className="h-4 w-4" />;
-      case 'user':
+      case "user":
         return <User className="h-4 w-4" />;
       default:
         return <User className="h-4 w-4" />;
@@ -77,8 +73,12 @@ export const Reports = () => {
   };
 
   const renderReportCard = (report: any) => {
-    const target = useArtistById(report.targetId); // This should be getUserById for users
-    const reporter = useArtistById(report.reporterId); // This should be getUserById
+    const target =
+      allArtists.find(a => a.id === report.targetId) ||
+      allUsers.find(u => u.id === report.targetId);
+    const reporter =
+      allArtists.find(a => a.id === report.reporterId) ||
+      allUsers.find(u => u.id === report.reporterId);
 
     if (!target || !reporter) return null;
 
@@ -98,7 +98,10 @@ export const Reports = () => {
             <div className="flex items-center space-x-2">
               {getTargetIcon(report.targetType)}
               <img
-                src={target.avatar || `https://ui-avatars.com/api/?name=${target.name}&size=60&background=random`}
+                src={
+                  target.avatar ||
+                  `https://ui-avatars.com/api/?name=${target.name}&size=60&background=random`
+                }
                 alt={target.name}
                 className="w-12 h-12 rounded-full"
               />
@@ -112,10 +115,12 @@ export const Reports = () => {
           </div>
           <div className="flex items-center space-x-2">
             {getStatusIcon(report.status)}
-            <span className={cn(
-              'px-2 py-1 rounded-full text-xs font-medium border',
-              getStatusColor(report.status)
-            )}>
+            <span
+              className={cn(
+                "px-2 py-1 rounded-full text-xs font-medium border",
+                getStatusColor(report.status)
+              )}
+            >
               {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
             </span>
           </div>
@@ -136,7 +141,7 @@ export const Reports = () => {
             </p>
           </div>
 
-          {report.status === 'open' && (
+          {report.status === "open" && (
             <div className="flex space-x-3 pt-4 border-t border-border">
               <button
                 onClick={handleClose}
@@ -154,7 +159,7 @@ export const Reports = () => {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'open':
+      case "open":
         return openReports.length > 0 ? (
           <div className="grid grid-cols-1 gap-6">
             {openReports.map(renderReportCard)}
@@ -167,7 +172,7 @@ export const Reports = () => {
           />
         );
 
-      case 'closed':
+      case "closed":
         return closedReports.length > 0 ? (
           <div className="grid grid-cols-1 gap-6">
             {closedReports.map(renderReportCard)}
@@ -190,7 +195,9 @@ export const Reports = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">User Reports</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            User Reports
+          </h1>
           <p className="text-muted-foreground">
             Review and manage user reports
           </p>
@@ -200,25 +207,27 @@ export const Reports = () => {
         <div className="bg-card border border-border rounded-lg">
           <div className="border-b border-border">
             <nav className="flex space-x-8 px-6">
-              {tabs.map((tab) => (
+              {tabs.map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                    "py-4 px-1 border-b-2 font-medium text-sm transition-colors",
                     activeTab === tab.id
-                      ? 'border-primary text-primary'
-                      : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                      ? "border-primary text-primary"
+                      : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
                   )}
                 >
                   {tab.label}
                   {tab.count > 0 && (
-                    <span className={cn(
-                      'ml-2 px-2 py-0.5 rounded-full text-xs font-medium',
-                      activeTab === tab.id
-                        ? 'bg-primary/10 text-primary'
-                        : 'bg-muted text-muted-foreground'
-                    )}>
+                    <span
+                      className={cn(
+                        "ml-2 px-2 py-0.5 rounded-full text-xs font-medium",
+                        activeTab === tab.id
+                          ? "bg-primary/10 text-primary"
+                          : "bg-muted text-muted-foreground"
+                      )}
+                    >
                       {tab.count}
                     </span>
                   )}
@@ -227,9 +236,7 @@ export const Reports = () => {
             </nav>
           </div>
 
-          <div className="p-6">
-            {renderTabContent()}
-          </div>
+          <div className="p-6">{renderTabContent()}</div>
         </div>
       </div>
     </div>

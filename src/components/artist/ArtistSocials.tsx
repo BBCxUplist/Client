@@ -1,4 +1,4 @@
-import { Instagram, Youtube, Music, ExternalLink } from 'lucide-react';
+import { Instagram, Youtube, Music, ExternalLink } from "lucide-react";
 
 interface ArtistSocialsProps {
   socials: {
@@ -13,7 +13,9 @@ export const ArtistSocials = ({ socials }: ArtistSocialsProps) => {
 
   return (
     <div className="mb-4 sm:mb-6">
-      <h3 className="text-base sm:text-lg font-bold font-dm-sans text-neutral-800 mb-3 sm:mb-4">Follow</h3>
+      <h3 className="text-base sm:text-lg font-bold font-dm-sans text-neutral-800 mb-3 sm:mb-4">
+        Follow
+      </h3>
       <div className="space-y-2 sm:space-y-3">
         {socials.instagram && (
           <a

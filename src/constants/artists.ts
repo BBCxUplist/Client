@@ -15,7 +15,8 @@ export const artists: Artist[] = [
     embeds: {
       youtube: "https://www.youtube.com/embed/BFyIwmV_X4g",
       spotify: "https://open.spotify.com/embed/artist/1z6FCVjbusHlS6mZgZwAkW",
-      soundcloud: "https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/users/divine-official",
+      soundcloud:
+        "https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/users/divine-official",
     },
     photos: [
       "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=600&fit=crop",
@@ -120,7 +121,8 @@ export const artists: Artist[] = [
     },
     embeds: {
       youtube: "https://www.youtube.com/embed/raga-track",
-      soundcloud: "https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/raga-music",
+      soundcloud:
+        "https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/raga-music",
     },
     photos: [
       "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=600&fit=crop",
@@ -155,7 +157,12 @@ export const artists: Artist[] = [
     price: 500000, // 5 lakhs
     rating: 4.5,
     tags: ["Punjabi Rap", "Hip-Hop", "Regional", "Fusion", "Traditional"],
-    categories: ["Punjabi Rap", "Hip-Hop", "Regional Music", "Live Performance"],
+    categories: [
+      "Punjabi Rap",
+      "Hip-Hop",
+      "Regional Music",
+      "Live Performance",
+    ],
     availability: [
       "2024-12-25",
       "2024-12-26",
@@ -188,7 +195,12 @@ export const artists: Artist[] = [
     price: 300000, // 3 lakhs
     rating: 4.4,
     tags: ["Hip-Hop", "Introspective", "Chill", "Mental Health", "Underground"],
-    categories: ["Hip-Hop", "Alternative Rap", "Live Performance", "Underground"],
+    categories: [
+      "Hip-Hop",
+      "Alternative Rap",
+      "Live Performance",
+      "Underground",
+    ],
     availability: [
       "2024-12-25",
       "2024-12-26",
@@ -251,7 +263,8 @@ export const artists: Artist[] = [
     embeds: {
       youtube: "https://www.youtube.com/embed/JFebKSkBKl8", // Machayenge
       spotify: "https://open.spotify.com/embed/artist/emiway-bantai",
-      soundcloud: "https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/users/emiway-bantai",
+      soundcloud:
+        "https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/users/emiway-bantai",
     },
     photos: [
       "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=600&fit=crop",
@@ -261,7 +274,12 @@ export const artists: Artist[] = [
     price: 2000000, // 20 lakhs
     rating: 4.8,
     tags: ["Hip-Hop", "Independent", "Mumbai", "Street Rap", "Bollywood"],
-    categories: ["Hip-Hop", "Independent Artist", "Live Performance", "Street Rap"],
+    categories: [
+      "Hip-Hop",
+      "Independent Artist",
+      "Live Performance",
+      "Street Rap",
+    ],
     availability: [
       "2024-12-25",
       "2024-12-26",
@@ -343,5 +361,4 @@ export const artists: Artist[] = [
     featured: true,
     createdAt: "2024-01-25T12:15:00Z",
   },
-
 ];

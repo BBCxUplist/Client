@@ -1,10 +1,8 @@
-
-
-import { useAuth, useCurrentUser } from '@/hooks/useAuth';
-import { UserDashboard } from './Dashboard/UserDashboard';
-import { ArtistDashboard } from './Dashboard/ArtistDashboard';
-import { EmptyState } from '@/components/common/EmptyState';
-import { User, Music } from 'lucide-react';
+import { useAuth, useCurrentUser } from "@/hooks/useAuth";
+import { UserDashboard } from "./Dashboard/UserDashboard";
+import { ArtistDashboard } from "./Dashboard/ArtistDashboard";
+import { EmptyState } from "@/components/common/EmptyState";
+import { User, Music } from "lucide-react";
 
 export const Dashboard = () => {
   const { isAuthenticated } = useAuth();
@@ -36,9 +34,9 @@ export const Dashboard = () => {
         </div>
 
         {/* Role-based Dashboard */}
-        {currentUser.role === 'user' && <UserDashboard />}
-        {currentUser.role === 'artist' && <ArtistDashboard />}
-        {currentUser.role === 'admin' && (
+        {currentUser.role === "user" && <UserDashboard />}
+        {currentUser.role === "artist" && <ArtistDashboard />}
+        {currentUser.role === "admin" && (
           <div className="text-center py-12">
             <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">

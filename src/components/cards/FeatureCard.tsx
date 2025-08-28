@@ -8,7 +8,9 @@ const FeatureCard = ({ icon, title, description }: FeatureCardProps) => {
   return (
     <div className="w-full p-4 border border-neutral-200 rounded-3xl inset-shadow-sm shadow-sm shadow-orange-600/5">
       <div
-        className={`p-3 bg-orange-600 rounded-2xl w-fit shadow-sm shadow-black/50 inset-shadow-lg inset-shadow-black`}
+        className={
+          "p-3 bg-orange-600 rounded-2xl w-fit shadow-sm shadow-black/50 inset-shadow-lg inset-shadow-black"
+        }
       >
         <img src={icon} alt={title.toLowerCase()} className="w-8 h-8" />
       </div>

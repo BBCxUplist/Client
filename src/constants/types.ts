@@ -1,14 +1,21 @@
-export type Role = 'user' | 'artist' | 'admin';
+export type Role = "user" | "artist" | "admin";
 
-export type BookingStatus = 'inquiry' | 'pending' | 'negotiating' | 'confirmed' | 'completed' | 'cancelled' | 'declined';
+export type BookingStatus =
+  | "inquiry"
+  | "pending"
+  | "negotiating"
+  | "confirmed"
+  | "completed"
+  | "cancelled"
+  | "declined";
 
-export type EscrowStatus = 'none' | 'funded' | 'released' | 'refunded';
+export type EscrowStatus = "none" | "funded" | "released" | "refunded";
 
-export type AppealStatus = 'pending' | 'approved' | 'rejected';
+export type AppealStatus = "pending" | "approved" | "rejected";
 
-export type ReportStatus = 'open' | 'closed';
+export type ReportStatus = "open" | "closed";
 
-export type ReportTargetType = 'user' | 'artist';
+export type ReportTargetType = "user" | "artist";
 
 export interface Socials {
   instagram?: string;

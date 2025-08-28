@@ -1,5 +1,5 @@
-import { ChevronDown } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface FAQCardProps {
   question: string;
@@ -9,7 +9,13 @@ interface FAQCardProps {
   onToggle: () => void;
 }
 
-const FAQCard = ({ question, answer, category, isOpen, onToggle }: FAQCardProps) => {
+const FAQCard = ({
+  question,
+  answer,
+  category,
+  isOpen,
+  onToggle,
+}: FAQCardProps) => {
   return (
     <motion.div
       className=""

@@ -1,7 +1,6 @@
-
-import { motion } from 'framer-motion';
-import { AlertCircle, RefreshCw } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { motion } from "framer-motion";
+import { AlertCircle, RefreshCw } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ErrorStateProps {
   title?: string;
@@ -11,8 +10,8 @@ interface ErrorStateProps {
 }
 
 export const ErrorState = ({
-  title = 'Something went wrong',
-  message = 'An error occurred while loading this content. Please try again.',
+  title = "Something went wrong",
+  message = "An error occurred while loading this content. Please try again.",
   onRetry,
   className,
 }: ErrorStateProps) => {
@@ -22,19 +21,19 @@ export const ErrorState = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
       className={cn(
-        'flex flex-col items-center justify-center py-12 px-4 text-center',
+        "flex flex-col items-center justify-center py-12 px-4 text-center",
         className
       )}
     >
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
-        transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
+        transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
         className="mb-4"
       >
         <AlertCircle className="h-12 w-12 text-destructive" />
       </motion.div>
-      
+
       <motion.h3
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -43,7 +42,7 @@ export const ErrorState = ({
       >
         {title}
       </motion.h3>
-      
+
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -52,7 +51,7 @@ export const ErrorState = ({
       >
         {message}
       </motion.p>
-      
+
       {onRetry && (
         <motion.button
           initial={{ opacity: 0, scale: 0.9 }}

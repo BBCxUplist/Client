@@ -1,30 +1,28 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { 
-  Star, 
- 
- 
-  Shield, 
+import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Star,
+  Shield,
   CheckCircle,
   ArrowLeft,
-  AlertCircle
-} from 'lucide-react';
-import { useArtistById } from '@/hooks/useArtists';
-import { useAuth } from '@/hooks/useAuth';
-import { useAppStore } from '@/store';
-import { EmptyState } from '@/components/common/EmptyState';
+  AlertCircle,
+} from "lucide-react";
+import { useArtistById } from "@/hooks/useArtists";
+import { useAuth } from "@/hooks/useAuth";
+import { useAppStore } from "@/store";
+import { EmptyState } from "@/components/common/EmptyState";
 
-import { formatPrice, formatDate } from '@/lib/utils';
-import { cn } from '@/lib/utils';
+import { formatPrice, formatDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 const bookingSchema = z.object({
-  date: z.string().min(1, 'Please select a date'),
-  timeSlot: z.string().min(1, 'Please select a time slot'),
-  amount: z.number().min(1, 'Amount must be greater than 0'),
+  date: z.string().min(1, "Please select a date"),
+  timeSlot: z.string().min(1, "Please select a time slot"),
+  amount: z.number().min(1, "Amount must be greater than 0"),
 });
 
 type BookingFormData = z.infer<typeof bookingSchema>;
@@ -35,12 +33,14 @@ export const Book = () => {
 
   const { createBooking, fundEscrow } = useAppStore();
   const navigate = useNavigate();
-  
-  const [step, setStep] = useState<'details' | 'payment' | 'success'>('details');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState('');
 
-  const artist = useArtistById(artistId || '');
+  const [step, setStep] = useState<"details" | "payment" | "success">(
+    "details"
+  );
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState("");
+
+  const artist = useArtistById(artistId || "");
   const bookingForm = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
@@ -49,7 +49,7 @@ export const Book = () => {
   });
 
   if (!isAuthenticated) {
-    navigate('/login');
+    navigate("/login");
     return null;
   }
 
@@ -63,7 +63,7 @@ export const Book = () => {
             description="The artist you're trying to book doesn't exist or has been removed."
             action={{
               label: "Browse Artists",
-              onClick: () => navigate('/explore'),
+              onClick: () => navigate("/explore"),
               variant: "outline",
             }}
           />
@@ -82,7 +82,7 @@ export const Book = () => {
             description="This artist is not currently available for booking."
             action={{
               label: "Browse Other Artists",
-              onClick: () => navigate('/explore'),
+              onClick: () => navigate("/explore"),
               variant: "outline",
             }}
           />
@@ -95,28 +95,28 @@ export const Book = () => {
     <Star
       key={i}
       className={cn(
-        'h-4 w-4',
-        i < Math.floor(artist.rating) 
-          ? 'fill-yellow-400 text-yellow-400' 
-          : 'text-gray-300'
+        "h-4 w-4",
+        i < Math.floor(artist.rating)
+          ? "fill-yellow-400 text-yellow-400"
+          : "text-gray-300"
       )}
     />
   ));
 
   const handleSubmitDetails = (data: BookingFormData) => {
-    bookingForm.setValue('date', data.date);
-    bookingForm.setValue('timeSlot', data.timeSlot);
-    bookingForm.setValue('amount', data.amount);
-    setStep('payment');
+    bookingForm.setValue("date", data.date);
+    bookingForm.setValue("timeSlot", data.timeSlot);
+    bookingForm.setValue("amount", data.amount);
+    setStep("payment");
   };
 
   const handlePayment = async () => {
     setIsProcessing(true);
-    setError('');
-    
+    setError("");
+
     try {
       const formData = bookingForm.getValues();
-      
+
       // Create booking
       const bookingId = createBooking(
         artist.id,
@@ -125,24 +125,25 @@ export const Book = () => {
         formData.timeSlot,
         formData.amount
       );
-      
+
       // Fund escrow (mock payment)
       fundEscrow(bookingId, formData.amount);
-      
-      setStep('success');
+
+      setStep("success");
     } catch (err) {
-      setError('Payment failed. Please try again.');
+      console.error(err);
+      setError("Payment failed. Please try again.");
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleBackToDetails = () => {
-    setStep('details');
+    setStep("details");
   };
 
   const handleViewDashboard = () => {
-    navigate('/dashboard');
+    navigate("/dashboard");
   };
 
   return (
@@ -163,40 +164,58 @@ export const Book = () => {
         {/* Progress Steps */}
         <div className="mb-8">
           <div className="flex items-center justify-center space-x-4">
-            <div className={cn(
-              'flex items-center space-x-2',
-              step === 'details' ? 'text-primary' : 'text-neutral-600'
-            )}>
-              <div className={cn(
-                'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium',
-                step === 'details' ? 'bg-orange-500 text-white' : 'bg-muted text-neutral-600'
-              )}>
+            <div
+              className={cn(
+                "flex items-center space-x-2",
+                step === "details" ? "text-primary" : "text-neutral-600"
+              )}
+            >
+              <div
+                className={cn(
+                  "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium",
+                  step === "details"
+                    ? "bg-orange-500 text-white"
+                    : "bg-muted text-neutral-600"
+                )}
+              >
                 1
               </div>
               <span className="hidden sm:inline">Booking Details</span>
             </div>
             <div className="w-8 h-1 bg-muted rounded"></div>
-            <div className={cn(
-              'flex items-center space-x-2',
-              step === 'payment' ? 'text-primary' : 'text-neutral-600'
-            )}>
-              <div className={cn(
-                'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium',
-                step === 'payment' ? 'bg-orange-500 text-white' : 'bg-muted text-neutral-600'
-              )}>
+            <div
+              className={cn(
+                "flex items-center space-x-2",
+                step === "payment" ? "text-primary" : "text-neutral-600"
+              )}
+            >
+              <div
+                className={cn(
+                  "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium",
+                  step === "payment"
+                    ? "bg-orange-500 text-white"
+                    : "bg-muted text-neutral-600"
+                )}
+              >
                 2
               </div>
               <span className="hidden sm:inline">Payment</span>
             </div>
             <div className="w-8 h-1 bg-muted rounded"></div>
-            <div className={cn(
-              'flex items-center space-x-2',
-              step === 'success' ? 'text-primary' : 'text-neutral-600'
-            )}>
-              <div className={cn(
-                'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium',
-                step === 'success' ? 'bg-orange-500 text-white' : 'bg-muted text-neutral-600'
-              )}>
+            <div
+              className={cn(
+                "flex items-center space-x-2",
+                step === "success" ? "text-primary" : "text-neutral-600"
+              )}
+            >
+              <div
+                className={cn(
+                  "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium",
+                  step === "success"
+                    ? "bg-orange-500 text-white"
+                    : "bg-muted text-neutral-600"
+                )}
+              >
                 3
               </div>
               <span className="hidden sm:inline">Confirmation</span>
@@ -207,25 +226,30 @@ export const Book = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2">
-            {step === 'details' && (
+            {step === "details" && (
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="bg-white border-2 border-neutral-200 rounded-3xl shadow-md p-6"
               >
-                <h2 className="text-2xl font-bold text-neutral-800 mb-6">Booking Details</h2>
-                
-                <form onSubmit={bookingForm.handleSubmit(handleSubmitDetails)} className="space-y-6">
+                <h2 className="text-2xl font-bold text-neutral-800 mb-6">
+                  Booking Details
+                </h2>
+
+                <form
+                  onSubmit={bookingForm.handleSubmit(handleSubmitDetails)}
+                  className="space-y-6"
+                >
                   <div>
                     <label className="block text-sm font-medium text-neutral-800 mb-2">
                       Select Date
                     </label>
                     <select
-                      {...bookingForm.register('date')}
+                      {...bookingForm.register("date")}
                       className="w-full px-3 py-2 border border-input rounded-md bg-white text-neutral-800 focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                       <option value="">Choose a date</option>
-                      {artist.availability.map((date) => (
+                      {artist.availability.map(date => (
                         <option key={date} value={date}>
                           {formatDate(date)}
                         </option>
@@ -243,11 +267,11 @@ export const Book = () => {
                       Select Time Slot
                     </label>
                     <select
-                      {...bookingForm.register('timeSlot')}
+                      {...bookingForm.register("timeSlot")}
                       className="w-full px-3 py-2 border border-input rounded-md bg-white text-neutral-800 focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                       <option value="">Choose a time</option>
-                      {artist.timeSlots?.map((time) => (
+                      {artist.timeSlots?.map(time => (
                         <option key={time} value={time}>
                           {time}
                         </option>
@@ -269,7 +293,9 @@ export const Book = () => {
                         $
                       </span>
                       <input
-                        {...bookingForm.register('amount', { valueAsNumber: true })}
+                        {...bookingForm.register("amount", {
+                          valueAsNumber: true,
+                        })}
                         type="number"
                         min={artist.price}
                         step="0.01"
@@ -296,14 +322,16 @@ export const Book = () => {
               </motion.div>
             )}
 
-            {step === 'payment' && (
+            {step === "payment" && (
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="bg-white border-2 border-neutral-200 rounded-3xl shadow-md p-6"
               >
-                <h2 className="text-2xl font-bold text-neutral-800 mb-6">Payment</h2>
-                
+                <h2 className="text-2xl font-bold text-neutral-800 mb-6">
+                  Payment
+                </h2>
+
                 {error && (
                   <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-md text-destructive">
                     {error}
@@ -312,7 +340,9 @@ export const Book = () => {
 
                 <div className="space-y-6">
                   <div className="p-4 bg-muted rounded-lg">
-                    <h3 className="font-semibold text-neutral-800 mb-2">Booking Summary</h3>
+                    <h3 className="font-semibold text-neutral-800 mb-2">
+                      Booking Summary
+                    </h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-neutral-600">Artist:</span>
@@ -320,12 +350,14 @@ export const Book = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-neutral-600">Date:</span>
-                        <span className="text-neutral-800">{formatDate(bookingForm.getValues('date'))}</span>
+                        <span className="text-neutral-800">
+                          {formatDate(bookingForm.getValues("date"))}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-neutral-600">Amount:</span>
                         <span className="text-neutral-800 font-semibold">
-                          {formatPrice(bookingForm.getValues('amount'))}
+                          {formatPrice(bookingForm.getValues("amount"))}
                         </span>
                       </div>
                     </div>
@@ -335,10 +367,13 @@ export const Book = () => {
                     <div className="flex items-start space-x-3">
                       <Shield className="h-5 w-5 text-primary mt-0.5" />
                       <div>
-                        <h4 className="font-semibold text-neutral-800 mb-1">Secure Escrow Payment</h4>
+                        <h4 className="font-semibold text-neutral-800 mb-1">
+                          Secure Escrow Payment
+                        </h4>
                         <p className="text-sm text-neutral-600">
-                          Your payment is held securely in escrow until the event is completed. 
-                          This protects both you and the artist.
+                          Your payment is held securely in escrow until the
+                          event is completed. This protects both you and the
+                          artist.
                         </p>
                       </div>
                     </div>
@@ -350,9 +385,9 @@ export const Book = () => {
                       disabled={isProcessing}
                       className="w-full py-3 px-4 bg-orange-500 text-white rounded-md font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
-                      {isProcessing ? 'Processing Payment...' : 'Pay Securely'}
+                      {isProcessing ? "Processing Payment..." : "Pay Securely"}
                     </button>
-                    
+
                     <button
                       type="button"
                       onClick={handleBackToDetails}
@@ -365,7 +400,7 @@ export const Book = () => {
               </motion.div>
             )}
 
-            {step === 'success' && (
+            {step === "success" && (
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -373,18 +408,25 @@ export const Book = () => {
               >
                 <div className="mb-6">
                   <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                  <h2 className="text-2xl font-bold text-neutral-800 mb-2">Booking Confirmed!</h2>
+                  <h2 className="text-2xl font-bold text-neutral-800 mb-2">
+                    Booking Confirmed!
+                  </h2>
                   <p className="text-neutral-600">
-                    Your booking has been created and payment has been processed securely.
+                    Your booking has been created and payment has been processed
+                    securely.
                   </p>
                 </div>
 
                 <div className="bg-muted rounded-lg p-4 mb-6">
-                  <h3 className="font-semibold text-neutral-800 mb-2">Next Steps</h3>
+                  <h3 className="font-semibold text-neutral-800 mb-2">
+                    Next Steps
+                  </h3>
                   <div className="text-sm text-neutral-600 space-y-1">
                     <p>• The artist will review your booking request</p>
                     <p>• You'll receive a notification when they respond</p>
-                    <p>• Once accepted, you can chat directly with the artist</p>
+                    <p>
+                      • Once accepted, you can chat directly with the artist
+                    </p>
                   </div>
                 </div>
 
@@ -402,16 +444,23 @@ export const Book = () => {
           <div className="space-y-6">
             {/* Artist Summary */}
             <div className="bg-white border-2 border-neutral-200 rounded-3xl shadow-md p-6">
-              <h3 className="text-lg font-bold text-neutral-800 mb-4">Artist Summary</h3>
-              
+              <h3 className="text-lg font-bold text-neutral-800 mb-4">
+                Artist Summary
+              </h3>
+
               <div className="flex items-center space-x-4 mb-4">
                 <img
-                  src={artist.avatar || `https://ui-avatars.com/api/?name=${artist.name}&size=80&background=random`}
+                  src={
+                    artist.avatar ||
+                    `https://ui-avatars.com/api/?name=${artist.name}&size=80&background=random`
+                  }
                   alt={artist.name}
                   className="w-16 h-16 rounded-full"
                 />
                 <div>
-                  <h4 className="font-semibold text-neutral-800">{artist.name}</h4>
+                  <h4 className="font-semibold text-neutral-800">
+                    {artist.name}
+                  </h4>
                   <div className="flex items-center space-x-1">
                     {ratingStars}
                     <span className="text-sm text-neutral-600 ml-1">
@@ -424,11 +473,15 @@ export const Book = () => {
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-neutral-600">Base Price:</span>
-                  <span className="text-neutral-800 font-semibold">{formatPrice(artist.price)}</span>
+                  <span className="text-neutral-800 font-semibold">
+                    {formatPrice(artist.price)}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-neutral-600">Available Dates:</span>
-                  <span className="text-neutral-800">{artist.availability.length}</span>
+                  <span className="text-neutral-800">
+                    {artist.availability.length}
+                  </span>
                 </div>
               </div>
 
@@ -448,19 +501,29 @@ export const Book = () => {
 
             {/* Escrow Information */}
             <div className="bg-white border-2 border-neutral-200 rounded-3xl shadow-md p-6">
-              <h3 className="text-lg font-bold text-neutral-800 mb-4">How Escrow Works</h3>
+              <h3 className="text-lg font-bold text-neutral-800 mb-4">
+                How Escrow Works
+              </h3>
               <div className="space-y-3 text-sm text-neutral-600">
                 <div className="flex items-start space-x-2">
                   <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                  <p>Your payment is held securely until the event is completed</p>
+                  <p>
+                    Your payment is held securely until the event is completed
+                  </p>
                 </div>
                 <div className="flex items-start space-x-2">
                   <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                  <p>The artist receives payment only after you confirm satisfaction</p>
+                  <p>
+                    The artist receives payment only after you confirm
+                    satisfaction
+                  </p>
                 </div>
                 <div className="flex items-start space-x-2">
                   <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                  <p>Full refund available if the artist cancels or doesn't perform</p>
+                  <p>
+                    Full refund available if the artist cancels or doesn't
+                    perform
+                  </p>
                 </div>
               </div>
             </div>

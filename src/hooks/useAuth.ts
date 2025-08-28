@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react';
-import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
-import { useAppStore } from '@/store';
-import type { User, Role } from '@/constants/types';
+import { useEffect, useState } from "react";
+import type { User as SupabaseUser, Session } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase";
+import { useAppStore } from "@/store";
+import type { User, Role } from "@/constants/types";
 
 export const useAuth = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState(true);
-  
+
   const { auth, login, logout: storeLogout } = useAppStore();
 
   useEffect(() => {
@@ -36,39 +36,39 @@ export const useAuth = () => {
       email,
       password,
     });
-    
+
     if (error) throw error;
-    
+
     // Determine role from user metadata or default to 'user'
-    const role = (data.user?.user_metadata?.role as Role) || 'user';
-    const userId = data.user?.id || '';
-    
+    const role = (data.user?.user_metadata?.role as Role) || "user";
+    const userId = data.user?.id || "";
+
     // Update local store
     login(role, userId);
-    
+
     return data;
   };
 
   const loginWithGoogle = async () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
+      provider: "google",
       options: {
         redirectTo: `${window.location.origin}/dashboard`,
         queryParams: {
-          access_type: 'offline',
-          prompt: 'consent',
+          access_type: "offline",
+          prompt: "consent",
         },
       },
     });
-    
+
     if (error) throw error;
-    
+
     return data;
   };
 
   const registerWithSupabase = async (
-    email: string, 
-    password: string, 
+    email: string,
+    password: string,
     userData: { name: string; role: Role }
   ) => {
     const { data, error } = await supabase.auth.signUp({
@@ -81,30 +81,30 @@ export const useAuth = () => {
         },
       },
     });
-    
+
     if (error) throw error;
-    
+
     // If user is confirmed immediately, log them in
     if (data.user && !data.user.email_confirmed_at) {
       // User needs to confirm email
       return { needsConfirmation: true };
     }
-    
+
     if (data.user) {
       const role = userData.role;
       const userId = data.user.id;
-      
+
       // Update local store
       login(role, userId);
     }
-    
+
     return data;
   };
 
   const logout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
-    
+
     // Clear local store
     storeLogout();
   };
@@ -113,7 +113,7 @@ export const useAuth = () => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
-    
+
     if (error) throw error;
   };
 
@@ -121,7 +121,7 @@ export const useAuth = () => {
     const { error } = await supabase.auth.updateUser({
       password,
     });
-    
+
     if (error) throw error;
   };
 
@@ -144,25 +144,25 @@ export const useAuth = () => {
 export const useCurrentUser = (): User | undefined => {
   const { currentUserId } = useAuth();
   const { users } = useAppStore();
-  
+
   if (!currentUserId) return undefined;
-  
-  return users.find((user) => user.id === currentUserId);
+
+  return users.find(user => user.id === currentUserId);
 };
 
 export const useIsAdmin = (): boolean => {
   const { role } = useAuth();
-  return role === 'admin';
+  return role === "admin";
 };
 
 export const useIsArtist = (): boolean => {
   const { role } = useAuth();
-  return role === 'artist';
+  return role === "artist";
 };
 
 export const useIsUser = (): boolean => {
   const { role } = useAuth();
-  return role === 'user';
+  return role === "user";
 };
 
 export const useIsBanned = (): boolean => {
