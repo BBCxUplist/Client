@@ -29,9 +29,9 @@ function AppContent() {
   const isBanned = useIsBanned();
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-[100dvh] bg-neutral-900 text-white">
       {isBanned && (
-        <div className="bg-destructive text-destructive-foreground px-4 py-2 text-center text-sm">
+        <div className="bg-destructive text-ui-red px-4 py-2 text-center text-sm">
           Your account has been suspended. Please contact support for
           assistance.
         </div>

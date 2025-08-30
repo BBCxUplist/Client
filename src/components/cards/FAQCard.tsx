@@ -28,10 +28,10 @@ const FAQCard = ({
         className="w-full p-4 text-left flex justify-between items-center "
       >
         <div className="flex-1">
-          <h3 className=" font-medium font-dm-sans text-neutral-800">
+          <h3 className=" font-medium font-dm-sans text-neutral-200">
             {question}
           </h3>
-          <span className="inline-block mt-1 text-orange-600 text-xs font-medium rounded-full">
+          <span className="inline-block mt-1 text-ui-blue text-xs font-medium rounded-full">
             {category.charAt(0).toUpperCase() + category.slice(1)}
           </span>
         </div>
@@ -40,7 +40,7 @@ const FAQCard = ({
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2, ease: "easeInOut" }}
         >
-          <ChevronDown className="w-5 h-5 text-orange-500" />
+          <ChevronDown className="w-5 h-5 text-ui-blue" />
         </motion.div>
       </button>
 
@@ -58,7 +58,7 @@ const FAQCard = ({
                 initial={{ y: -10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.2, delay: 0.1 }}
-                className="text-neutral-600 text-sm leading-relaxed"
+                className="text-neutral-200 text-sm leading-relaxed"
               >
                 {answer}
               </motion.p>

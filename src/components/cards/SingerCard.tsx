@@ -1,6 +1,6 @@
 const SingerCard = () => {
   return (
-    <div className="w-full p-2 border border-neutral-200 rounded-4xl inset-shadow-sm shadow-sm shadow-orange-500/5">
+    <div className="w-full p-2 border border-neutral-200 rounded-4xl bg-white/20 backdrop-blur-sm">
       <img
         src="/images/singer.jpeg"
         alt="artist"
@@ -8,7 +8,7 @@ const SingerCard = () => {
       />
       <div className="flex flex-col  gap-2 p-4 pb-2">
         <p className="text-lg font-bold font-dm-sans">John Doe</p>
-        <p className="text-sm text-neutral-600">
+        <p className="text-sm text-neutral-200">
           Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam,
           quos.
         </p>

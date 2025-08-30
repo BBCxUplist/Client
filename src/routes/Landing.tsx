@@ -95,7 +95,7 @@ export const Landing = () => {
   ];
 
   return (
-    <div className="min-h-[100dvh] h-full w-full text-black">
+    <div className="min-h-[100dvh] h-full w-full bg-neutral-900">
       <motion.div
         className={
           "p-2 sm:p-4 fixed top-0 z-10 w-full transition-all duration-300 "
@@ -105,7 +105,7 @@ export const Landing = () => {
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
         <motion.div
-          className={`border bg-white border-neutral-200 shadow-sm inset-shadow-sm shadow-orange-500/5 mx-auto rounded-2xl sm:rounded-3xl flex justify-between items-center transition-all duration-300 ${
+          className={`border bg-card border-border shadow-sm shadow-ui-blue mx-auto rounded-2xl sm:rounded-3xl flex justify-between items-center transition-all duration-300 ${
             isScrolled
               ? "max-w-3xl p-1.5 sm:p-2 rounded-xl sm:rounded-4xl"
               : "max-w-5xl p-2 sm:p-3 rounded-2xl sm:rounded-3xl"
@@ -132,7 +132,7 @@ export const Landing = () => {
               />
             </div>
             <p
-              className={`font-bold font-dm-sans transition-all duration-300 ${
+              className={`font-bold font-dm-sans text-neutral-900 transition-all duration-300 ${
                 isScrolled ? "text-lg sm:text-xl" : "text-xl sm:text-2xl"
               }`}
             >
@@ -148,7 +148,7 @@ export const Landing = () => {
             {/* Desktop Navigation */}
             <button
               onClick={handleExploreClick}
-              className={`hidden md:block transition-all duration-300 hover:text-orange-500 ${
+              className={`hidden md:block transition-all duration-300 hover:text-ui-blue ${
                 isScrolled ? "text-sm" : "text-base"
               }`}
             >
@@ -156,7 +156,7 @@ export const Landing = () => {
             </button>
             <button
               onClick={handleFeaturedArtistsClick}
-              className={`hidden md:block transition-all duration-300 hover:text-orange-500 ${
+              className={`hidden md:block transition-all duration-300 hover:text-ui-blue ${
                 isScrolled ? "text-sm" : "text-base"
               }`}
             >
@@ -166,7 +166,7 @@ export const Landing = () => {
             {/* Sign In Button */}
             <button
               onClick={handleSignInClick}
-              className={`bg-orange-500 font-bold text-white rounded-xl sm:rounded-2xl transition-all duration-300 hover:bg-orange-600 ${
+              className={`bg-ui-blue font-bold text-white rounded-xl sm:rounded-2xl transition-all duration-300 hover:bg-ui-blue/90 ${
                 isScrolled
                   ? "px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm"
                   : "px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base"
@@ -184,17 +184,17 @@ export const Landing = () => {
               aria-label="Toggle menu"
             >
               <span
-                className={`bg-neutral-600 block transition-all duration-300 ease-out h-0.5 w-5 rounded-sm ${
+                className={`bg-muted-foreground block transition-all duration-300 ease-out h-0.5 w-5 rounded-sm ${
                   isSidebarOpen ? "rotate-45 translate-y-1" : "-translate-y-0.5"
                 }`}
               ></span>
               <span
-                className={`bg-neutral-600 block transition-all duration-300 ease-out h-0.5 w-5 rounded-sm my-0.5 ${
+                className={`bg-muted-foreground block transition-all duration-300 ease-out h-0.5 w-5 rounded-sm my-0.5 ${
                   isSidebarOpen ? "opacity-0" : "opacity-100"
                 }`}
               ></span>
               <span
-                className={`bg-neutral-600 block transition-all duration-300 ease-out h-0.5 w-5 rounded-sm ${
+                className={`bg-muted-foreground block transition-all duration-300 ease-out h-0.5 w-5 rounded-sm ${
                   isSidebarOpen
                     ? "-rotate-45 -translate-y-1"
                     : "translate-y-0.5"
@@ -212,8 +212,8 @@ export const Landing = () => {
         onFeaturedArtistsClick={handleFeaturedArtistsClick}
       />
 
-      <div className="min-h-[100dvh] w-full relative px-4 sm:px-6 lg:px-8 overflow-hidden">
-        <motion.img
+      <div className="min-h-[100dvh] w-full relative px-4 sm:px-6 lg:px-8 overflow-hidden ">
+      {/* <motion.img
           src="/images/cd.png"
           alt="bg"
           className="h-[50%] sm:h-[60%] md:h-[70%] aspect-square object-cover absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 opacity-20"
@@ -221,10 +221,10 @@ export const Landing = () => {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 0.2, scale: 1 }}
           transition={{ duration: 1, ease: "easeOut" }}
-        />
+        /> */}
 
         <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center w-full max-w-6xl px-4"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center w-full max-w-6xl px-4 z-30"
           {...staggerContainer}
           initial="initial"
           animate="animate"
@@ -236,11 +236,11 @@ export const Landing = () => {
           >
             <p className="leading-tight">
               Artist Discovery & <br className="hidden sm:block" />
-              <span className="text-orange-500">Booking Made Simple</span>
+              <span className="text-ui-red">Booking Made Simple</span>
             </p>
           </motion.div>
           <motion.p
-            className="text-center text-neutral-600 mt-4 text-sm sm:text-base max-w-2xl mx-auto px-4"
+            className="text-center text-neutral-200 mt-4 text-sm sm:text-base max-w-2xl mx-auto px-4"
             {...fadeInUp}
             transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
           >
@@ -250,7 +250,7 @@ export const Landing = () => {
           </motion.p>
 
           <motion.div
-            className="w-full relative max-w-xs sm:max-w-md md:max-w-xl h-full mt-6 mx-auto flex items-center border-2 border-orange-600/30 bg-white/80 backdrop-blur-sm rounded-full px-3 sm:px-4 py-1 shadow-lg shadow-orange-500/10 hover:border-orange-500/50 focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/20 transition-all duration-300 cursor-pointer"
+            className="w-full relative max-w-xs sm:max-w-md md:max-w-xl h-full mt-6 mx-auto flex items-center border-2 border-ui-blue/30 bg-white/80 backdrop-blur-sm rounded-full px-3 sm:px-4 py-1 shadow-lg shadow-ui-blue/10 hover:border-ui-blue/50 focus-within:border-ui-blue focus-within:ring-2 focus-within:ring-ui-blue/20 transition-all duration-300 cursor-pointer"
             {...scaleIn}
             transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
             whileHover={{ scale: 1.05 }}
@@ -260,7 +260,7 @@ export const Landing = () => {
             <input
               type="text"
               placeholder="Search for an artist"
-              className="w-full p-2 sm:p-3 text-base sm:text-lg bg-transparent outline-none placeholder:text-neutral-400 focus:placeholder:text-orange-400 transition-colors duration-200 cursor-pointer"
+              className="w-full p-2 sm:p-3 text-base sm:text-lg bg-transparent outline-none placeholder:text-neutral-400 focus:placeholder:text-ui-blue transition-colors duration-200 cursor-pointer"
               readOnly
               onClick={handleSearchClick}
             />
@@ -290,7 +290,7 @@ export const Landing = () => {
           {...fadeInLeft}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          Featured <span className="text-orange-600">Artists</span>
+          Featured <span className="text-ui-blue">Artists</span>
         </motion.p>
 
         <motion.div
@@ -329,7 +329,7 @@ export const Landing = () => {
           {...fadeInLeft}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          How it <span className="text-orange-600">works</span>
+          How it <span className="text-ui-blue">works</span>
         </motion.p>
 
         <motion.div
