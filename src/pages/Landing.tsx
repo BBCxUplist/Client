@@ -9,18 +9,23 @@ import Footer from "@/components/landing/Footer";
 
 const Landing = () => {
   return (
-    <div className="min-h-[100dvh] w-full bg-neutral-950 text-orange-600 border-b-[10px] border-orange-500 texture-bg">
+    <div className="min-h-[100dvh] w-full bg-neutral-950 text-orange-600 border-b-4 md:border-b-6 lg:border-b-[10px] border-orange-500 texture-bg">
       <Navbar />
-      <div className="w-full p-4 pb-0 md:p-6 md:pb-0 lg:p-8 lg:pb-0">
-        <div className="h-[calc(100vh-80px)] w-full  relative ">
+      <div className="w-full px-4 pb-0 md:px-6 lg:px-8">
+        {/* Hero Section */}
+        <div className="h-[calc(100vh-80px)] w-full relative">
           <Scene3D className="w-full h-full opacity-20" />
           <HeroSection />
         </div>
-        <About />
-        <FeaturedArtist />
-        <HowItWorks />
-        <Faq />
-        <Footer />
+        
+        {/* Content Sections */}
+        <div className="space-y-0">
+          <About />
+          <FeaturedArtist />
+          <HowItWorks />
+          <Faq />
+          <Footer />
+        </div>
       </div>
     </div>
   );

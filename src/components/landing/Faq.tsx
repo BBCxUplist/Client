@@ -10,16 +10,16 @@ const Faq = () => {
   };
 
   return (
-    <div className="w-full p-10 border-t border-dashed border-white">
+    <div className="w-full p-6 md:p-8 lg:p-10 border-t border-dashed border-white">
       <div className="max-w-7xl mx-auto">
-        <h2 className="font-bold text-white text-4xl md:text-5xl lg:text-7xl mb-12">
+        <h2 className="font-bold text-white text-4xl md:text-5xl lg:text-7xl mb-8 md:mb-12">
           Frequently Asked Questions
         </h2>
 
-        <div className="space-y-8">
+        <div className="space-y-6 md:space-y-8">
           {faqContent.map((category, categoryIndex) => (
-            <div key={categoryIndex} className="bg-white/5 backdrop-blur-sm p-8">
-              <h3 className="text-3xl font-semibold text-white mb-6 font-mondwest">
+            <div key={categoryIndex} className="bg-white/5 backdrop-blur-sm p-4 md:p-6 lg:p-8">
+              <h3 className="text-2xl md:text-3xl font-semibold text-white mb-4 md:mb-6 font-mondwest">
                 {category.title}
               </h3>
               
@@ -37,7 +37,7 @@ const Faq = () => {
                           onClick={() => toggleItem(categoryIndex, itemIndex)}
                           className="w-full text-left py-4 px-2 flex justify-between items-center hover:bg-white/5 transition-all duration-300 ease-out group"
                         >
-                          <h4 className="text-3xl font-semibold text-orange-400 pr-4 font-mondwest">
+                          <h4 className="text-xl md:text-2xl lg:text-3xl font-semibold text-orange-400 pr-2 md:pr-4 font-mondwest">
                             {item.question}
                           </h4>
                           <div className={`text-white text-2xl transition-all duration-500 ease-out ${

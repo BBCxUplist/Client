@@ -15,18 +15,18 @@ const Navbar = () => {
   };
 
   return (
-    <div className="flex justify-between items-center p-4 sticky top-0 z-50 bg-gradient-to-b from-black via-black/50 to-transparent">
+    <div className="flex justify-between items-center p-3 md:p-4 sticky top-0 z-50 bg-gradient-to-b from-black via-black/50 to-transparent">
       <Link
-        className="py-4 w-28 text-center text-white relative text-sm"
+        className="py-2 md:py-4 w-20 md:w-28 text-center text-white relative text-xs md:text-sm"
         to="/"
       >
         <p>UPLIST</p>
-        <span className="absolute top-0 right-0 w-2 h-2 border-t border-r border-orange-500"></span>
-        <span className="absolute top-0 left-0 w-2 h-2 border-t border-l border-orange-500"></span>
-        <span className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-orange-500"></span>
-        <span className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-orange-500"></span>
+        <span className="absolute top-0 right-0 w-1.5 md:w-2 h-1.5 md:h-2 border-t border-r border-orange-500"></span>
+        <span className="absolute top-0 left-0 w-1.5 md:w-2 h-1.5 md:h-2 border-t border-l border-orange-500"></span>
+        <span className="absolute bottom-0 right-0 w-1.5 md:w-2 h-1.5 md:h-2 border-b border-r border-orange-500"></span>
+        <span className="absolute bottom-0 left-0 w-1.5 md:w-2 h-1.5 md:h-2 border-b border-l border-orange-500"></span>
       </Link>
-      <img src="/logo/logo.png" alt="menu" className=" h-12" />
+      <img src="/logo/logo.png" alt="menu" className="h-8 md:h-12" />
 
       {/* Menu Button and Dropdown Container */}
       <div
@@ -34,12 +34,12 @@ const Navbar = () => {
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <button className="py-4 w-28 text-center text-white relative text-sm">
+        <button className="py-2 md:py-4 w-20 md:w-28 text-center text-white relative text-xs md:text-sm">
           MENU
-          <span className="absolute top-0 right-0 w-2 h-2 border-t border-r border-orange-500"></span>
-          <span className="absolute top-0 left-0 w-2 h-2 border-t border-l border-orange-500"></span>
-          <span className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-orange-500"></span>
-          <span className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-orange-500"></span>
+          <span className="absolute top-0 right-0 w-1.5 md:w-2 h-1.5 md:h-2 border-t border-r border-orange-500"></span>
+          <span className="absolute top-0 left-0 w-1.5 md:w-2 h-1.5 md:h-2 border-t border-l border-orange-500"></span>
+          <span className="absolute bottom-0 right-0 w-1.5 md:w-2 h-1.5 md:h-2 border-b border-r border-orange-500"></span>
+          <span className="absolute bottom-0 left-0 w-1.5 md:w-2 h-1.5 md:h-2 border-b border-l border-orange-500"></span>
         </button>
 
         <AnimatePresence>
@@ -60,10 +60,10 @@ const Navbar = () => {
                 ease: "easeInOut",
               }}
               // onMouseEnter={handleMouseLeave}
-              // onMouseLeave={handleMouseLeave}
+              onClick={handleMouseLeave}
             >
               <motion.div
-                className=" bg-orange-600 text-black rounded-sm w-[350px] z-50 p-1 ml-auto"
+                className="bg-orange-600 text-black rounded-sm min-w-full  md:min-w-auto md:h-auto md:w-[350px] z-50 p-1 ml-auto"
                 initial={{
                   opacity: 0,
                   width: 0,
@@ -71,7 +71,7 @@ const Navbar = () => {
                 }}
                 animate={{
                   opacity: 1,
-                  width: 350,
+                  width: window.innerWidth < 768 ? 280 : 350,
                   height: "auto",
                 }}
                 exit={{
@@ -85,8 +85,7 @@ const Navbar = () => {
                   width: { duration: 0.4, ease: "easeInOut" },
                   height: { duration: 0.4, ease: "easeInOut" },
                 }}
-              onMouseLeave={handleMouseLeave}
-                
+                onMouseLeave={handleMouseLeave}
               >
                 <div className="relative p-4 overflow-hidden">
                   <span className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-black"></span>
@@ -104,8 +103,8 @@ const Navbar = () => {
                         to={item.href}
                         className="py-1 border-b border-dashed border-black whitespace-nowrap relative overflow-hidden group"
                       >
-                        <p className="text-3xl rounded-sm p-1 px-2 transition-colors duration-300 whitespace-nowrap relative z-10 group-hover:text-orange-600">
-                          <span className="font-mondwest text-4xl mr-6">
+                        <p className="text-xl md:text-3xl rounded-sm p-1 px-2 transition-colors duration-300 whitespace-nowrap relative z-10 group-hover:text-orange-600">
+                          <span className="font-mondwest text-2xl md:text-4xl mr-3 md:mr-6">
                             0{index + 1}
                           </span>{" "}
                           {item.label}
