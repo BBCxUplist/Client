@@ -3,7 +3,7 @@ const HeroSection = () => {
     <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-4">
       <div className=" mb-16">
         <p className="text-6xl md:text-8xl lg:text-9xl leading-none text-white  mb-4 font-medium">
-          Artist discover &
+          Artist discovery &
         </p>
         <p className="text-7xl md:text-9xl lg:text-[10rem] leading-none font-mondwest font-bold">
           BOOKING MADE SIMPLE
