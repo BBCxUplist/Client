@@ -45,24 +45,21 @@ const Navbar = () => {
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div 
-              className="absolute -top-10 -right-8 bg-orange-600 text-black rounded-sm w-[350px] z-50 p-1"
+              className="absolute top-0 right-0 bg-orange-600 text-black rounded-sm w-[350px] z-50 p-1"
               initial={{ 
                 opacity: 0, 
                 width: 0, 
                 height: 0,
-                scale: 0.8
               }}
               animate={{ 
                 opacity: 1, 
                 width: 350, 
                 height: "auto",
-                // scale: 1
               }}
               exit={{ 
                 opacity: 0, 
                 width: 0, 
                 height: 0,
-                // scale: 0.8
               }}
               transition={{ 
                 duration: 0.4, 
