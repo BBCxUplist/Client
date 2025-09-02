@@ -15,7 +15,7 @@ const Navbar = () => {
   };
 
   return (
-    <div className="flex justify-between items-center p-4 sticky top-0 z-10">
+    <div className="flex justify-between items-center p-4">
       <Link
         className="py-4 w-28 text-center text-white relative text-sm"
         to="/"
@@ -30,7 +30,7 @@ const Navbar = () => {
       
       {/* Menu Button and Dropdown Container */}
       <div 
-        className=""
+        className="relative"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
