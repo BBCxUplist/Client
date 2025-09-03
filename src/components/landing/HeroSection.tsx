@@ -6,7 +6,7 @@ const HeroSection = () => {
           Artist discovery &
         </p>
         <p className="text-7xl md:text-9xl lg:text-[10rem] leading-none font-mondwest font-bold">
-          BOOKING MADE SIMPLE
+          BOOKINGS MADE SIMPLE
         </p>
       </div>
 
@@ -20,6 +20,7 @@ const HeroSection = () => {
           <img
             src="/icons/search.png"
             alt="search"
+            draggable={false}
             className="absolute right-4 top-1/2 transform -translate-y-1/2 w-24 h-24 bg-black"
           />
         </div>

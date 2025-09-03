@@ -1,23 +1,33 @@
-const navItems = [
+interface NavItem {
+  label: string;
+  href: string;
+  id?: string;
+}
+
+const navItems: NavItem[] = [
+  {
+    label: "Explore",
+    href: "/explore",
+  },
   {
     label: "About",
-    href: "/about",
+    href: "/about", 
+    id: "about",
   },
   {
-    label: "Explore",
-    href: "/explore",
+    label: "Featured Artists",
+    href: "/featured-artists",
+    id: "featured-artists",
   },
   {
-    label: "Explore",
-    href: "/explore",
+    label: "How It Works",
+    href: "/how-it-works",
+    id: "how-it-works",
   },
   {
-    label: "Explore",
-    href: "/explore",
-  },
-  {
-    label: "Explore",
-    href: "/explore",
+    label: "Faq",
+    href: "/faq",
+    id: "faq",
   },
 ];
 
@@ -26,7 +36,7 @@ const contactItems = [
     label: "Contact",
     href: "/contact",
   },
-  
+
   {
     label: "Contact",
     href: "/contact",

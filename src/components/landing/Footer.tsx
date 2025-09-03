@@ -10,20 +10,20 @@ const Footer = () => {
           <div className="mb-6 md:mb-8">
             <div className="text-white text-2xl md:text-4xl lg:text-5xl font-bold font-mondwest">
               GLOBAL FROM{' '}
-              <span className="text-orange-400 ml-1 md:ml-2">DAY ONE</span>
+              <span className="text-orange-500 ml-1 md:ml-2">DAY ONE</span>
             </div>
           </div>
 
           {/* Social Links & Copyright */}
           <div>
             <div className="flex flex-wrap gap-4 md:gap-6 lg:gap-8 mb-4 md:mb-6">
-              <a href="#" className="text-white hover:text-orange-400 transition-colors duration-300 font-semibold text-sm md:text-base">
+              <a href="#" className="text-white hover:text-orange-500 transition-colors duration-300 font-semibold text-sm md:text-base">
                 TWITTER
               </a>
-              <a href="#" className="text-white hover:text-orange-400 transition-colors duration-300 font-semibold text-sm md:text-base">
+              <a href="#" className="text-white hover:text-orange-500 transition-colors duration-300 font-semibold text-sm md:text-base">
                 LINKEDIN
               </a>
-              <a href="#" className="text-white hover:text-orange-400 transition-colors duration-300 font-semibold text-sm md:text-base">
+              <a href="#" className="text-white hover:text-orange-500 transition-colors duration-300 font-semibold text-sm md:text-base">
                 MEDIUM
               </a>
             </div>
@@ -49,6 +49,7 @@ const Footer = () => {
             <img 
               src="/logo/logo.png" 
               alt="Uplist Logo" 
+              draggable={false}
               className="h-16 md:h-20 lg:h-28 w-auto opacity-80 hover:opacity-100 transition-opacity duration-300"
             />
           </div>

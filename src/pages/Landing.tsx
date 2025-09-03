@@ -6,10 +6,38 @@ import FeaturedArtist from "@/components/landing/FeaturedArtist";
 import HowItWorks from "@/components/landing/HowItWorks";
 import Faq from "@/components/landing/Faq";
 import Footer from "@/components/landing/Footer";
+import { useEffect } from "react";
 
 const Landing = () => {
+  useEffect(() => {
+    // Check if there's a section to scroll to (set from navigation menu)
+    const scrollToSection = sessionStorage.getItem('scrollToSection');
+    if (scrollToSection) {
+      // Clear the session storage
+      sessionStorage.removeItem('scrollToSection');
+      
+      // Wait for the component to fully render
+      setTimeout(() => {
+        const element = document.getElementById(scrollToSection);
+        if (element) {
+          // Get the element's position from the top of the page
+          const elementTop = element.offsetTop;
+          
+          // Add fixed 100px offset
+          const scrollPosition = elementTop - 100;
+          
+          // Smooth scroll to the element with offset
+          window.scrollTo({
+            top: scrollPosition,
+            behavior: 'smooth'
+          });
+        }
+      }, 100);
+    }
+  }, []);
+
   return (
-    <div className="min-h-[100dvh] w-full bg-neutral-950 text-orange-600 border-b-4 md:border-b-6 lg:border-b-[10px] border-orange-500 texture-bg">
+    <div className="min-h-[100dvh] w-full bg-neutral-950 text-orange-500 border-b-4 md:border-b-6 lg:border-b-[10px] border-orange-600 texture-bg">
       <Navbar />
       <div className="w-full px-4 pb-0 md:px-6 lg:px-8">
         {/* Hero Section */}

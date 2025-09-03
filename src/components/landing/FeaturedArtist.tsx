@@ -5,7 +5,7 @@ const FeaturedArtist = () => {
   const topArtists = artists.slice(0, 8);
 
   return (
-    <div className="w-full p-6 md:p-8 lg:p-10 border-t border-dashed border-white">
+    <div id="featured-artists" className="w-full p-6 md:p-8 lg:p-10 border-t border-dashed border-white">
       <div className="max-w-7xl mx-auto">
         <h2 className="font-bold text-white text-4xl md:text-5xl lg:text-7xl mb-8 md:mb-12">
           Featured Artists
@@ -18,6 +18,7 @@ const FeaturedArtist = () => {
                 <img
                   src={artist.avatar}
                   alt={artist.name}
+                  draggable={false}
                   className="w-full aspect-[9/16] object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 text-xs">

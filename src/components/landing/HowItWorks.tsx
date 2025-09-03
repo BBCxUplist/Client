@@ -5,7 +5,7 @@ const HowItWorks = () => {
   const [activeView, setActiveView] = useState<"user" | "artist">("user");
 
   return (
-    <div className="w-full p-6 md:p-8 lg:p-10 border-t border-dashed border-white">
+    <div id="how-it-works" className="w-full p-6 md:p-8 lg:p-10 border-t border-dashed border-white">
       <div className="max-w-7xl mx-auto">
         <h2 className="font-bold text-white text-4xl md:text-5xl lg:text-7xl mb-8 md:mb-12">
           How It Works

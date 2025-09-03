@@ -10,7 +10,7 @@ const Faq = () => {
   };
 
   return (
-    <div className="w-full p-6 md:p-8 lg:p-10 border-t border-dashed border-white">
+    <div id="faq" className="w-full p-6 md:p-8 lg:p-10 border-t border-dashed border-white">
       <div className="max-w-7xl mx-auto">
         <h2 className="font-bold text-white text-4xl md:text-5xl lg:text-7xl mb-8 md:mb-12">
           Frequently Asked Questions
@@ -37,7 +37,7 @@ const Faq = () => {
                           onClick={() => toggleItem(categoryIndex, itemIndex)}
                           className="w-full text-left py-4 px-2 flex justify-between items-center hover:bg-white/5 transition-all duration-300 ease-out group"
                         >
-                          <h4 className="text-xl md:text-2xl lg:text-3xl font-semibold text-orange-400 pr-2 md:pr-4 font-mondwest">
+                          <h4 className="text-xl md:text-2xl lg:text-3xl font-semibold text-orange-500 pr-2 md:pr-4 font-mondwest">
                             {item.question}
                           </h4>
                           <div className={`text-white text-2xl transition-all duration-500 ease-out ${
