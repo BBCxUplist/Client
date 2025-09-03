@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 interface FilterProps {
   onFilterChange: (filters: FilterState) => void;
@@ -110,104 +111,114 @@ const Sidebar = ({ onFilterChange, isMobile }: FilterProps) => {
         </div>
 
         {/* Mobile: Expandable Filter Content */}
-        {isExpanded && (
-          <div className="border-l border-r border-b border-dashed border-white p-4 space-y-4">
-            {/* Tab Buttons */}
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                className={`border p-2 text-xs transition-all duration-300 ${
-                  activeTab === "all"
-                    ? "bg-orange-500 text-black border-black"
-                    : "text-orange-500 border-orange-500 hover:bg-orange-500/10"
-                }`}
-                onClick={() => handleTabChange("all")}
-              >
-                ALL ARTISTS
-              </button>
-              <button
-                className={`border p-2 text-xs transition-all duration-300 ${
-                  activeTab === "bookable"
-                    ? "bg-orange-500 text-black border-black"
-                    : "text-orange-500 border-orange-500 hover:bg-orange-500/10"
-                }`}
-                onClick={() => handleTabChange("bookable")}
-              >
-                BOOKABLE
-              </button>
-            </div>
-
-            {/* Categories */}
-            <div>
-              <h4 className="text-white text-xs font-medium mb-2">CATEGORIES</h4>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-32 overflow-y-auto">
-                {categories.slice(0, 9).map((category) => (
-                  <label key={category} className="flex items-center space-x-1 cursor-pointer text-xs">
-                    <input
-                      type="checkbox"
-                      checked={selectedCategories.includes(category)}
-                      onChange={() => handleCategoryChange(category)}
-                      className="w-3 h-3 text-orange-500 bg-transparent border-orange-500 rounded focus:ring-orange-500"
-                    />
-                    <span className="text-white truncate">{category}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Price and Rating in row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Price Range */}
-              <div>
-                <h4 className="text-white text-xs font-medium mb-2">PRICE RANGE</h4>
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    placeholder="Min"
-                    value={priceRange[0]}
-                    onChange={(e) => handlePriceChange(Number(e.target.value), priceRange[1])}
-                    className="w-full px-2 py-1 text-xs bg-transparent border border-orange-500 text-white placeholder-white/50 focus:outline-none focus:border-orange-400"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Max"
-                    value={priceRange[1]}
-                    onChange={(e) => handlePriceChange(priceRange[0], Number(e.target.value))}
-                    className="w-full px-2 py-1 text-xs bg-transparent border border-orange-500 text-white placeholder-white/50 focus:outline-none focus:border-orange-400"
-                  />
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="border-l border-r border-b border-dashed border-white overflow-hidden"
+            >
+              <div className="p-4 space-y-4">
+                {/* Tab Buttons */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    className={`border p-2 text-xs transition-all duration-300 ${
+                      activeTab === "all"
+                        ? "bg-orange-500 text-black border-black"
+                        : "text-orange-500 border-orange-500 hover:bg-orange-500/10"
+                    }`}
+                    onClick={() => handleTabChange("all")}
+                  >
+                    ALL ARTISTS
+                  </button>
+                  <button
+                    className={`border p-2 text-xs transition-all duration-300 ${
+                      activeTab === "bookable"
+                        ? "bg-orange-500 text-black border-black"
+                        : "text-orange-500 border-orange-500 hover:bg-orange-500/10"
+                    }`}
+                    onClick={() => handleTabChange("bookable")}
+                  >
+                    BOOKABLE
+                  </button>
                 </div>
-                <div className="text-white text-xs text-center mt-1">
-                  ₹{(priceRange[0] / 100000).toFixed(1)}L - ₹{(priceRange[1] / 100000).toFixed(1)}L
-                </div>
-              </div>
 
-              {/* Rating */}
-              <div>
-                <h4 className="text-white text-xs font-medium mb-2">MIN RATING</h4>
-                <div className="grid grid-cols-2 gap-1">
-                  {[4.5, 4.0, 3.5, 3.0].map((rating) => (
-                    <label key={rating} className="flex items-center space-x-1 cursor-pointer text-xs">
+                {/* Categories */}
+                <div>
+                  <h4 className="text-white text-xs font-medium mb-2">CATEGORIES</h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-32 overflow-y-auto">
+                    {categories.slice(0, 9).map((category) => (
+                      <label key={category} className="flex items-center space-x-1 cursor-pointer text-xs">
+                        <input
+                          type="checkbox"
+                          checked={selectedCategories.includes(category)}
+                          onChange={() => handleCategoryChange(category)}
+                          className="w-3 h-3 text-orange-500 bg-transparent border-orange-500 rounded focus:ring-orange-500"
+                        />
+                        <span className="text-white truncate">{category}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Price and Rating in row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Price Range */}
+                  <div>
+                    <h4 className="text-white text-xs font-medium mb-2">PRICE RANGE</h4>
+                    <div className="flex gap-2">
                       <input
-                        type="radio"
-                        name="rating"
-                        checked={minRating === rating}
-                        onChange={() => handleRatingChange(rating)}
-                        className="w-3 h-3 text-orange-500 bg-transparent border-orange-500 focus:ring-orange-500"
+                        type="number"
+                        placeholder="Min"
+                        value={priceRange[0]}
+                        onChange={(e) => handlePriceChange(Number(e.target.value), priceRange[1])}
+                        className="w-full px-2 py-1 text-xs bg-transparent border border-orange-500 text-white placeholder-white/50 focus:outline-none focus:border-orange-400"
                       />
-                      <span className="text-white">{rating}+⭐</span>
-                    </label>
-                  ))}
+                      <input
+                        type="number"
+                        placeholder="Max"
+                        value={priceRange[1]}
+                        onChange={(e) => handlePriceChange(priceRange[0], Number(e.target.value))}
+                        className="w-full px-2 py-1 text-xs bg-transparent border border-orange-500 text-white placeholder-white/50 focus:outline-none focus:border-orange-400"
+                      />
+                    </div>
+                    <div className="text-white text-xs text-center mt-1">
+                      ₹{(priceRange[0] / 100000).toFixed(1)}L - ₹{(priceRange[1] / 100000).toFixed(1)}L
+                    </div>
+                  </div>
+
+                  {/* Rating */}
+                  <div>
+                    <h4 className="text-white text-xs font-medium mb-2">MIN RATING</h4>
+                    <div className="grid grid-cols-2 gap-1">
+                      {[4.5, 4.0, 3.5, 3.0].map((rating) => (
+                        <label key={rating} className="flex items-center space-x-1 cursor-pointer text-xs">
+                          <input
+                            type="radio"
+                            name="rating"
+                            checked={minRating === rating}
+                            onChange={() => handleRatingChange(rating)}
+                            className="w-3 h-3 text-orange-500 bg-transparent border-orange-500 focus:ring-orange-500"
+                          />
+                          <span className="text-white">{rating}+⭐</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }
 
   // Desktop version (unchanged from original)
   return (
-    <div className="w-[280px] h-full sticky top-[100px] space-y-6">
+    <div className="w-[280px] h-fit sticky top-[100px] space-y-6">
       {/* Tab Buttons */}
       <div className="space-y-2">
         <button
