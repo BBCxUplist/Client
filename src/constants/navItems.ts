@@ -33,17 +33,13 @@ const navItems: NavItem[] = [
 
 const contactItems = [
   {
-    label: "Contact",
-    href: "/contact",
+    label: "Sign In",
+    href: "/auth",
   },
 
   {
-    label: "Contact",
-    href: "/contact",
-  },
-  {
-    label: "Contact",
-    href: "/contact",
+    label: "Register",
+    href: "/auth",
   },
 ];
 

@@ -1,11 +1,15 @@
 import { artists } from "@/constants/artists";
+import { Link } from "react-router-dom";
 
 const FeaturedArtist = () => {
   // Get the first 8 artists
   const topArtists = artists.slice(0, 8);
 
   return (
-    <div id="featured-artists" className="w-full p-6 md:p-8 lg:p-10 border-t border-dashed border-white">
+    <div
+      id="featured-artists"
+      className="w-full p-6 md:p-8 lg:p-10 border-t border-dashed border-white"
+    >
       <div className="max-w-7xl mx-auto">
         <h2 className="font-bold text-white text-4xl md:text-5xl lg:text-7xl mb-8 md:mb-12">
           Featured Artists
@@ -13,7 +17,11 @@ const FeaturedArtist = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
           {topArtists.map((artist) => (
-            <div key={artist.id} className="relative group">
+            <Link
+              key={artist.id}
+              to={`/artist/${artist.slug}`}
+              className="relative group"
+            >
               <div className="relative mb-4 overflow-hidden">
                 <img
                   src={artist.avatar}
@@ -42,7 +50,7 @@ const FeaturedArtist = () => {
                   ))}
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

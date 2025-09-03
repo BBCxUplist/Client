@@ -29,7 +29,7 @@ const CassetteTape: React.FC<CassetteTapeProps> = ({
   const { actions } = useAnimations(animations, groupRef);
 
   // Auto-rotate the object
-  useFrame((state) => {
+  useFrame(() => {
     if (groupRef.current && !error) {
       groupRef.current.rotation.y += 0.005;
     }

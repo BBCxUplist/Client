@@ -3,6 +3,7 @@ import Sidebar from "@/components/explore/Sidebar";
 import { artists } from "@/constants/artists";
 import { motion } from "framer-motion";
 import { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 
 interface FilterState {
   activeTab: "all" | "bookable";
@@ -176,9 +177,11 @@ const Explore = () => {
                     }`}
                   >
                     <div className="flex-grow pr-2 overflow-hidden">
-                      <p className="text-white text-2xl sm:text-3xl lg:text-5xl font-bold font-mondwest truncate">
-                        {artist.name}
-                      </p>
+                      <Link to={`/artist/${artist.slug}`} className="block hover:opacity-80 transition-opacity">
+                        <p className="text-white text-2xl sm:text-3xl lg:text-5xl font-bold font-mondwest truncate">
+                          {artist.name}
+                        </p>
+                      </Link>
                       <p className="text-white text-xs font-thin truncate max-w-full">
                         {artist.tags.join(", ")}
                       </p>
