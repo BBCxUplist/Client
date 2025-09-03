@@ -1,47 +1,51 @@
 /* Font Declarations */
 @font-face {
-  font-family: 'NonNaturalGrotesk';
-  src: url('/fonts/nonNaturalGrotesk/non-natural-grotesk-plain-light.otf') format('opentype');
+  font-family: "NonNaturalGrotesk";
+  src: url("/fonts/nonNaturalGrotesk/non-natural-grotesk-plain-light.otf")
+    format("opentype");
   font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'NonNaturalGrotesk';
-  src: url('/fonts/nonNaturalGrotesk/nonnatural-groteskplainbold.otf') format('opentype');
+  font-family: "NonNaturalGrotesk";
+  src: url("/fonts/nonNaturalGrotesk/nonnatural-groteskplainbold.otf")
+    format("opentype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'NonNaturalGrotesk';
-  src: url('/fonts/nonNaturalGrotesk/ver3-nonnatural-grotesk-inktrap-bold.otf') format('opentype');
+  font-family: "NonNaturalGrotesk";
+  src: url("/fonts/nonNaturalGrotesk/ver3-nonnatural-grotesk-inktrap-bold.otf")
+    format("opentype");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'NonNaturalGrotesk';
-  src: url('/fonts/nonNaturalGrotesk/ver3-non-natural-grotesk-inktrap-thin.otf') format('opentype');
+  font-family: "NonNaturalGrotesk";
+  src: url("/fonts/nonNaturalGrotesk/ver3-non-natural-grotesk-inktrap-thin.otf")
+    format("opentype");
   font-weight: 100;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Mondwest';
-  src: url('/fonts/mondwest/ppmondwest-regular.otf') format('opentype');
+  font-family: "Mondwest";
+  src: url("/fonts/mondwest/ppmondwest-regular.otf") format("opentype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Mondwest';
-  src: url('/fonts/mondwest/ppneuebit-bold.otf') format('opentype');
+  font-family: "Mondwest";
+  src: url("/fonts/mondwest/ppneuebit-bold.otf") format("opentype");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -88,8 +92,10 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --font-family-sans: 'NonNaturalGrotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-family-heading: 'Mondwest', 'NonNaturalGrotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-sans: "NonNaturalGrotesk", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
+  --font-family-heading: "Mondwest", "NonNaturalGrotesk", -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 :root {
@@ -167,9 +173,11 @@
   }
   body {
     @apply bg-neutral-950 text-white;
-    font-family: 'NonNaturalGrotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: "NonNaturalGrotesk", -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Roboto, sans-serif;
   }
   .font-mondwest {
-    font-family: 'Mondwest', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: "Mondwest", -apple-system, BlinkMacSystemFont, "Segoe UI",
+      Roboto, sans-serif;
   }
 }
