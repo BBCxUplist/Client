@@ -4,7 +4,8 @@ interface Artist {
   id: string;
   name: string;
   email: string;
-  status: string;
+  status: "verified" | "appeal" | "rejected" | "suspended";
+  joinDate: string;
   bookings: number;
   revenue: number;
   rating: number;
@@ -27,6 +28,52 @@ const ArtistsTab = ({
   onFilterChange,
   onStatusChange,
 }: ArtistsTabProps) => {
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "verified":
+        return "text-green-400 bg-green-500/20";
+      case "appeal":
+        return "text-yellow-400 bg-yellow-500/20";
+      case "rejected":
+        return "text-red-400 bg-red-500/20";
+      case "suspended":
+        return "text-gray-400 bg-gray-500/20";
+      default:
+        return "text-white/60 bg-white/10";
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "verified":
+        return (
+          <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        );
+      case "appeal":
+        return (
+          <svg className="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+        );
+      case "rejected":
+        return (
+          <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        );
+      case "suspended":
+        return (
+          <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L5.636 5.636" />
+          </svg>
+        );
+      default:
+        return null;
+    }
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -39,159 +86,165 @@ const ArtistsTab = ({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-6"
     >
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
-        <h2 className="font-mondwest text-3xl lg:text-4xl font-bold text-white mb-4 lg:mb-0">
-          Artists Management
-        </h2>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <input
-            type="text"
-            placeholder="Search artists..."
-            value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="bg-white/5 border border-white/20 text-white placeholder:text-white/50 p-3 focus:border-orange-500 focus:outline-none transition-colors"
-          />
-          <select
-            value={filterStatus}
-            onChange={(e) => onFilterChange(e.target.value)}
-            className="bg-white/5 border border-white/20 text-white p-3 focus:border-orange-500 focus:outline-none transition-colors"
-          >
-            <option value="all">All Status</option>
-            <option value="verified">Verified</option>
-            <option value="pending">Pending</option>
-            <option value="rejected">Rejected</option>
-            <option value="suspended">Suspended</option>
-          </select>
+      <div>
+        <h2 className="text-2xl font-bold text-white mb-4">Artist Management</h2>
+        <p className="text-white/70">Manage artist profiles, verifications, and appeals</p>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="bg-white/5 border border-white/10 p-4 rounded-lg">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-white/70 text-sm mb-2">Search Artists</label>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Search by name or email..."
+              className="w-full bg-white/5 border border-white/20 text-white p-2 rounded focus:border-orange-500 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-white/70 text-sm mb-2">Filter by Status</label>
+            <select
+              value={filterStatus}
+              onChange={(e) => onFilterChange(e.target.value)}
+              className="w-full bg-white/5 border border-white/20 text-white p-2 rounded focus:border-orange-500 focus:outline-none"
+            >
+              <option value="all">All Status</option>
+              <option value="verified">Verified</option>
+              <option value="appeal">Appeal</option>
+              <option value="rejected">Rejected</option>
+              <option value="suspended">Suspended</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* Artists Table */}
-      <div className="bg-white/5 border border-white/10 overflow-x-auto">
-        <table className="w-full">
-          <thead className="border-b border-white/10">
-            <tr>
-              <th className="text-left p-4 text-white/70 font-semibold">
-                Artist
-              </th>
-              <th className="text-left p-4 text-white/70 font-semibold">
-                Status
-              </th>
-              <th className="text-left p-4 text-white/70 font-semibold">
-                Bookings
-              </th>
-              <th className="text-left p-4 text-white/70 font-semibold">
-                Revenue
-              </th>
-              <th className="text-left p-4 text-white/70 font-semibold">
-                Rating
-              </th>
-              <th className="text-left p-4 text-white/70 font-semibold">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredArtists.map((artist) => (
-              <tr key={artist.id} className="border-b border-white/5">
-                <td className="p-4">
-                  <div>
-                    <p className="text-white font-semibold">
-                      {artist.name}
-                    </p>
-                    <p className="text-white/60 text-sm">
-                      {artist.email}
-                    </p>
-                  </div>
-                </td>
-                <td className="p-4">
-                  <span
-                    className={`px-3 py-1 text-xs font-semibold ${
-                      artist.status === "verified"
-                        ? "bg-green-500/20 text-green-400 border border-green-500/40"
-                        : artist.status === "pending"
-                        ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/40"
-                        : artist.status === "suspended"
-                        ? "bg-red-500/20 text-red-400 border border-red-500/40"
-                        : "bg-gray-500/20 text-gray-400 border border-gray-500/40"
-                    }`}
-                  >
-                    {artist.status.toUpperCase()}
-                  </span>
-                </td>
-                <td className="p-4 text-white">{artist.bookings}</td>
-                <td className="p-4 text-white">
-                  {formatCurrency(artist.revenue)}
-                </td>
-                <td className="p-4 text-white">
-                  ⭐ {artist.rating.toFixed(1)}
-                </td>
-                <td className="p-4">
-                  <div className="flex gap-2">
-                    {artist.status === "pending" && (
-                      <>
-                        <button
-                          onClick={() =>
-                            onStatusChange(
-                              artist.id,
-                              "verified",
-                              "artist"
-                            )
-                          }
-                          className="bg-green-500/20 border border-green-500/40 text-green-400 px-3 py-1 text-xs hover:bg-green-500/30 transition-colors"
-                        >
-                          APPROVE
-                        </button>
-                        <button
-                          onClick={() =>
-                            onStatusChange(
-                              artist.id,
-                              "rejected",
-                              "artist"
-                            )
-                          }
-                          className="bg-red-500/20 border border-red-500/40 text-red-400 px-3 py-1 text-xs hover:bg-red-500/30 transition-colors"
-                        >
-                          REJECT
-                        </button>
-                      </>
-                    )}
-                    {artist.status === "verified" && (
-                      <button
-                        onClick={() =>
-                          onStatusChange(
-                            artist.id,
-                            "suspended",
-                            "artist"
-                          )
-                        }
-                        className="bg-yellow-500/20 border border-yellow-500/40 text-yellow-400 px-3 py-1 text-xs hover:bg-yellow-500/30 transition-colors"
-                      >
-                        SUSPEND
-                      </button>
-                    )}
-                    {artist.status === "suspended" && (
-                      <button
-                        onClick={() =>
-                          onStatusChange(
-                            artist.id,
-                            "verified",
-                            "artist"
-                          )
-                        }
-                        className="bg-green-500/20 border border-green-500/40 text-green-400 px-3 py-1 text-xs hover:bg-green-500/30 transition-colors"
-                      >
-                        REACTIVATE
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* Artists Count */}
+      <div className="flex items-center justify-between">
+        <p className="text-white/70">
+          Showing {filteredArtists.length} artists
+        </p>
+        <div className="flex gap-2">
+          <button className="bg-green-500/20 border border-green-500/40 text-green-400 px-3 py-1 rounded text-sm hover:bg-green-500/30 transition-colors">
+            Bulk Verify
+          </button>
+          <button className="bg-yellow-500/20 border border-yellow-500/40 text-yellow-400 px-3 py-1 rounded text-sm hover:bg-yellow-500/30 transition-colors">
+            Review Appeals
+          </button>
+        </div>
       </div>
+
+      {/* Artists List */}
+      <div className="space-y-4">
+        {filteredArtists.map((artist) => (
+          <motion.div
+            key={artist.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white/5 border border-white/10 p-4 rounded-lg"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                {getStatusIcon(artist.status)}
+                <div>
+                  <h4 className="text-white font-semibold">{artist.name}</h4>
+                  <p className="text-white/60 text-sm">{artist.email}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(artist.status)}`}>
+                  {artist.status === "appeal" ? "APPEAL" : artist.status.toUpperCase()}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3 text-sm">
+              <div>
+                <span className="text-white/70">Join Date: </span>
+                <span className="text-white">{new Date(artist.joinDate).toLocaleDateString()}</span>
+              </div>
+              <div>
+                <span className="text-white/70">Bookings: </span>
+                <span className="text-white">{artist.bookings}</span>
+              </div>
+              <div>
+                <span className="text-white/70">Revenue: </span>
+                <span className="text-white">{formatCurrency(artist.revenue)}</span>
+              </div>
+              <div>
+                <span className="text-white/70">Rating: </span>
+                <span className="text-white">{artist.rating}/5</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex gap-2">
+                <button className="bg-white/10 border border-white/20 text-white px-3 py-1 rounded hover:bg-white/20 transition-colors text-sm">
+                  View Profile
+                </button>
+                <button className="bg-white/10 border border-white/20 text-white px-3 py-1 rounded hover:bg-white/20 transition-colors text-sm">
+                  View Documents
+                </button>
+              </div>
+              <div className="flex gap-2">
+                {artist.status === "appeal" && (
+                  <>
+                    <button
+                      onClick={() => onStatusChange(artist.id, "verified", "artist")}
+                      className="bg-green-500/20 border border-green-500/40 text-green-400 px-3 py-1 rounded hover:bg-green-500/30 transition-colors text-sm"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => onStatusChange(artist.id, "rejected", "artist")}
+                      className="bg-red-500/20 border border-red-500/40 text-red-400 px-3 py-1 rounded hover:bg-red-500/30 transition-colors text-sm"
+                    >
+                      Reject
+                    </button>
+                  </>
+                )}
+                {artist.status === "verified" && (
+                  <button
+                    onClick={() => onStatusChange(artist.id, "suspended", "artist")}
+                    className="bg-yellow-500/20 border border-yellow-500/40 text-yellow-400 px-3 py-1 rounded hover:bg-yellow-500/30 transition-colors text-sm"
+                  >
+                    Suspend
+                  </button>
+                )}
+                {artist.status === "suspended" && (
+                  <button
+                    onClick={() => onStatusChange(artist.id, "verified", "artist")}
+                    className="bg-green-500/20 border border-green-500/40 text-green-400 px-3 py-1 rounded hover:bg-green-500/30 transition-colors text-sm"
+                  >
+                    Reactivate
+                  </button>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* No Results */}
+      {filteredArtists.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-white/60 text-lg">No artists found matching your criteria</p>
+          <button
+            onClick={() => {
+              onSearchChange("");
+              onFilterChange("all");
+            }}
+            className="text-orange-400 hover:text-orange-300 mt-2"
+          >
+            Clear all filters
+          </button>
+        </div>
+      )}
     </motion.div>
   );
 };

@@ -124,10 +124,11 @@ const Explore = () => {
             {/* Artists grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 divide-y divide-dashed divide-white">
               {filteredArtists.map((artist, index) => (
-                <div
+                <Link
                   key={artist.id}
                   onMouseEnter={() => setIsHovered(index)}
                   onMouseLeave={() => setIsHovered(null)}
+                  to={`/artist/${artist.slug}`}
                   className="mx-2 p-4 [&:nth-child(-n+1)]:border-t sm:[&:nth-child(-n+2)]:border-t lg:[&:nth-child(-n+3)]:border-t border-dashed border-white relative group"
                 >
                   {/* Mobile: Image always visible */}
@@ -192,7 +193,7 @@ const Explore = () => {
                       className="w-5 h-5 sm:w-6 sm:h-6 mt-2 sm:mt-0 self-end sm:self-center"
                     />
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
 

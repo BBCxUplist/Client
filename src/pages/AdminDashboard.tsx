@@ -4,15 +4,15 @@ import { Link, useNavigate } from "react-router-dom";
 import OverviewTab from "@/components/admin/OverviewTab";
 import ArtistsTab from "@/components/admin/ArtistsTab";
 import UsersTab from "@/components/admin/UsersTab";
-import BookingsTab from "@/components/admin/BookingsTab";
 import ReportsTab from "@/components/admin/ReportsTab";
+import RecentActivityTab from "@/components/admin/RecentActivityTab";
 import SettingsTab from "@/components/admin/SettingsTab";
 
 interface Artist {
   id: string;
   name: string;
   email: string;
-  status: "verified" | "pending" | "rejected" | "suspended";
+  status: "verified" | "appeal" | "rejected" | "suspended";
   joinDate: string;
   bookings: number;
   revenue: number;
@@ -29,15 +29,7 @@ interface User {
   totalSpent: number;
 }
 
-interface Booking {
-  id: string;
-  artistName: string;
-  userName: string;
-  eventDate: string;
-  amount: number;
-  status: "confirmed" | "pending" | "cancelled" | "disputed";
-  createdAt: string;
-}
+
 
 interface Report {
   id: string;
@@ -46,6 +38,7 @@ interface Report {
   reportedItem: string;
   reason: string;
   status: "pending" | "resolved" | "dismissed";
+  priority: "low" | "medium" | "high";
   createdAt: string;
 }
 
@@ -65,7 +58,7 @@ const dummyArtists: Artist[] = [
     id: "2",
     name: "Priya Singh",
     email: "priya@example.com",
-    status: "pending",
+    status: "appeal",
     joinDate: "2024-03-10",
     bookings: 0,
     revenue: 0,
@@ -123,35 +116,7 @@ const dummyUsers: User[] = [
   },
 ];
 
-const dummyBookings: Booking[] = [
-  {
-    id: "1",
-    artistName: "Rajesh Kumar",
-    userName: "Vikash Gupta",
-    eventDate: "2025-01-15",
-    amount: 75000,
-    status: "confirmed",
-    createdAt: "2024-12-01",
-  },
-  {
-    id: "2",
-    artistName: "Amit Sharma",
-    userName: "Sunita Rao",
-    eventDate: "2025-02-20",
-    amount: 50000,
-    status: "pending",
-    createdAt: "2024-12-15",
-  },
-  {
-    id: "3",
-    artistName: "Rajesh Kumar",
-    userName: "Rahul Verma",
-    eventDate: "2025-01-30",
-    amount: 80000,
-    status: "disputed",
-    createdAt: "2024-12-10",
-  },
-];
+
 
 const dummyReports: Report[] = [
   {
@@ -161,6 +126,7 @@ const dummyReports: Report[] = [
     reportedItem: "Rahul Verma",
     reason: "Inappropriate behavior during event",
     status: "pending",
+    priority: "high",
     createdAt: "2024-12-20",
   },
   {
@@ -170,6 +136,7 @@ const dummyReports: Report[] = [
     reportedItem: "Artist Profile Content",
     reason: "Misleading information",
     status: "resolved",
+    priority: "medium",
     createdAt: "2024-12-18",
   },
 ];
@@ -177,7 +144,7 @@ const dummyReports: Report[] = [
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<
-    "overview" | "artists" | "users" | "bookings" | "reports" | "settings"
+    "overview" | "artists" | "users" | "reports" | "recent-activity" | "settings"
   >("overview");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
@@ -299,14 +266,14 @@ const AdminDashboard = () => {
                 { id: "overview", label: "Overview", icon: "/icons/overview.png" },
                 { id: "artists", label: "Artists", icon: "/icons/artist.png" },
                 { id: "users", label: "Users", icon: "/icons/users.png" },
-                { id: "bookings", label: "Bookings", icon: "/icons/calendar.png" },
                 { id: "reports", label: "Reports", icon: "/icons/report.png" },
+                { id: "recent-activity", label: "Recent Activity", icon: "/icons/overview.png" },
                 { id: "settings", label: "Settings", icon: "/icons/settings.png" },
               ].map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => {
-                    setActiveTab(tab.id as "overview" | "artists" | "users" | "bookings" | "reports" | "settings");
+                    setActiveTab(tab.id as "overview" | "artists" | "users" | "reports" | "recent-activity" | "settings");
                     setMobileMenuOpen(false);
                   }}
                   className={`w-full text-left p-3 font-semibold transition-all duration-300 flex items-center gap-3  ${
@@ -333,13 +300,13 @@ const AdminDashboard = () => {
               { id: "overview", label: "Overview", icon: "/icons/overview.png" },
               { id: "artists", label: "Artists", icon: "/icons/artist.png" },
               { id: "users", label: "Users", icon: "/icons/users.png" },
-              { id: "bookings", label: "Bookings", icon: "/icons/calendar.png" },
               { id: "reports", label: "Reports", icon: "/icons/report.png" },
+              { id: "recent-activity", label: "Recent Activity", icon: "/icons/overview.png" },
               { id: "settings", label: "Settings", icon: "/icons/settings.png" },
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as "overview" | "artists" | "users" | "bookings" | "reports" | "settings")}
+                onClick={() => setActiveTab(tab.id as "overview" | "artists" | "users" | "reports" | "recent-activity" | "settings")}
                 className={`w-full text-left p-3 font-semibold transition-all duration-300 flex items-center gap-2 ${
                   activeTab === tab.id
                     ? "bg-orange-500 text-black"
@@ -380,8 +347,8 @@ const AdminDashboard = () => {
             />
           )}
 
-          {/* Bookings Tab */}
-          {activeTab === "bookings" && <BookingsTab dummyBookings={dummyBookings} />}
+          {/* Recent Activity Tab */}
+          {activeTab === "recent-activity" && <RecentActivityTab />}
 
           {/* Reports Tab */}
           {activeTab === "reports" && <ReportsTab dummyReports={dummyReports} />}

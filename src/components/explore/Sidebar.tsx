@@ -274,7 +274,7 @@ const Sidebar = ({ onFilterChange, isMobile }: FilterProps) => {
         </div>
 
         {/* Price Range Filter */}
-        <div className="mb-6">
+        {/* <div className="mb-6">
           <h3 className="text-white text-xs font-medium mb-3">PRICE RANGE</h3>
           <div className="space-y-3">
             <div className="flex space-x-2">
@@ -298,10 +298,10 @@ const Sidebar = ({ onFilterChange, isMobile }: FilterProps) => {
               ₹{(priceRange[0] / 100000).toFixed(1)}L - ₹{(priceRange[1] / 100000).toFixed(1)}L
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Rating Filter */}
-        <div className="mb-6">
+        {/* <div className="mb-6">
           <h3 className="text-white text-xs font-medium mb-3">MINIMUM RATING</h3>
           <div className="space-y-2">
             {[4.5, 4.0, 3.5, 3.0, 2.5, 2.0].map((rating) => (
@@ -317,7 +317,7 @@ const Sidebar = ({ onFilterChange, isMobile }: FilterProps) => {
               </label>
             ))}
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
