@@ -1,21 +1,21 @@
-export type Role = "user" | "artist" | "admin";
+export type Role = 'user' | 'artist' | 'admin';
 
 export type BookingStatus =
-  | "inquiry"
-  | "pending"
-  | "negotiating"
-  | "confirmed"
-  | "completed"
-  | "cancelled"
-  | "declined";
+  | 'inquiry'
+  | 'pending'
+  | 'negotiating'
+  | 'confirmed'
+  | 'completed'
+  | 'cancelled'
+  | 'declined';
 
-export type EscrowStatus = "none" | "funded" | "released" | "refunded";
+export type EscrowStatus = 'none' | 'funded' | 'released' | 'refunded';
 
-export type AppealStatus = "pending" | "approved" | "rejected";
+export type AppealStatus = 'pending' | 'approved' | 'rejected';
 
-export type ReportStatus = "open" | "closed";
+export type ReportStatus = 'open' | 'closed';
 
-export type ReportTargetType = "user" | "artist";
+export type ReportTargetType = 'user' | 'artist';
 
 export interface Socials {
   instagram?: string;
@@ -55,12 +55,12 @@ export interface Artist {
   socials?: Socials;
   embeds?: Embeds;
   photos: string[];
-  price: number;
-  rating: number;
-  tags: string[];
-  categories: string[];
-  availability: string[];
-  timeSlots: string[];
+  basePrice: number;
+  // rating?: number;
+  genres: string[];
+  // categories: string[];
+  // availability: string[];
+  // timeSlots: string[];
   isBookable: boolean;
   appealStatus: AppealStatus;
   featured?: boolean;

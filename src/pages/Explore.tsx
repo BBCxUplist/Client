@@ -1,109 +1,139 @@
-import Navbar from "@/components/landing/Navbar";
-import Sidebar from "@/components/explore/Sidebar";
-import { artists } from "@/constants/artists";
-import { motion } from "framer-motion";
-import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import Navbar from '@/components/landing/Navbar';
+import Sidebar from '@/components/explore/Sidebar';
+import { artists } from '@/constants/artists';
+import { motion } from 'framer-motion';
+import { useState, useMemo, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+
+enum ActivityTab {
+  ALL = 'all',
+  BOOKABLE = 'bookable',
+}
 
 interface FilterState {
-  activeTab: "all" | "bookable";
-  categories: string[];
-  tags: string[];
-  priceRange: [number, number];
-  rating: number;
+  activeTab: ActivityTab;
+  genres: string[];
 }
 
 const Explore = () => {
+  const [searchParams] = useSearchParams();
   const [isHovered, setIsHovered] = useState<number | null>(null);
   const [showImageDirectly, setShowImageDirectly] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<FilterState>({
-    activeTab: "all",
-    categories: [],
-    tags: [],
-    priceRange: [0, 5000000],
-    rating: 0,
+    activeTab: ActivityTab.ALL,
+    genres: [],
   });
 
-  // Filter artists based on current filters
+  // Initialize search term from URL params
+  useEffect(() => {
+    const urlSearchTerm = searchParams.get('search') || '';
+    setSearchTerm(urlSearchTerm);
+  }, [searchParams]);
+
+  // Filter artists based on current filters and search term
   const filteredArtists = useMemo(() => {
-    return artists.filter((artist) => {
+    return artists.filter(artist => {
+      // Filter by search term
+      if (searchTerm.trim()) {
+        const searchLower = searchTerm.toLowerCase();
+        const matchesName = artist.name.toLowerCase().includes(searchLower);
+        const matchesGenres = artist.genres.some(genre =>
+          genre.toLowerCase().includes(searchLower)
+        );
+        const matchesBio = artist.bio?.toLowerCase().includes(searchLower);
+
+        if (!matchesName && !matchesGenres && !matchesBio) {
+          return false;
+        }
+      }
+
       // Filter by bookable status
-      if (filters.activeTab === "bookable" && !artist.isBookable) {
+      if (filters.activeTab === ActivityTab.BOOKABLE && !artist.isBookable) {
         return false;
       }
 
-      // Filter by categories
-      if (filters.categories.length > 0) {
-        const hasMatchingCategory = artist.categories.some((category) =>
-          filters.categories.includes(category)
+      // Filter by genres
+      if (filters.genres.length > 0) {
+        const hasMatchingGenre = artist.genres.some(genre =>
+          filters.genres.includes(genre)
         );
-        if (!hasMatchingCategory) return false;
-      }
-
-      // Filter by tags
-      if (filters.tags.length > 0) {
-        const hasMatchingTag = artist.tags.some((tag) =>
-          filters.tags.includes(tag)
-        );
-        if (!hasMatchingTag) return false;
-      }
-
-      // Filter by price range
-      if (
-        artist.price < filters.priceRange[0] ||
-        artist.price > filters.priceRange[1]
-      ) {
-        return false;
-      }
-
-      // Filter by rating
-      if (artist.rating < filters.rating) {
-        return false;
+        if (!hasMatchingGenre) return false;
       }
 
       return true;
     });
-  }, [filters]);
+  }, [filters, searchTerm]);
 
   const handleFilterChange = (newFilters: FilterState) => {
     setFilters(newFilters);
   };
 
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+  };
+
   return (
-    <div className="min-h-screen">
+    <div className='min-h-screen'>
       <Navbar />
-      <div className="w-full p-4 md:p-6 lg:p-8">
-        <h2 className="font-bold text-white text-3xl md:text-4xl lg:text-7xl mb-6 md:mb-8 lg:mb-12">
-          Explore
-        </h2>
+      <div className='w-full p-4 md:p-6 lg:p-8'>
+        <div className='w-full flex md:items-center justify-between mb-6 md:mb-8 lg:mb-12 flex-col md:flex-row gap-4 md:gap-0'>
+          <h2 className='font-bold text-white text-3xl md:text-4xl lg:text-7xl'>
+            Explore
+          </h2>
+
+          {/* Search Bar */}
+          <div className='w-full md:max-w-2xl'>
+            <div className='relative'>
+              <input
+                type='text'
+                value={searchTerm}
+                onChange={e => handleSearchChange(e.target.value)}
+                placeholder='Search artists, genres, or venues...'
+                className='w-full px-6 py-4 text-lg bg-black/20 border border-white/20 text-white placeholder-white/60 transition-all duration-300 focus:outline-none focus:ring-0 focus:border-orange-500'
+              />
+              <img
+                src='/icons/search.png'
+                alt='search'
+                className='absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 opacity-60'
+              />
+            </div>
+            {searchTerm && (
+              <p className='text-white/60 text-sm mt-2'>
+                Searching for: "
+                <span className='text-orange-400'>{searchTerm}</span>"
+              </p>
+            )}
+          </div>
+        </div>
 
         {/* Mobile/Tablet: Filters on top */}
-        <div className="lg:hidden mb-6">
+        <div className='lg:hidden mb-6'>
           <Sidebar onFilterChange={handleFilterChange} isMobile={true} />
         </div>
 
-        <div className="flex flex-col lg:flex-row h-full gap-4">
+        <div className='flex flex-col lg:flex-row h-full gap-4'>
           {/* Desktop: Sidebar on left */}
-          <div className="hidden lg:block">
+          <div className='hidden lg:block'>
             <Sidebar onFilterChange={handleFilterChange} isMobile={false} />
           </div>
 
-          <div className="w-full">
+          <div className='w-full'>
             {/* Results count and image toggle */}
-            <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div className="text-white text-sm">
+            <div className='mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2'>
+              <div className='text-white text-sm'>
                 Showing {filteredArtists.length} of {artists.length} artists
               </div>
 
               {/* Image display toggle - only on lg+ screens */}
-              <div className="hidden lg:flex items-center gap-3">
-                <span className="text-white text-xs">Image Display:</span>
+              <div className='hidden lg:flex items-center gap-3'>
+                <span className='text-white text-xs'>Image Display:</span>
                 <button
                   onClick={() => setShowImageDirectly(false)}
                   className={`px-3 py-1 text-xs border transition-all duration-300 ${
                     !showImageDirectly
-                      ? "bg-orange-500 text-black border-black"
-                      : "text-orange-500 border-orange-500 hover:bg-orange-500/10"
+                      ? 'bg-orange-500 text-black border-black'
+                      : 'text-orange-500 border-orange-500 hover:bg-orange-500/10'
                   }`}
                 >
                   On Hover
@@ -112,8 +142,8 @@ const Explore = () => {
                   onClick={() => setShowImageDirectly(true)}
                   className={`px-3 py-1 text-xs border transition-all duration-300 ${
                     showImageDirectly
-                      ? "bg-orange-500 text-black border-black"
-                      : "text-orange-500 border-orange-500 hover:bg-orange-500/10"
+                      ? 'bg-orange-500 text-black border-black'
+                      : 'text-orange-500 border-orange-500 hover:bg-orange-500/10'
                   }`}
                 >
                   Always Show
@@ -122,31 +152,31 @@ const Explore = () => {
             </div>
 
             {/* Artists grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 divide-y divide-dashed divide-white">
+            <div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 divide-y divide-dashed divide-white'>
               {filteredArtists.map((artist, index) => (
                 <Link
                   key={artist.id}
                   onMouseEnter={() => setIsHovered(index)}
                   onMouseLeave={() => setIsHovered(null)}
                   to={`/artist/${artist.slug}`}
-                  className="mx-2 p-4 [&:nth-child(-n+1)]:border-t sm:[&:nth-child(-n+2)]:border-t lg:[&:nth-child(-n+3)]:border-t border-dashed border-white relative group"
+                  className='mx-2 p-4 [&:nth-child(-n+1)]:border-t sm:[&:nth-child(-n+2)]:border-t lg:[&:nth-child(-n+3)]:border-t border-dashed border-white relative group'
                 >
                   {/* Mobile: Image always visible */}
-                  <div className="lg:hidden mb-3">
+                  <div className='lg:hidden mb-3'>
                     <img
                       src={artist.avatar}
                       alt={artist.name}
-                      className="w-full aspect-square object-cover rounded"
+                      className='w-full aspect-square object-cover rounded'
                     />
                   </div>
 
                   {/* Desktop: Always show image (like mobile style) */}
                   {showImageDirectly && (
-                    <div className="hidden lg:block mb-4">
+                    <div className='hidden lg:block mb-4'>
                       <img
                         src={artist.avatar}
                         alt={artist.name}
-                        className="w-full aspect-square object-cover rounded"
+                        className='w-full aspect-square object-cover rounded'
                       />
                     </div>
                   )}
@@ -158,14 +188,14 @@ const Explore = () => {
                       alt={artist.name}
                       initial={{
                         opacity: 0,
-                        filter: "blur(8px)",
+                        filter: 'blur(8px)',
                       }}
                       animate={{
                         opacity: isHovered === index ? 1 : 0,
-                        filter: isHovered === index ? "blur(0px)" : "blur(8px)",
+                        filter: isHovered === index ? 'blur(0px)' : 'blur(8px)',
                       }}
-                      transition={{ duration: 0.2, ease: "easeOut" }}
-                      className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 hidden lg:group-hover:block aspect-square w-4/5 object-cover z-10"
+                      transition={{ duration: 0.2, ease: 'easeOut' }}
+                      className='absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 hidden lg:group-hover:block aspect-square w-4/5 object-cover z-10'
                     />
                   )}
 
@@ -173,24 +203,27 @@ const Explore = () => {
                   <div
                     className={`flex ${
                       showImageDirectly
-                        ? "flex-col sm:flex-row sm:items-center sm:justify-between"
-                        : "flex-col sm:flex-row sm:items-center sm:justify-between"
+                        ? 'flex-col sm:flex-row sm:items-center sm:justify-between'
+                        : 'flex-col sm:flex-row sm:items-center sm:justify-between'
                     }`}
                   >
-                    <div className="flex-grow pr-2 overflow-hidden">
-                      <Link to={`/artist/${artist.slug}`} className="block hover:opacity-80 transition-opacity">
-                        <p className="text-white text-2xl sm:text-3xl lg:text-5xl font-bold font-mondwest truncate">
+                    <div className='flex-grow pr-2 overflow-hidden'>
+                      <Link
+                        to={`/artist/${artist.slug}`}
+                        className='block hover:opacity-80 transition-opacity'
+                      >
+                        <p className='text-white text-2xl sm:text-3xl lg:text-5xl font-bold font-mondwest truncate'>
                           {artist.name}
                         </p>
                       </Link>
-                      <p className="text-white text-xs font-thin truncate max-w-full">
-                        {artist.tags.join(", ")}
+                      <p className='text-white text-xs font-thin truncate max-w-full'>
+                        {artist.genres.join(', ')}
                       </p>
                     </div>
                     <img
-                      src="/icons/plus.svg"
-                      alt="plus"
-                      className="w-5 h-5 sm:w-6 sm:h-6 mt-2 sm:mt-0 self-end sm:self-center"
+                      src='/icons/plus.svg'
+                      alt='plus'
+                      className='w-5 h-5 sm:w-6 sm:h-6 mt-2 sm:mt-0 self-end sm:self-center'
                     />
                   </div>
                 </Link>
@@ -199,11 +232,11 @@ const Explore = () => {
 
             {/* No results message */}
             {filteredArtists.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-white text-lg">
+              <div className='text-center py-12'>
+                <p className='text-white text-lg'>
                   No artists found matching your filters
                 </p>
-                <p className="text-white/60 text-sm mt-2">
+                <p className='text-white/60 text-sm mt-2'>
                   Try adjusting your search criteria
                 </p>
               </div>
