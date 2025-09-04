@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
-
+import { formatPrice } from '@/helper';
 interface Artist {
   id: string;
   name: string;
@@ -52,14 +52,6 @@ const BookingTab = ({ artist }: BookingTabProps) => {
     alternativeDates: [],
     quotedPrice: null,
   });
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
 
   const handleInputChange = (field: string, value: string) => {
     setBookingForm(prev => ({

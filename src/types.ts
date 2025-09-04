@@ -128,3 +128,10 @@ export interface Tag {
   name: string;
   color: string;
 }
+
+export enum DashboardTab {
+  OVERVIEW = 'overview',
+  BOOKINGS = 'bookings',
+  ANALYTICS = 'analytics',
+  SETTINGS = 'settings',
+}
