@@ -26,7 +26,7 @@ interface Artist {
   categories: string[];
   isBookable: boolean;
   appealStatus: string;
-  featured: boolean | undefined;
+  featured: boolean;
   createdAt: string;
 }
 
@@ -73,7 +73,7 @@ const adminArtists: Artist[] = artists.map((artist) => ({
   categories: artist.categories,
   isBookable: artist.isBookable,
   appealStatus: artist.appealStatus,
-  featured: artist.featured,
+  featured: artist.featured || false,
   createdAt: artist.createdAt,
 }));
 
