@@ -4,6 +4,8 @@ import Landing from './pages/Landing'
 import Explore from './pages/Explore'
 import ArtistProfile from './pages/ArtistProfile'
 import Auth from './pages/Auth'
+import Admin from './pages/Admin'
+import AdminDashboard from './pages/AdminDashboard'
 
 function App() {
   return (
@@ -13,6 +15,8 @@ function App() {
                 <Route path="/explore" element={<Explore />} />
                 <Route path="/artist/:username" element={<ArtistProfile />} />
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/admin/dashboard" element={<AdminDashboard />} />
       </Routes>
     </div>
   )
