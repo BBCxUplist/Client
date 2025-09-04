@@ -5,6 +5,7 @@ import Explore from './pages/Explore'
 import ArtistProfile from './pages/ArtistProfile'
 import ArtistEdit from './pages/ArtistEdit'
 import ArtistDashboard from './pages/ArtistDashboard'
+import UserDashboard from './pages/UserDashboard'
 import Auth from './pages/Auth'
 import Admin from './pages/Admin'
 import AdminDashboard from './pages/AdminDashboard'
@@ -18,7 +19,7 @@ function App() {
           <Route path="/artist/:username" element={<ArtistProfile />} />
           <Route path="/artist/:username/edit" element={<ArtistEdit />} />
           <Route path="/artist/:username/dashboard" element={<ArtistDashboard />} />
-          <Route path="/artist/dashboard" element={<ArtistDashboard />} />
+          <Route path="/user/dashboard" element={<UserDashboard />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
