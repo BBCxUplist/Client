@@ -9,6 +9,16 @@ interface Artist {
   bookings: number;
   revenue: number;
   rating: number;
+  slug: string;
+  avatar: string | undefined;
+  bio: string | undefined;
+  price: number;
+  tags: string[];
+  categories: string[];
+  isBookable: boolean;
+  appealStatus: string;
+  featured: boolean;
+  createdAt: string;
 }
 
 interface ArtistsTabProps {
@@ -150,20 +160,40 @@ const ArtistsTab = ({
           >
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
-                {getStatusIcon(artist.status)}
+                {artist.avatar ? (
+                  <img 
+                    src={artist.avatar} 
+                    alt={artist.name} 
+                    className="w-12 h-12 object-cover border-2 border-white/20"
+                  />
+                ) : (
+                  <div className="w-12 h-12 bg-orange-500 flex items-center justify-center text-black font-bold text-lg">
+                    {artist.name.charAt(0)}
+                  </div>
+                )}
                 <div>
                   <h4 className="text-white font-semibold">{artist.name}</h4>
                   <p className="text-white/60 text-sm">{artist.email}</p>
+                  {artist.bio && (
+                    <p className="text-white/50 text-xs mt-1 line-clamp-2 max-w-xs">
+                      {artist.bio}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(artist.status)}`}>
                   {artist.status === "appeal" ? "APPEAL" : artist.status.toUpperCase()}
                 </span>
+                {artist.featured && (
+                  <span className="px-2 py-1 rounded text-xs font-medium bg-orange-500/20 text-orange-400 border border-orange-500/40">
+                    FEATURED
+                  </span>
+                )}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3 text-sm">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-3 text-sm">
               <div>
                 <span className="text-white/70">Join Date: </span>
                 <span className="text-white">{new Date(artist.joinDate).toLocaleDateString()}</span>
@@ -180,13 +210,38 @@ const ArtistsTab = ({
                 <span className="text-white/70">Rating: </span>
                 <span className="text-white">{artist.rating}/5</span>
               </div>
+              <div>
+                <span className="text-white/70">Price: </span>
+                <span className="text-orange-400 font-semibold">{formatCurrency(artist.price)}</span>
+              </div>
+            </div>
+            
+            {/* Tags and Categories */}
+            <div className="mb-3">
+              <div className="flex flex-wrap gap-2 mb-2">
+                {artist.tags.slice(0, 3).map((tag, index) => (
+                  <span key={index} className="px-2 py-1 bg-white/10 border border-white/20 text-white/80 text-xs rounded">
+                    {tag}
+                  </span>
+                ))}
+                {artist.tags.length > 3 && (
+                  <span className="px-2 py-1 bg-white/5 border border-white/10 text-white/50 text-xs rounded">
+                    +{artist.tags.length - 3} more
+                  </span>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center justify-between">
               <div className="flex gap-2">
-                <button className="bg-white/10 border border-white/20 text-white px-3 py-1 rounded hover:bg-white/20 transition-colors text-sm">
+                <a 
+                  href={`/artist/${artist.slug}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="bg-white/10 border border-white/20 text-white px-3 py-1 rounded hover:bg-white/20 transition-colors text-sm"
+                >
                   View Profile
-                </button>
+                </a>
                 <button className="bg-white/10 border border-white/20 text-white px-3 py-1 rounded hover:bg-white/20 transition-colors text-sm">
                   View Documents
                 </button>

@@ -7,6 +7,7 @@ import UsersTab from "@/components/admin/UsersTab";
 import ReportsTab from "@/components/admin/ReportsTab";
 import RecentActivityTab from "@/components/admin/RecentActivityTab";
 import SettingsTab from "@/components/admin/SettingsTab";
+import { artists } from "@/constants/artists";
 
 interface Artist {
   id: string;
@@ -17,6 +18,16 @@ interface Artist {
   bookings: number;
   revenue: number;
   rating: number;
+  slug: string;
+  avatar: string | undefined;
+  bio: string | undefined;
+  price: number;
+  tags: string[];
+  categories: string[];
+  isBookable: boolean;
+  appealStatus: string;
+  featured: boolean | undefined;
+  createdAt: string;
 }
 
 interface User {
@@ -42,49 +53,29 @@ interface Report {
   createdAt: string;
 }
 
-// Dummy Data
-const dummyArtists: Artist[] = [
-  {
-    id: "1",
-    name: "Rajesh Kumar",
-    email: "rajesh@example.com",
-    status: "verified",
-    joinDate: "2024-01-15",
-    bookings: 45,
-    revenue: 450000,
-    rating: 4.8,
-  },
-  {
-    id: "2",
-    name: "Priya Singh",
-    email: "priya@example.com",
-    status: "appeal",
-    joinDate: "2024-03-10",
-    bookings: 0,
-    revenue: 0,
-    rating: 0,
-  },
-  {
-    id: "3",
-    name: "Amit Sharma",
-    email: "amit@example.com",
-    status: "verified",
-    joinDate: "2024-02-20",
-    bookings: 32,
-    revenue: 320000,
-    rating: 4.6,
-  },
-  {
-    id: "4",
-    name: "Neha Patel",
-    email: "neha@example.com",
-    status: "suspended",
-    joinDate: "2024-01-05",
-    bookings: 12,
-    revenue: 120000,
-    rating: 3.2,
-  },
-];
+// Transform artists data to match admin interface
+const adminArtists: Artist[] = artists.map((artist) => ({
+  id: artist.id,
+  name: artist.name,
+  email: `${artist.slug}@example.com`, // Generate email from slug
+  status: artist.appealStatus === "approved" ? "verified" : 
+          artist.appealStatus === "pending" ? "appeal" : 
+          artist.appealStatus === "rejected" ? "rejected" : "suspended",
+  joinDate: artist.createdAt.split('T')[0], // Extract date from ISO string
+  bookings: Math.floor(Math.random() * 50) + 10, // Random bookings for demo
+  revenue: artist.price * (Math.floor(Math.random() * 20) + 5), // Random revenue based on price
+  rating: artist.rating,
+  slug: artist.slug,
+  avatar: artist.avatar,
+  bio: artist.bio,
+  price: artist.price,
+  tags: artist.tags,
+  categories: artist.categories,
+  isBookable: artist.isBookable,
+  appealStatus: artist.appealStatus,
+  featured: artist.featured,
+  createdAt: artist.createdAt,
+}));
 
 const dummyUsers: User[] = [
   {
@@ -150,9 +141,28 @@ const AdminDashboard = () => {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Calculate dashboard statistics from real artist data
+  const dashboardStats = useMemo(() => {
+    const totalArtists = adminArtists.length;
+    const verifiedArtists = adminArtists.filter(a => a.status === "verified").length;
+    const pendingArtists = adminArtists.filter(a => a.status === "appeal").length;
+    const totalRevenue = adminArtists.reduce((sum, a) => sum + a.revenue, 0);
+    const averageRating = adminArtists.reduce((sum, a) => sum + a.rating, 0) / totalArtists;
+    const featuredArtists = adminArtists.filter(a => a.featured).length;
+    
+    return {
+      totalArtists,
+      verifiedArtists,
+      pendingArtists,
+      totalRevenue,
+      averageRating: averageRating.toFixed(1),
+      featuredArtists
+    };
+  }, []);
+
   // Filtering logic
   const filteredArtists = useMemo(() => {
-    return dummyArtists.filter((artist) => {
+    return adminArtists.filter((artist) => {
       const matchesSearch =
         artist.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         artist.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -189,6 +199,14 @@ const AdminDashboard = () => {
     navigate("/admin");
   };
 
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
@@ -204,14 +222,24 @@ const AdminDashboard = () => {
               <span className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-orange-500"></span>
               <span className="absolute bottom-0 left-0 w-1.5 h-1.5 border-b border-l border-orange-500"></span>
             </Link>
-            <div className="hidden lg:block">
-              <h1 className="font-mondwest text-xl font-bold text-white">
-                ADMIN DASHBOARD
-              </h1>
-              <p className="text-white/60 text-sm">
-                Administrative Control Panel
-              </p>
+                      <div className="hidden lg:block">
+            <h1 className="font-mondwest text-xl font-bold text-white">
+              ADMIN DASHBOARD
+            </h1>
+            <p className="text-white/60 text-sm">
+              Administrative Control Panel
+            </p>
+            <div className="flex gap-4 mt-2 text-xs">
+              <span className="text-white/80">
+                Artists: {dashboardStats.totalArtists} | 
+                Verified: {dashboardStats.verifiedArtists} | 
+                Pending: {dashboardStats.pendingArtists}
+              </span>
+              <span className="text-orange-400">
+                Total Revenue: {formatPrice(dashboardStats.totalRevenue)}
+              </span>
             </div>
+          </div>
           </div>
           <button
             onClick={handleLogout}
@@ -323,7 +351,7 @@ const AdminDashboard = () => {
         {/* Main Content */}
         <div className="flex-1 p-4 lg:p-6">
           {/* Overview Tab */}
-          {activeTab === "overview" && <OverviewTab />}
+          {activeTab === "overview" && <OverviewTab dashboardStats={dashboardStats} formatPrice={formatPrice} />}
 
           {/* Artists Tab */}
           {activeTab === "artists" && (

@@ -1,13 +1,25 @@
 import { motion } from "framer-motion";
 
-const OverviewTab = () => {
-  // Mock data for demonstration
+interface OverviewTabProps {
+  dashboardStats: {
+    totalArtists: number;
+    verifiedArtists: number;
+    pendingArtists: number;
+    totalRevenue: number;
+    averageRating: string;
+    featuredArtists: number;
+  };
+  formatPrice: (price: number) => string;
+}
+
+const OverviewTab = ({ dashboardStats, formatPrice }: OverviewTabProps) => {
+  // Use real data from dashboard
   const stats = [
-    { label: "Total Users", value: "2,847", change: "+12%", changeType: "positive" },
-    { label: "Verified Artists", value: "156", change: "+8%", changeType: "positive" },
-    { label: "Total Bookings", value: "1,234", change: "+23%", changeType: "positive" },
-    { label: "Revenue", value: "$45,678", change: "+18%", changeType: "positive" },
-    { label: "Total Commission", value: "$4,567", change: "+15%", changeType: "positive" },
+    { label: "Total Artists", value: dashboardStats.totalArtists.toString(), change: "+5%", changeType: "positive" as const },
+    { label: "Verified Artists", value: dashboardStats.verifiedArtists.toString(), change: "+8%", changeType: "positive" as const },
+    { label: "Pending Artists", value: dashboardStats.pendingArtists.toString(), change: "+2%", changeType: "positive" as const },
+    { label: "Total Revenue", value: formatPrice(dashboardStats.totalRevenue), change: "+18%", changeType: "positive" as const },
+    { label: "Featured Artists", value: dashboardStats.featuredArtists.toString(), change: "+3%", changeType: "positive" as const },
   ];
 
   return (
@@ -46,6 +58,63 @@ const OverviewTab = () => {
           </motion.div>
         ))}
       </div>
+
+      {/* Top Artists by Revenue */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="bg-white/5 border border-white/10 p-6"
+      >
+        <h3 className="text-white font-semibold text-lg mb-4">Top Artists by Revenue</h3>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between p-3 bg-white/5 border border-white/10">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-black text-sm font-bold">
+                D
+              </div>
+              <div>
+                <p className="text-white font-semibold">Divine</p>
+                <p className="text-white/60 text-xs">Hip-Hop, Rap</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-orange-400 font-bold">{formatPrice(2500000)}</p>
+              <p className="text-white/60 text-xs">₹25L</p>
+            </div>
+          </div>
+          <div className="flex items-center justify-between p-3 bg-white/5 border border-white/10">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-black text-sm font-bold">
+                R
+              </div>
+              <div>
+                <p className="text-white font-semibold">Raftaar</p>
+                <p className="text-white/60 text-xs">Hip-Hop, Producer</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-orange-400 font-bold">{formatPrice(3000000)}</p>
+              <p className="text-white/60 text-xs">₹30L</p>
+            </div>
+          </div>
+          <div className="flex items-center justify-between p-3 bg-white/5 border border-white/10">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-black text-sm font-bold">
+                E
+              </div>
+              <div>
+                <p className="text-white font-semibold">Emiway</p>
+                <p className="text-white/60 text-xs">Hip-Hop, Independent</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-orange-400 font-bold">{formatPrice(2000000)}</p>
+              <p className="text-white/60 text-xs">₹20L</p>
+            </div>
+          </div>
+        </div>
+      </motion.div>
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
