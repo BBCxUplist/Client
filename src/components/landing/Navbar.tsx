@@ -161,9 +161,9 @@ const Navbar = () => {
                   <div className="flex flex-nowrap text-center font-thin text-sm divide-x divide-black divide-dashed mt-2">
                     {contactItems.map((item, index) => (
                       <div key={index} className="p-1 w-full ">
-                        <p className="w-full p-2 rounded-sm hover:bg-black hover:text-orange-500">
+                        <Link to={item.href} className="w-full p-2 rounded-sm hover:bg-black hover:text-orange-500">
                           {item.label}
-                        </p>
+                        </Link>
                       </div>
                     ))}
                   </div>
