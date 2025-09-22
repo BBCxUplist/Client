@@ -40,13 +40,11 @@ const Landing = () => {
     <div className='min-h-[100dvh] w-full bg-neutral-950 text-orange-500 border-b-4 md:border-b-6 lg:border-b-[10px] border-orange-600 texture-bg'>
       <Navbar />
       <div className='w-full px-4 pb-0 md:px-6 lg:px-8'>
-        {/* Hero Section */}
         <div className='h-[calc(100vh-80px)] w-full relative'>
           <Scene3D className='w-full h-full opacity-20' />
           <HeroSection />
         </div>
 
-        {/* Content Sections */}
         <div className='space-y-0'>
           <About />
           <FeaturedArtist />
