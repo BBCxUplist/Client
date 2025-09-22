@@ -99,7 +99,7 @@ const Messages = () => {
               showBackButton={isMobileView}
             />
           ) : (
-            <div className='hidden lg:flex h-full items-center justify-center bg-neutral-900/50'>
+            <div className='hidden lg:flex h-full items-center justify-center texture-bg'>
               <div className='text-center'>
                 <div className='w-24 h-24 mx-auto mb-6 bg-white/5 border border-white/10 flex items-center justify-center'>
                   <svg

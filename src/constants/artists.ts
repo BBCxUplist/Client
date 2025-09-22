@@ -13,10 +13,11 @@ export const artists: Artist[] = [
       spotify: 'https://open.spotify.com/artist/1z6FCVjbusHlS6mZgZwAkW',
     },
     embeds: {
-      youtube: 'https://www.youtube.com/watch?v=XCIYHCXQoxQ',
-      spotify: 'https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9',
-      soundcloud:
+      youtube: ['https://www.youtube.com/watch?v=XCIYHCXQoxQ'],
+      spotify: ['https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9'],
+      soundcloud: [
         'https://soundcloud.com/ender-gaming-531387957/seedhe-maut-raat-ki-raani',
+      ],
     },
     photos: [
       'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=600&fit=crop',
@@ -42,10 +43,21 @@ export const artists: Artist[] = [
       spotify: 'https://open.spotify.com/artist/encore-abj',
     },
     embeds: {
-      youtube: 'https://www.youtube.com/watch?v=XCIYHCXQoxQ',
-      spotify: 'https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9',
-      soundcloud:
+      youtube: [
+        'https://www.youtube.com/watch?v=XCIYHCXQoxQ',
+        'https://www.youtube.com/watch?v=XCIYHCXQoxQ',
+        'https://www.youtube.com/watch?v=XCIYHCXQoxQ',
+      ],
+      spotify: [
+        'https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9',
+        'https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9',
+        'https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9',
+      ],
+      soundcloud: [
         'https://soundcloud.com/ender-gaming-531387957/seedhe-maut-raat-ki-raani',
+        'https://soundcloud.com/ender-gaming-531387957/seedhe-maut-raat-ki-raani',
+        'https://soundcloud.com/ender-gaming-531387957/seedhe-maut-raat-ki-raani',
+      ],
     },
     photos: [
       'https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=800&h=600&fit=crop',
@@ -74,10 +86,11 @@ export const artists: Artist[] = [
       spotify: 'https://open.spotify.com/artist/krsna-official',
     },
     embeds: {
-      youtube: 'https://www.youtube.com/watch?v=XCIYHCXQoxQ',
-      spotify: 'https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9',
-      soundcloud:
+      youtube: ['https://www.youtube.com/watch?v=XCIYHCXQoxQ'],
+      spotify: ['https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9'],
+      soundcloud: [
         'https://soundcloud.com/ender-gaming-531387957/seedhe-maut-raat-ki-raani',
+      ],
     },
     photos: [
       'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800&h=600&fit=crop',
@@ -112,10 +125,11 @@ export const artists: Artist[] = [
       soundcloud: 'https://soundcloud.com/raga-official',
     },
     embeds: {
-      youtube: 'https://www.youtube.com/watch?v=XCIYHCXQoxQ',
-      spotify: 'https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9',
-      soundcloud:
+      youtube: ['https://www.youtube.com/watch?v=XCIYHCXQoxQ'],
+      spotify: ['https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9'],
+      soundcloud: [
         'https://soundcloud.com/ender-gaming-531387957/seedhe-maut-raat-ki-raani',
+      ],
     },
     photos: [
       'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=600&fit=crop',
@@ -142,10 +156,11 @@ export const artists: Artist[] = [
       youtube: 'https://youtube.com/@TalwiinderOfficial',
     },
     embeds: {
-      youtube: 'https://www.youtube.com/watch?v=XCIYHCXQoxQ',
-      spotify: 'https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9',
-      soundcloud:
+      youtube: ['https://www.youtube.com/watch?v=XCIYHCXQoxQ'],
+      spotify: ['https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9'],
+      soundcloud: [
         'https://soundcloud.com/ender-gaming-531387957/seedhe-maut-raat-ki-raani',
+      ],
     },
     photos: [
       'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800&h=600&fit=crop',
@@ -183,10 +198,11 @@ export const artists: Artist[] = [
       youtube: 'https://youtube.com/@CalmOfficial',
     },
     embeds: {
-      youtube: 'https://www.youtube.com/watch?v=XCIYHCXQoxQ',
-      spotify: 'https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9',
-      soundcloud:
+      youtube: ['https://www.youtube.com/watch?v=XCIYHCXQoxQ'],
+      spotify: ['https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9'],
+      soundcloud: [
         'https://soundcloud.com/ender-gaming-531387957/seedhe-maut-raat-ki-raani',
+      ],
     },
     photos: [
       'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800&h=600&fit=crop',
@@ -231,10 +247,11 @@ export const artists: Artist[] = [
       spotify: 'https://open.spotify.com/artist/hanumankind',
     },
     embeds: {
-      youtube: 'https://www.youtube.com/watch?v=XCIYHCXQoxQ',
-      spotify: 'https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9',
-      soundcloud:
+      youtube: ['https://www.youtube.com/watch?v=XCIYHCXQoxQ'],
+      spotify: ['https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9'],
+      soundcloud: [
         'https://soundcloud.com/ender-gaming-531387957/seedhe-maut-raat-ki-raani',
+      ],
     },
     photos: [
       'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800&h=600&fit=crop',
@@ -269,10 +286,11 @@ export const artists: Artist[] = [
       spotify: 'https://open.spotify.com/artist/emiway-bantai',
     },
     embeds: {
-      youtube: 'https://www.youtube.com/watch?v=XCIYHCXQoxQ',
-      spotify: 'https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9',
-      soundcloud:
+      youtube: ['https://www.youtube.com/watch?v=XCIYHCXQoxQ'],
+      spotify: ['https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9'],
+      soundcloud: [
         'https://soundcloud.com/ender-gaming-531387957/seedhe-maut-raat-ki-raani',
+      ],
     },
     photos: [
       'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=600&fit=crop',
@@ -315,10 +333,11 @@ export const artists: Artist[] = [
       spotify: 'https://open.spotify.com/artist/raftaar',
     },
     embeds: {
-      youtube: 'https://www.youtube.com/watch?v=XCIYHCXQoxQ',
-      spotify: 'https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9',
-      soundcloud:
+      youtube: ['https://www.youtube.com/watch?v=XCIYHCXQoxQ'],
+      spotify: ['https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9'],
+      soundcloud: [
         'https://soundcloud.com/ender-gaming-531387957/seedhe-maut-raat-ki-raani',
+      ],
     },
     photos: [
       'https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=800&h=600&fit=crop',
@@ -347,10 +366,11 @@ export const artists: Artist[] = [
       spotify: 'https://open.spotify.com/artist/king-rocco',
     },
     embeds: {
-      youtube: 'https://www.youtube.com/watch?v=XCIYHCXQoxQ',
-      spotify: 'https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9',
-      soundcloud:
+      youtube: ['https://www.youtube.com/watch?v=XCIYHCXQoxQ'],
+      spotify: ['https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9'],
+      soundcloud: [
         'https://soundcloud.com/ender-gaming-531387957/seedhe-maut-raat-ki-raani',
+      ],
     },
     photos: [
       'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800&h=600&fit=crop',

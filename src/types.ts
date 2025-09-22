@@ -26,9 +26,9 @@ export interface Socials {
 }
 
 export interface Embeds {
-  youtube?: string;
-  spotify?: string;
-  soundcloud?: string;
+  youtube?: string[];
+  spotify?: string[];
+  soundcloud?: string[];
 }
 
 export interface User {

@@ -6,4 +6,4 @@ export interface FormData {
   isArtist: boolean;
 }
 
-export type AuthMode = "signin" | "register";
+export type AuthMode = 'signin' | 'register';

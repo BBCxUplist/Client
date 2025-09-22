@@ -9,23 +9,24 @@ interface CassetteTapeProps {
   scale?: number;
 }
 
-const CassetteTape: React.FC<CassetteTapeProps> = ({ 
-  position = [0, 0, 0], 
-  rotation = [0, 0, 0], 
-  scale = 1 
+const CassetteTape: React.FC<CassetteTapeProps> = ({
+  position = [0, 0, 0],
+  rotation = [0, 0, 0],
+  scale = 1,
 }) => {
   const groupRef = useRef<Group>(null);
   const [error, setError] = useState<string | null>(null);
-  
-  const { scene, animations } = useGLTF('/casette_tape_recorder.glb', 
+
+  const { scene, animations } = useGLTF(
+    '/casette_tape_recorder.glb',
     true, // draco
     true, // ktx2
-    (error) => {
+    error => {
       console.error('Error loading GLB:', error);
       setError('Failed to load 3D model');
     }
   );
-  
+
   const { actions } = useAnimations(animations, groupRef);
 
   // Auto-rotate the object
@@ -38,7 +39,7 @@ const CassetteTape: React.FC<CassetteTapeProps> = ({
   // Play animations if they exist
   useEffect(() => {
     if (actions && Object.keys(actions).length > 0 && !error) {
-      Object.values(actions).forEach((action) => {
+      Object.values(actions).forEach(action => {
         if (action) {
           action.play();
         }
@@ -50,7 +51,7 @@ const CassetteTape: React.FC<CassetteTapeProps> = ({
     return (
       <mesh position={position}>
         <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial color="red" />
+        <meshStandardMaterial color='red' />
       </mesh>
     );
   }

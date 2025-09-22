@@ -1,11 +1,7 @@
-import { Suspense } from "react";
-import { Canvas } from "@react-three/fiber";
-import {
-  Environment,
-  PerspectiveCamera,
-  Html,
-} from "@react-three/drei";
-import CassetteTape from "./CassetteTape";
+import { Suspense } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { Environment, PerspectiveCamera, Html } from '@react-three/drei';
+import CassetteTape from './CassetteTape';
 
 interface Scene3DProps {
   className?: string;
@@ -13,22 +9,22 @@ interface Scene3DProps {
 
 const LoadingFallback = () => (
   <Html center>
-    <div className="text-orange-500 text-lg font-semibold">
+    <div className='text-orange-500 text-lg font-semibold'>
       Loading 3D Model...
     </div>
   </Html>
 );
 
-const Scene3D = ({ className = "" }: Scene3DProps) => {
+const Scene3D = ({ className = '' }: Scene3DProps) => {
   return (
     <div className={`w-full h-full ${className}`}>
       <Canvas
         camera={{ position: [0, 0, 0], fov: 35 }}
-        style={{ background: "transparent" }}
+        style={{ background: 'transparent' }}
         gl={{
           antialias: true,
           alpha: true,
-          powerPreference: "high-performance",
+          powerPreference: 'high-performance',
         }}
       >
         {/* Camera */}
@@ -47,7 +43,11 @@ const Scene3D = ({ className = "" }: Scene3DProps) => {
 
         {/* 3D Object with Suspense */}
         <Suspense fallback={<LoadingFallback />}>
-          <CassetteTape position={[0, 1, 0]} rotation={[20, 0, 0]} scale={100} />
+          <CassetteTape
+            position={[0, 1, 0]}
+            rotation={[20, 0, 0]}
+            scale={100}
+          />
         </Suspense>
 
         {/* Controls */}
@@ -62,7 +62,7 @@ const Scene3D = ({ className = "" }: Scene3DProps) => {
         /> */}
 
         {/* Environment */}
-        <Environment preset="city" />
+        <Environment preset='city' />
       </Canvas>
     </div>
   );
