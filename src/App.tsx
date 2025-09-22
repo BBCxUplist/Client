@@ -9,6 +9,7 @@ import UserDashboard from './pages/UserDashboard';
 import Auth from './pages/Auth';
 import Admin from './pages/Admin';
 import AdminDashboard from './pages/AdminDashboard';
+import Messages from './pages/Messages';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           element={<ArtistDashboard />}
         />
         <Route path='/user/dashboard' element={<UserDashboard />} />
+        <Route path='/messages' element={<Messages />} />
         <Route path='/auth' element={<Auth />} />
         <Route path='/admin' element={<Admin />} />
         <Route path='/admin/dashboard' element={<AdminDashboard />} />
