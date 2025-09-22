@@ -102,7 +102,10 @@ const ArtistProfile = () => {
                       {formatPrice(artist?.basePrice)}
                     </p>
                   </div>
-                  <button className='w-full bg-orange-500 text-black py-3 font-semibold hover:bg-orange-600 transition-colors duration-300 text-sm md:text-base'>
+                  <button
+                    onClick={() => setActiveTab(ArtistTab.BOOKING)}
+                    className='w-full bg-orange-500 text-black py-3 font-semibold hover:bg-orange-600 transition-colors duration-300 text-sm md:text-base'
+                  >
                     BOOK NOW
                   </button>
                 </div>

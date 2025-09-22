@@ -56,11 +56,7 @@ export interface Artist {
   embeds?: Embeds;
   photos: string[];
   basePrice: number;
-  // rating?: number;
   genres: string[];
-  // categories: string[];
-  // availability: string[];
-  // timeSlots: string[];
   isBookable: boolean;
   appealStatus: AppealStatus;
   featured?: boolean;
