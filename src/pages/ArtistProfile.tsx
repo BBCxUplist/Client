@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Navbar from '@/components/landing/Navbar';
-import { artists } from '@/constants/artists';
 import AboutTab from '@/components/artist/AboutTab';
 import MusicTab from '@/components/artist/MusicTab';
 // import ReviewsTab from "@/components/artist/ReviewsTab";
 import GalleryTab from '@/components/artist/GalleryTab';
 import BookingTab from '@/components/artist/BookingTab';
 import { formatPrice } from '@/helper';
+import { useGetArtist } from '../hooks/useGetArtist';
 
 enum ArtistTab {
   MUSIC = 'music',
@@ -20,10 +20,26 @@ const ArtistProfile = () => {
   const { username } = useParams();
   const [activeTab, setActiveTab] = useState<ArtistTab>(ArtistTab.MUSIC);
 
-  // Find artist by slug from the artists.ts file
-  const artist = artists.find(a => a.slug === username);
+  // Fetch artist data from API
+  const { data, isLoading, error } = useGetArtist(username || '');
+  const artist = data?.data;
 
-  if (!artist) {
+  if (isLoading) {
+    return (
+      <div className='min-h-screen bg-neutral-950 text-white'>
+        <Navbar />
+        <div className='flex items-center justify-center h-[calc(100vh-100px)]'>
+          <div className='text-center'>
+            <div className='w-32 h-32 mx-auto mb-4 bg-neutral-700/50 animate-pulse rounded'></div>
+            <div className='h-8 w-48 bg-neutral-700/50 animate-pulse rounded mx-auto mb-2'></div>
+            <div className='h-4 w-64 bg-neutral-700/50 animate-pulse rounded mx-auto'></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !artist) {
     return (
       <div className='min-h-screen bg-neutral-950 text-white'>
         <Navbar />
@@ -60,14 +76,14 @@ const ArtistProfile = () => {
               <div className='relative mb-6 sm:max-w-sm sm:mx-auto lg:max-w-none lg:mx-0'>
                 <img
                   src={artist?.avatar}
-                  alt={artist?.name}
+                  alt={artist?.displayName}
                   className='w-full aspect-square object-cover'
                   draggable={false}
                   onError={e => {
                     e.currentTarget.src = '/images/artistNotFound.jpeg';
                   }}
                 />
-                {artist?.isBookable && (
+                {artist?.isAvailable && (
                   <div className='absolute bottom-4 left-4 bg-orange-500 text-black px-3 py-2 text-sm font-semibold'>
                     AVAILABLE
                   </div>
@@ -76,7 +92,7 @@ const ArtistProfile = () => {
 
               {/* Artist Name */}
               <h1 className='font-mondwest text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4'>
-                {artist?.name}
+                {artist?.displayName}
               </h1>
 
               {/* Genre Tags */}
@@ -139,14 +155,24 @@ const ArtistProfile = () => {
 
             {/* Content Sections */}
             <div className='min-h-[400px]'>
-              {activeTab === ArtistTab.ABOUT && <AboutTab artist={artist} />}
-              {activeTab === ArtistTab.MUSIC && <MusicTab artist={artist} />}
+              {activeTab === ArtistTab.ABOUT && (
+                <AboutTab artist={{ bio: artist?.bio }} />
+              )}
+              {activeTab === ArtistTab.MUSIC && <MusicTab />}
               {/* {activeTab === "reviews" && <ReviewsTab artist={artist} />} */}
               {activeTab === ArtistTab.GALLERY && (
-                <GalleryTab artist={artist} />
+                <GalleryTab artist={{ photos: artist?.photos }} />
               )}
               {activeTab === ArtistTab.BOOKING && (
-                <BookingTab artist={artist} />
+                <BookingTab
+                  artist={{
+                    id: artist?.id || '',
+                    displayName: artist?.displayName || '',
+                    basePrice: artist?.basePrice || 0,
+                    isBookable: artist?.isBookable || false,
+                    location: artist?.location,
+                  }}
+                />
               )}
             </div>
           </div>

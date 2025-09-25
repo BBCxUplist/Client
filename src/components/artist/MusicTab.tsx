@@ -1,16 +1,30 @@
 import { motion } from 'framer-motion';
 import React, { useState, useMemo } from 'react';
-import type { Artist } from '@/types';
 import EmbedPlayer from './EmbedPlayer';
 
-interface MusicTabProps {
-  artist: Artist;
-}
-
-const MusicTab = ({ artist }: MusicTabProps) => {
+const MusicTab = () => {
   const [selectedPlatform, setSelectedPlatform] = useState<
     'youtube' | 'soundcloud' | 'spotify'
   >('youtube');
+
+  // Hardcoded music data
+  const musicData = {
+    youtube: [
+      'https://www.youtube.com/watch?v=XCIYHCXQoxQ',
+      'https://www.youtube.com/watch?v=XCIYHCXQoxQ',
+      'https://www.youtube.com/watch?v=XCIYHCXQoxQ',
+    ],
+    spotify: [
+      'https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9',
+      'https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9',
+      'https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9',
+    ],
+    soundcloud: [
+      'https://soundcloud.com/ender-gaming-531387957/seedhe-maut-raat-ki-raani',
+      'https://soundcloud.com/ender-gaming-531387957/seedhe-maut-raat-ki-raani',
+      'https://soundcloud.com/ender-gaming-531387957/seedhe-maut-raat-ki-raani',
+    ],
+  };
 
   const getPlatformIcon = (platform: string) => {
     return `/icons/embeds/${platform}.png`;
@@ -18,19 +32,16 @@ const MusicTab = ({ artist }: MusicTabProps) => {
 
   const getAvailablePlatforms = () => {
     const platforms: Array<'youtube' | 'soundcloud' | 'spotify'> = [];
-    if (artist?.embeds?.youtube && artist.embeds.youtube.length > 0)
-      platforms.push('youtube');
-    if (artist?.embeds?.spotify && artist.embeds.spotify.length > 0)
-      platforms.push('spotify');
-    if (artist?.embeds?.soundcloud && artist.embeds.soundcloud.length > 0)
-      platforms.push('soundcloud');
+    if (musicData.youtube.length > 0) platforms.push('youtube');
+    if (musicData.spotify.length > 0) platforms.push('spotify');
+    if (musicData.soundcloud.length > 0) platforms.push('soundcloud');
     return platforms;
   };
 
   const availablePlatforms = getAvailablePlatforms();
   const currentPlatformTracks = useMemo(
-    () => artist?.embeds?.[selectedPlatform] || [],
-    [artist?.embeds, selectedPlatform]
+    () => musicData[selectedPlatform] || [],
+    [selectedPlatform]
   );
 
   // Auto-select first available platform if current selection has no tracks

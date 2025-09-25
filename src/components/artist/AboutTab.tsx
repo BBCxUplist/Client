@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
+import type { AboutTabData } from '../../types/tabs';
 
 interface AboutTabProps {
-  artist: any;
+  artist: AboutTabData;
 }
 
 const AboutTab = ({ artist }: AboutTabProps) => {

@@ -13,17 +13,10 @@ import {
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { formatPrice } from '@/helper';
-interface Artist {
-  id: string;
-  name: string;
-  basePrice: number;
-  isBookable: boolean;
-  location?: string;
-  // ... other artist properties
-}
+import type { BookingTabData } from '../../types/tabs';
 
 interface BookingTabProps {
-  artist: Artist;
+  artist: BookingTabData;
 }
 
 const BookingTab = ({ artist }: BookingTabProps) => {
@@ -103,7 +96,7 @@ const BookingTab = ({ artist }: BookingTabProps) => {
       className='space-y-6 md:space-y-8'
     >
       <h3 className='text-2xl md:text-3xl font-semibold text-orange-500 mb-6 font-mondwest'>
-        Book {artist.name}
+        Book {artist.displayName}
       </h3>
 
       {/* Booking Status */}
@@ -398,7 +391,7 @@ const BookingTab = ({ artist }: BookingTabProps) => {
                 <div className='flex justify-between'>
                   <span className='text-white/70'>Artist:</span>
                   <span className='text-white font-semibold'>
-                    {artist.name}
+                    {artist.displayName}
                   </span>
                 </div>
                 {selectedDate && (

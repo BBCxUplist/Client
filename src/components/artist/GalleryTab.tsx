@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import type { Artist } from '@/types';
+import type { GalleryTabData } from '../../types/tabs';
 
 interface GalleryTabProps {
-  artist: Artist;
+  artist: GalleryTabData;
 }
 
 const GalleryTab = ({ artist }: GalleryTabProps) => {
@@ -18,7 +18,7 @@ const GalleryTab = ({ artist }: GalleryTabProps) => {
         Gallery
       </h3>
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6'>
-        {artist?.photos?.length > 0 ? (
+        {artist?.photos && artist.photos.length > 0 ? (
           artist.photos.map((image: string, index: number) => (
             <Dialog key={index}>
               <DialogTrigger asChild>
