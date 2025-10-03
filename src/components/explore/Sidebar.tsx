@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 interface FilterProps {
   onFilterChange: (filters: FilterState) => void;
   isMobile: boolean;
+  currentFilters?: FilterState;
+  availableGenres?: string[];
 }
 
 interface FilterState {
@@ -16,34 +18,46 @@ enum ActivityTab {
   BOOKABLE = 'bookable',
 }
 
-const Sidebar = ({ onFilterChange, isMobile }: FilterProps) => {
-  const [activeTab, setActiveTab] = useState<ActivityTab>(ActivityTab.ALL);
-  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
+const Sidebar = ({
+  onFilterChange,
+  isMobile,
+  currentFilters,
+  availableGenres,
+}: FilterProps) => {
+  const [activeTab, setActiveTab] = useState<ActivityTab>(
+    currentFilters?.activeTab || ActivityTab.ALL
+  );
+  const [selectedGenres, setSelectedGenres] = useState<string[]>(
+    currentFilters?.genres || []
+  );
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
-  // Available filter options
-  const genres = [
-    'Hip-Hop',
-    'Rap',
-    'Bollywood',
-    'Producer',
-    'Regional Music',
-    'Independent Artist',
-    'Live Performance',
-    'Battle Rap',
-    'Storytelling',
-    'Pop Rap',
-    'Commercial Music',
-    'Alternative Rap',
-    'Underground',
-    'Viral Artist',
-    'Street Rap',
-    'Music Producer',
-    'MTV Hustle',
-    'Regional Rap',
-    'Fusion',
-    'Traditional',
-  ];
+  // Use available genres from props, fallback to default list
+  const genres =
+    availableGenres && availableGenres.length > 0
+      ? availableGenres
+      : [
+          'Hip-Hop',
+          'Rap',
+          'Bollywood',
+          'Producer',
+          'Regional Music',
+          'Independent Artist',
+          'Live Performance',
+          'Battle Rap',
+          'Storytelling',
+          'Pop Rap',
+          'Commercial Music',
+          'Alternative Rap',
+          'Underground',
+          'Viral Artist',
+          'Street Rap',
+          'Music Producer',
+          'MTV Hustle',
+          'Regional Rap',
+          'Fusion',
+          'Traditional',
+        ];
 
   const handleTabChange = (tab: ActivityTab) => {
     setActiveTab(tab);
@@ -55,7 +69,7 @@ const Sidebar = ({ onFilterChange, isMobile }: FilterProps) => {
       ? selectedGenres.filter(g => g !== genre)
       : [...selectedGenres, genre];
     setSelectedGenres(newGenres);
-    updateFilters(ActivityTab.ALL, newGenres);
+    updateFilters(activeTab, newGenres);
   };
 
   const updateFilters = (tab: ActivityTab, genres: string[]) => {
@@ -67,10 +81,19 @@ const Sidebar = ({ onFilterChange, isMobile }: FilterProps) => {
 
   const clearFilters = () => {
     setSelectedGenres([]);
+    setActiveTab(ActivityTab.ALL);
     updateFilters(ActivityTab.ALL, []);
   };
 
   const activeFiltersCount = selectedGenres.length;
+
+  // Sync state when currentFilters prop changes
+  useEffect(() => {
+    if (currentFilters) {
+      setActiveTab(currentFilters.activeTab);
+      setSelectedGenres(currentFilters.genres);
+    }
+  }, [currentFilters]);
 
   if (isMobile) {
     return (
@@ -143,7 +166,7 @@ const Sidebar = ({ onFilterChange, isMobile }: FilterProps) => {
                   </button>
                   <button
                     className={`border p-2 text-xs transition-all duration-300 ${
-                      activeTab === 'bookable'
+                      activeTab === ActivityTab.BOOKABLE
                         ? 'bg-orange-500 text-black border-black'
                         : 'text-orange-500 border-orange-500 hover:bg-orange-500/10'
                     }`}
@@ -190,7 +213,7 @@ const Sidebar = ({ onFilterChange, isMobile }: FilterProps) => {
       <div className='space-y-2'>
         <button
           className={`w-full border p-2 text-sm transition-all duration-300 ${
-            activeTab === 'all'
+            activeTab === ActivityTab.ALL
               ? 'bg-orange-500 text-black border-black'
               : 'text-orange-500 border-orange-500 hover:bg-orange-500/10'
           }`}
@@ -200,7 +223,7 @@ const Sidebar = ({ onFilterChange, isMobile }: FilterProps) => {
         </button>
         <button
           className={`w-full border p-2 text-sm transition-all duration-300 ${
-            activeTab === 'bookable'
+            activeTab === ActivityTab.BOOKABLE
               ? 'bg-orange-500 text-black border-black'
               : 'text-orange-500 border-orange-500 hover:bg-orange-500/10'
           }`}

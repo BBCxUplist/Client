@@ -44,3 +44,14 @@ export interface FeaturedArtistsResponse {
     artists: Artist[];
   };
 }
+
+export interface AllArtistsResponse {
+  success: boolean;
+  message: string;
+  data: {
+    artists: Artist[];
+    page: number;
+    limit: number;
+    hasMore: boolean;
+  };
+}
