@@ -158,7 +158,9 @@ const ArtistProfile = () => {
               {activeTab === ArtistTab.ABOUT && (
                 <AboutTab artist={{ bio: artist?.bio }} />
               )}
-              {activeTab === ArtistTab.MUSIC && <MusicTab />}
+              {activeTab === ArtistTab.MUSIC && (
+                <MusicTab artist={{ embeds: artist?.embeds }} />
+              )}
               {/* {activeTab === "reviews" && <ReviewsTab artist={artist} />} */}
               {activeTab === ArtistTab.GALLERY && (
                 <GalleryTab artist={{ photos: artist?.photos }} />

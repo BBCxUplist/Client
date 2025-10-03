@@ -4,7 +4,9 @@ export interface Socials {
 }
 
 export interface Embeds {
-  spotify?: string;
+  spotify?: string[];
+  youtube?: string[];
+  soundcloud?: string[];
 }
 
 export interface Artist {

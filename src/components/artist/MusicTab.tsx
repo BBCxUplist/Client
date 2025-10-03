@@ -2,28 +2,26 @@ import { motion } from 'framer-motion';
 import React, { useState, useMemo } from 'react';
 import EmbedPlayer from './EmbedPlayer';
 
-const MusicTab = () => {
+interface MusicTabProps {
+  artist: {
+    embeds?: {
+      spotify?: string[];
+      youtube?: string[];
+      soundcloud?: string[];
+    };
+  };
+}
+
+const MusicTab = ({ artist }: MusicTabProps) => {
   const [selectedPlatform, setSelectedPlatform] = useState<
     'youtube' | 'soundcloud' | 'spotify'
   >('youtube');
 
-  // Hardcoded music data
+  // Use real artist data from API
   const musicData = {
-    youtube: [
-      'https://www.youtube.com/watch?v=XCIYHCXQoxQ',
-      'https://www.youtube.com/watch?v=XCIYHCXQoxQ',
-      'https://www.youtube.com/watch?v=XCIYHCXQoxQ',
-    ],
-    spotify: [
-      'https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9',
-      'https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9',
-      'https://open.spotify.com/track/19pHSvXUwErAXFktkvYMk9',
-    ],
-    soundcloud: [
-      'https://soundcloud.com/ender-gaming-531387957/seedhe-maut-raat-ki-raani',
-      'https://soundcloud.com/ender-gaming-531387957/seedhe-maut-raat-ki-raani',
-      'https://soundcloud.com/ender-gaming-531387957/seedhe-maut-raat-ki-raani',
-    ],
+    youtube: artist.embeds?.youtube || [],
+    spotify: artist.embeds?.spotify || [],
+    soundcloud: artist.embeds?.soundcloud || [],
   };
 
   const getPlatformIcon = (platform: string) => {
