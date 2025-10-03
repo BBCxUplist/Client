@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import EmbedPlayer from './EmbedPlayer';
 
 interface MusicTabProps {
@@ -17,12 +17,15 @@ const MusicTab = ({ artist }: MusicTabProps) => {
     'youtube' | 'soundcloud' | 'spotify'
   >('youtube');
 
-  // Use real artist data from API
-  const musicData = {
-    youtube: artist.embeds?.youtube || [],
-    spotify: artist.embeds?.spotify || [],
-    soundcloud: artist.embeds?.soundcloud || [],
-  };
+  // Use real artist data from API - always ensure arrays
+  const musicData = useMemo(
+    () => ({
+      youtube: artist.embeds?.youtube || [],
+      spotify: artist.embeds?.spotify || [],
+      soundcloud: artist.embeds?.soundcloud || [],
+    }),
+    [artist.embeds]
+  );
 
   const getPlatformIcon = (platform: string) => {
     return `/icons/embeds/${platform}.png`;
@@ -37,17 +40,45 @@ const MusicTab = ({ artist }: MusicTabProps) => {
   };
 
   const availablePlatforms = getAvailablePlatforms();
-  const currentPlatformTracks = useMemo(
-    () => musicData[selectedPlatform] || [],
-    [selectedPlatform]
-  );
+  const currentPlatformTracks = useMemo(() => {
+    const tracks = musicData[selectedPlatform];
+
+    // Force it to be an array
+    if (!Array.isArray(tracks)) {
+      console.warn(
+        'Tracks is not an array, converting to empty array:',
+        tracks
+      );
+      return [];
+    }
+    return tracks;
+  }, [selectedPlatform, musicData]);
 
   // Auto-select first available platform if current selection has no tracks
-  React.useEffect(() => {
+  useEffect(() => {
     if (currentPlatformTracks.length === 0 && availablePlatforms.length > 0) {
       setSelectedPlatform(availablePlatforms[0]);
     }
   }, [currentPlatformTracks.length, availablePlatforms]);
+
+  // Error boundary for the component
+  if (!artist || !artist.embeds) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className='space-y-6 md:space-y-8'
+      >
+        <h3 className='text-2xl md:text-3xl font-semibold text-orange-500 mb-6 font-mondwest'>
+          Music & Tracks
+        </h3>
+        <div className='text-center py-8 text-white/60'>
+          <p>No music data available</p>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -86,9 +117,13 @@ const MusicTab = ({ artist }: MusicTabProps) => {
 
       {/* All Tracks as Embedded Players */}
       <div className='space-y-6'>
-        {currentPlatformTracks.length > 0 ? (
+        {Array.isArray(currentPlatformTracks) &&
+        currentPlatformTracks.length > 0 ? (
           currentPlatformTracks.map((embedUrl, index) => (
-            <div key={index} className='bg-white/5 p-4 border border-white/10'>
+            <div
+              key={`${selectedPlatform}-${index}`}
+              className='bg-white/5 p-4 border border-white/10'
+            >
               <div className='flex items-center gap-3 mb-4'>
                 <img
                   src={getPlatformIcon(selectedPlatform)}
