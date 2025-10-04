@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import EmbedPlayer from './EmbedPlayer';
 
 interface MusicTabProps {
