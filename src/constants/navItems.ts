@@ -29,9 +29,8 @@ const navItems: NavItem[] = [
     id: 'how-it-works',
   },
   {
-    label: 'Faq',
-    href: '/faq',
-    id: 'faq',
+    label: 'Dashboard',
+    href: '/dashboard',
   },
 ];
 

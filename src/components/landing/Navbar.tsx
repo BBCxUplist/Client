@@ -2,6 +2,7 @@ import { navItems, contactItems } from '@/constants/navItems';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useStore } from '@/stores/store';
 
 interface NavItem {
   label: string;
@@ -12,6 +13,7 @@ interface NavItem {
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isAuthenticated, user, logout } = useStore();
 
   const handleMouseEnter = () => {
     setIsMenuOpen(true);
@@ -19,6 +21,13 @@ const Navbar = () => {
 
   const handleMouseLeave = () => {
     setIsMenuOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setIsMenuOpen(false);
+    // Optionally redirect to home page
+    window.location.href = '/';
   };
 
   const handleNavClick = (item: NavItem) => {
@@ -164,16 +173,34 @@ const Navbar = () => {
                   </div>
 
                   <div className='flex flex-nowrap text-center font-thin text-sm divide-x divide-black divide-dashed mt-2'>
-                    {contactItems.map((item, index) => (
-                      <div key={index} className='p-1 flex-grow '>
-                        <Link
-                          to={item.href}
-                          className=' p-1 block w-full rounded-sm hover:bg-black hover:text-orange-500'
-                        >
-                          {item.label}
-                        </Link>
-                      </div>
-                    ))}
+                    {isAuthenticated ? (
+                      <>
+                        <div className='p-1 flex-grow'>
+                          <span className='p-1 block w-full text-black/70'>
+                            Welcome, {user?.name || user?.email}
+                          </span>
+                        </div>
+                        <div className='p-1 flex-grow'>
+                          <button
+                            onClick={handleLogout}
+                            className='p-1 block w-full rounded-sm hover:bg-black hover:text-orange-500'
+                          >
+                            Logout
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      contactItems.map((item, index) => (
+                        <div key={index} className='p-1 flex-grow '>
+                          <Link
+                            to={item.href}
+                            className=' p-1 block w-full rounded-sm hover:bg-black hover:text-orange-500'
+                          >
+                            {item.label}
+                          </Link>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               </motion.div>

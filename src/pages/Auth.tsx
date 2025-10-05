@@ -1,6 +1,6 @@
 // pages/Auth.tsx
-import { useState } from 'react';
-// import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/landing/Navbar';
 import { resetPassword } from '@/lib/supabase';
 import { useRegisterWithValidation } from '@/hooks/useRegister';
@@ -14,10 +14,12 @@ import AuthMessages from '@/components/auth/AuthMessages';
 import AuthFooter from '@/components/auth/AuthFooter';
 import DesktopBranding from '@/components/auth/DesktopBranding';
 import OTPVerification from '@/components/auth/OTPVerification';
+import { useStore } from '@/stores/store';
 import type { FormData, AuthMode } from '@/components/auth/types';
 
 const Auth = () => {
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useStore();
   const [activeMode, setActiveMode] = useState<AuthMode>('signin');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -42,6 +44,13 @@ const Auth = () => {
   const loginMutation = useLogin();
   const googleLoginMutation = useGoogleLogin();
   const registerAPIMutation = useRegisterAPI();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
 
   // ... (keep all existing functions - handleInputChange, validateForm, handleSubmit, switchMode, onGoogleLogin, onForgotPassword)
   const handleInputChange = (
@@ -108,7 +117,7 @@ const Auth = () => {
           password: formData.password,
         });
         console.log('Login successful:', result);
-        // navigate('/explore'); // Removed navigation for now
+        // Navigation will be handled by useEffect when isAuthenticated changes
       } else {
         const role = formData.isArtist ? 'artist' : 'user';
         const result = await registerMutation.mutateAsync({

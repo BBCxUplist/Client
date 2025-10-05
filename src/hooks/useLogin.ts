@@ -1,13 +1,17 @@
 import { useMutation } from '@tanstack/react-query';
 import { login, loginWithGoogle } from '@/lib/supabase';
+import { useStore } from '@/stores/store';
 import type {
   LoginData,
   LoginResponse,
   AuthError,
   UseLoginReturn,
+  User,
 } from '@/types/auth';
 
 export const useLogin = (): UseLoginReturn => {
+  const { setAuth } = useStore();
+
   return useMutation<LoginResponse, AuthError, LoginData>({
     mutationFn: async ({ email, password }) => {
       try {
@@ -22,8 +26,19 @@ export const useLogin = (): UseLoginReturn => {
         };
       }
     },
-    onSuccess: () => {
-      // Login completed successfully
+    onSuccess: data => {
+      // Extract user data and role from the response
+      const userData: User = {
+        id: data.user.id,
+        email: data.user.email,
+        name: data.user.user_metadata?.name || '',
+        role: data.user.user_metadata?.role || 'user',
+        created_at: data.user.created_at,
+        updated_at: data.user.updated_at,
+      };
+
+      // Set authentication state in Zustand
+      setAuth(userData, data.session.access_token, data.session.refresh_token);
     },
     onError: () => {
       // Handle login errors
@@ -32,6 +47,8 @@ export const useLogin = (): UseLoginReturn => {
 };
 
 export const useGoogleLogin = () => {
+  const { setAuth } = useStore();
+
   return useMutation<any, AuthError, void>({
     mutationFn: async () => {
       try {
@@ -45,8 +62,19 @@ export const useGoogleLogin = () => {
         };
       }
     },
-    onSuccess: () => {
-      // Google login completed successfully
+    onSuccess: data => {
+      // Extract user data and role from the response
+      const userData: User = {
+        id: data.user.id,
+        email: data.user.email,
+        name: data.user.user_metadata?.name || '',
+        role: data.user.user_metadata?.role || 'user',
+        created_at: data.user.created_at,
+        updated_at: data.user.updated_at,
+      };
+
+      // Set authentication state in Zustand
+      setAuth(userData, data.session.access_token, data.session.refresh_token);
     },
     onError: () => {
       // Handle Google login errors
