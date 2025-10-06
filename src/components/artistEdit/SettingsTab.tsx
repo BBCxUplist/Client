@@ -28,33 +28,13 @@ const SettingsTab = ({ artist }: SettingsTabProps) => {
             </label>
             <input
               type='email'
-              value={`${artist.slug}@example.com`}
+              value={artist.email || 'Not available'}
               className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500'
               readOnly
             />
             <p className='text-white/50 text-xs mt-1'>
-              Contact support to change email
+              Email cannot be changed. Contact support if needed.
             </p>
-          </div>
-
-          <div>
-            <label className='block text-white/70 text-sm mb-2'>
-              Phone Number
-            </label>
-            <input
-              type='tel'
-              placeholder='+91 98765 43210'
-              className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500'
-            />
-          </div>
-
-          <div>
-            <label className='block text-white/70 text-sm mb-2'>Location</label>
-            <input
-              type='text'
-              placeholder='Mumbai, Maharashtra'
-              className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500'
-            />
           </div>
         </div>
       </div>

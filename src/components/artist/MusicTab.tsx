@@ -73,8 +73,13 @@ const MusicTab = ({ artist }: MusicTabProps) => {
         <h3 className='text-2xl md:text-3xl font-semibold text-orange-500 mb-6 font-mondwest'>
           Music & Tracks
         </h3>
-        <div className='text-center py-8 text-white/60'>
-          <p>No music data available</p>
+        <div className='flex flex-col items-center justify-center py-12 text-center'>
+          <img
+            src='/icons/empty/music.svg'
+            alt='No music available'
+            className='w-24 h-24 mb-4 opacity-50'
+          />
+          <p className='text-white/60 text-lg'>No music data available</p>
         </div>
       </motion.div>
     );
@@ -142,12 +147,24 @@ const MusicTab = ({ artist }: MusicTabProps) => {
             </div>
           ))
         ) : availablePlatforms.length > 0 ? (
-          <div className='text-center py-8 text-white/60'>
-            <p>No tracks available on {selectedPlatform}</p>
+          <div className='flex flex-col items-center justify-center py-12 text-center'>
+            <img
+              src='/icons/empty/music.svg'
+              alt='No tracks available'
+              className='w-24 h-24 mb-4 opacity-50'
+            />
+            <p className='text-white/60 text-lg'>
+              No tracks available on {selectedPlatform}
+            </p>
           </div>
         ) : (
-          <div className='text-center py-8 text-white/60'>
-            <p>No tracks available</p>
+          <div className='flex flex-col items-center justify-center py-12 text-center'>
+            <img
+              src='/icons/empty/music.svg'
+              alt='No tracks available'
+              className='w-24 h-24 mb-4 opacity-50'
+            />
+            <p className='text-white/60 text-lg'>No tracks available</p>
           </div>
         )}
       </div>

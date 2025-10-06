@@ -17,9 +17,22 @@ const AboutTab = ({ artist }: AboutTabProps) => {
         <h3 className='text-2xl md:text-3xl font-semibold text-orange-500 mb-4 font-mondwest'>
           About
         </h3>
-        <p className='text-white/80 leading-relaxed text-base md:text-lg max-w-4xl'>
-          {artist?.bio || 'No biography available for this artist.'}
-        </p>
+        {artist?.bio ? (
+          <p className='text-white/80 leading-relaxed text-base md:text-lg max-w-4xl'>
+            {artist.bio}
+          </p>
+        ) : (
+          <div className='flex flex-col items-center justify-center py-12 text-center'>
+            <img
+              src='/icons/empty/about.svg'
+              alt='No about information'
+              className='w-24 h-24 mb-4 opacity-50'
+            />
+            <p className='text-white/60 text-lg'>
+              No biography available for this artist.
+            </p>
+          </div>
+        )}
       </div>
     </motion.div>
   );

@@ -55,8 +55,13 @@ const GalleryTab = ({ artist }: GalleryTabProps) => {
             </Dialog>
           ))
         ) : (
-          <div className='text-center py-8 text-white/60'>
-            <p>No gallery images available</p>
+          <div className='flex flex-col items-center justify-center py-12 text-center col-span-full'>
+            <img
+              src='/icons/empty/gallery.svg'
+              alt='No gallery images available'
+              className='w-24 h-24 mb-4 opacity-50'
+            />
+            <p className='text-white/60 text-lg'>No gallery images available</p>
           </div>
         )}
       </div>

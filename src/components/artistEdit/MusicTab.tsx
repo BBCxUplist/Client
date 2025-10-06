@@ -1,6 +1,17 @@
 import { useState } from 'react';
 
-const MusicTab = () => {
+interface MusicTabProps {
+  formData?: {
+    embeds?: {
+      youtube?: string[];
+      soundcloud?: string[];
+      spotify?: string[];
+    };
+  };
+  handleInputChange?: (field: string, value: any) => void;
+}
+
+const MusicTab = ({ formData, handleInputChange }: MusicTabProps) => {
   const [selectedPlatform, setSelectedPlatform] = useState<
     'youtube' | 'soundcloud' | 'spotify'
   >('youtube');
@@ -11,6 +22,39 @@ const MusicTab = () => {
     { value: 'soundcloud', label: 'SoundCloud' },
     { value: 'spotify', label: 'Spotify' },
   ];
+
+  const currentEmbeds = formData?.embeds || {
+    youtube: [],
+    soundcloud: [],
+    spotify: [],
+  };
+
+  const handleAddEmbed = () => {
+    if (!embedUrl.trim() || !handleInputChange) return;
+
+    const currentPlatformEmbeds = currentEmbeds[selectedPlatform] || [];
+    const updatedEmbeds = [...currentPlatformEmbeds, embedUrl.trim()];
+
+    handleInputChange('embeds', {
+      ...currentEmbeds,
+      [selectedPlatform]: updatedEmbeds,
+    });
+
+    setEmbedUrl('');
+  };
+
+  const handleRemoveEmbed = (platform: string, index: number) => {
+    if (!handleInputChange) return;
+
+    const currentPlatformEmbeds =
+      currentEmbeds[platform as keyof typeof currentEmbeds] || [];
+    const updatedEmbeds = currentPlatformEmbeds.filter((_, i) => i !== index);
+
+    handleInputChange('embeds', {
+      ...currentEmbeds,
+      [platform]: updatedEmbeds,
+    });
+  };
 
   return (
     <div className='space-y-8'>
@@ -74,7 +118,11 @@ const MusicTab = () => {
 
           {/* Add Button */}
           <div className='flex justify-end'>
-            <button className='bg-orange-500 text-black px-6 py-3 font-semibold hover:bg-orange-600 transition-colors'>
+            <button
+              onClick={handleAddEmbed}
+              disabled={!embedUrl.trim()}
+              className='bg-orange-500 text-black px-6 py-3 font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+            >
               Add Embed
             </button>
           </div>
@@ -88,40 +136,51 @@ const MusicTab = () => {
         </h3>
 
         <div className='space-y-4'>
-          {/* Example embed items */}
-          <div className='flex items-center justify-between p-4 bg-white/5 border border-white/10'>
-            <div className='flex items-center gap-4'>
-              <div className='w-12 h-12 bg-orange-500/20 flex items-center justify-center'>
-                <span className='text-orange-500 text-xl'>▶</span>
-              </div>
-              <div>
-                <p className='text-white font-semibold'>Featured Track</p>
-                <p className='text-white/60 text-sm'>YouTube • 2.1M views</p>
-              </div>
-            </div>
-            <div className='flex gap-2'>
-              <button className='text-red-400 hover:text-red-300 px-3 py-1 text-sm border border-red-500/40 hover:border-red-500/60 transition-colors'>
-                Remove
-              </button>
-            </div>
-          </div>
+          {Object.entries(currentEmbeds).map(([platform, embeds]) => {
+            if (!embeds || embeds.length === 0) return null;
 
-          <div className='flex items-center justify-between p-4 bg-white/5 border border-white/10'>
-            <div className='flex items-center gap-4'>
-              <div className='w-12 h-12 bg-orange-500/20 flex items-center justify-center'>
-                <span className='text-orange-500 text-xl'>♪</span>
+            return embeds.map((url, index) => (
+              <div
+                key={`${platform}-${index}`}
+                className='flex items-center justify-between p-4 bg-white/5 border border-white/10'
+              >
+                <div className='flex items-center gap-4'>
+                  <div className='w-12 h-12 bg-orange-500/20 flex items-center justify-center'>
+                    <img
+                      src={`/icons/embeds/${platform}.png`}
+                      alt={platform}
+                      className='w-6 h-6'
+                    />
+                  </div>
+                  <div>
+                    <p className='text-white font-semibold'>
+                      {platform.charAt(0).toUpperCase() + platform.slice(1)}{' '}
+                      Track {index + 1}
+                    </p>
+                    <p className='text-white/60 text-sm truncate max-w-xs'>
+                      {url}
+                    </p>
+                  </div>
+                </div>
+                <div className='flex gap-2'>
+                  <button
+                    onClick={() => handleRemoveEmbed(platform, index)}
+                    className='text-red-400 hover:text-red-300 px-3 py-1 text-sm border border-red-500/40 hover:border-red-500/60 transition-colors'
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
-              <div>
-                <p className='text-white font-semibold'>Latest Single</p>
-                <p className='text-white/60 text-sm'>Spotify • 500K plays</p>
-              </div>
+            ));
+          })}
+
+          {Object.values(currentEmbeds).every(
+            embeds => !embeds || embeds.length === 0
+          ) && (
+            <div className='text-center py-8 text-white/60'>
+              <p>No music embeds added yet</p>
             </div>
-            <div className='flex gap-2'>
-              <button className='text-red-400 hover:text-red-300 px-3 py-1 text-sm border border-red-500/40 hover:border-red-500/60 transition-colors'>
-                Remove
-              </button>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

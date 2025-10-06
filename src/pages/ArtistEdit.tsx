@@ -8,6 +8,7 @@ import ProfileTab from '@/components/artistEdit/ProfileTab';
 import MusicTab from '@/components/artistEdit/MusicTab';
 import GalleryTab from '@/components/artistEdit/GalleryTab';
 import SettingsTab from '@/components/artistEdit/SettingsTab';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 
 enum ArtistEditTab {
   PROFILE = 'profile',
@@ -50,6 +51,12 @@ const ArtistEdit = () => {
     },
     genres: [] as string[],
     price: 0,
+    embeds: {
+      youtube: [] as string[],
+      soundcloud: [] as string[],
+      spotify: [] as string[],
+    },
+    photos: [] as string[],
   });
 
   // Original data to track changes
@@ -69,6 +76,12 @@ const ArtistEdit = () => {
     },
     genres: [] as string[],
     price: 0,
+    embeds: {
+      youtube: [] as string[],
+      soundcloud: [] as string[],
+      spotify: [] as string[],
+    },
+    photos: [] as string[],
   });
 
   // Update profile mutation
@@ -77,6 +90,9 @@ const ArtistEdit = () => {
   // Message states
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Modal state
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   // Initialize form data when artist is found
   useEffect(() => {
@@ -95,8 +111,14 @@ const ArtistEdit = () => {
           soundcloud: '',
           youtube: '',
         },
-        genres: [], // Will be populated from other sources
-        price: 0, // Will be populated from other sources
+        genres: artist.genres || [],
+        price: artist.basePrice || 0,
+        embeds: artist.embeds || {
+          youtube: [],
+          soundcloud: [],
+          spotify: [],
+        },
+        photos: artist.photos || [],
       };
 
       setFormData(initialData);
@@ -180,6 +202,27 @@ const ArtistEdit = () => {
       changes.socials = formData.socials;
     }
 
+    // Check embeds object
+    const embedsChanged = Object.keys(formData.embeds).some(
+      key =>
+        JSON.stringify(formData.embeds[key as keyof typeof formData.embeds]) !==
+        JSON.stringify(
+          originalData.embeds[key as keyof typeof originalData.embeds]
+        )
+    );
+
+    if (embedsChanged) {
+      changes.embeds = formData.embeds;
+    }
+
+    // Check photos array
+    if (
+      JSON.stringify(formData.photos.sort()) !==
+      JSON.stringify(originalData.photos.sort())
+    ) {
+      changes.photos = formData.photos;
+    }
+
     return changes;
   };
 
@@ -226,7 +269,24 @@ const ArtistEdit = () => {
   };
 
   const handleCancel = () => {
+    // Check if there are any unsaved changes
+    const changedFields = getChangedFields();
+    const hasChanges = Object.keys(changedFields).length > 0;
+
+    if (hasChanges) {
+      setShowCancelModal(true);
+    } else {
+      navigate('/dashboard');
+    }
+  };
+
+  const handleConfirmCancel = () => {
+    setShowCancelModal(false);
     navigate('/dashboard');
+  };
+
+  const handleCloseCancelModal = () => {
+    setShowCancelModal(false);
   };
 
   // No artist data - redirect to dashboard to fetch data
@@ -336,11 +396,20 @@ const ArtistEdit = () => {
           )}
 
           {/* Music Tab */}
-          {activeTab === ArtistEditTab.MUSIC && <MusicTab />}
+          {activeTab === ArtistEditTab.MUSIC && (
+            <MusicTab
+              formData={formData}
+              handleInputChange={handleInputChange}
+            />
+          )}
 
           {/* Gallery Tab */}
           {activeTab === ArtistEditTab.GALLERY && (
-            <GalleryTab artist={artist} />
+            <GalleryTab
+              artist={artist}
+              formData={formData}
+              handleInputChange={handleInputChange}
+            />
           )}
 
           {/* Settings Tab */}
@@ -349,6 +418,18 @@ const ArtistEdit = () => {
           )}
         </div>
       </div>
+
+      {/* Cancel Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showCancelModal}
+        onClose={handleCloseCancelModal}
+        onConfirm={handleConfirmCancel}
+        title='Unsaved Changes'
+        message='You have unsaved changes. Are you sure you want to leave? Your changes will be lost.'
+        confirmText='Leave'
+        cancelText='Stay'
+        confirmButtonColor='red'
+      />
     </div>
   );
 };

@@ -52,12 +52,18 @@ const ProfileTab = ({
             <input
               type='text'
               value={formData.username}
-              onChange={e => handleInputChange('username', e.target.value)}
+              onChange={e => {
+                const value = e.target.value
+                  .toLowerCase()
+                  .replace(/[^a-z0-9._]/g, '');
+                handleInputChange('username', value);
+              }}
               className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
               placeholder='Enter username (e.g., artistname)'
             />
             <p className='text-white/50 text-xs mt-1'>
-              This will be your unique identifier and profile URL
+              Username must be lowercase, no spaces, only letters, numbers, dots
+              (.) and underscores (_)
             </p>
           </div>
 
@@ -177,11 +183,12 @@ const ProfileTab = ({
               Booking Price (₹)
             </label>
             <input
-              type='number'
-              value={formData.price}
-              onChange={e =>
-                handleInputChange('price', parseInt(e.target.value) || 0)
-              }
+              type='text'
+              value={formData.price || ''}
+              onChange={e => {
+                const value = e.target.value.replace(/[^0-9]/g, '');
+                handleInputChange('price', parseInt(value) || 0);
+              }}
               className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
               placeholder='Enter booking price'
             />
@@ -203,7 +210,7 @@ const ProfileTab = ({
             <div className='flex flex-wrap gap-2 mb-3 min-h-[32px]'>
               {formData.genres.length === 0 ? (
                 <span className='text-white/40 text-sm italic'>
-                  No genres added yet
+                  No genres selected yet
                 </span>
               ) : (
                 formData.genres.map((genre, index) => (
@@ -222,17 +229,34 @@ const ProfileTab = ({
                 ))
               )}
             </div>
-            <input
-              type='text'
-              placeholder='Add new genre'
-              onKeyPress={e => {
-                if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                  handleGenreChange(e.currentTarget.value.trim(), 'add');
-                  e.currentTarget.value = '';
-                }
-              }}
-              className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
-            />
+            <div className='flex flex-wrap gap-2'>
+              {[
+                'Pop',
+                'Rock',
+                'Hip Hop',
+                'Jazz',
+                'Classical',
+                'Folk',
+                'Metal',
+              ].map(genre => (
+                <button
+                  key={genre}
+                  onClick={() => {
+                    const action = formData.genres.includes(genre)
+                      ? 'remove'
+                      : 'add';
+                    handleGenreChange(genre, action);
+                  }}
+                  className={`px-3 py-2 text-sm border transition-all duration-300 ${
+                    formData.genres.includes(genre)
+                      ? 'bg-orange-500 text-black border-orange-500'
+                      : 'bg-white/10 text-white border-white/30 hover:border-white/60'
+                  }`}
+                >
+                  {genre}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -242,6 +266,9 @@ const ProfileTab = ({
         <h3 className='text-xl font-semibold text-white mb-6 font-mondwest'>
           Social Media
         </h3>
+        <p className='text-white/60 text-sm mb-4'>
+          Add only your usernames (without @ symbol or full URLs)
+        </p>
 
         <div className='space-y-4'>
           <div>
@@ -251,7 +278,7 @@ const ProfileTab = ({
               value={formData.socials.twitter}
               onChange={e => handleSocialChange?.('twitter', e.target.value)}
               className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
-              placeholder='@username'
+              placeholder='username'
             />
           </div>
 
@@ -264,7 +291,7 @@ const ProfileTab = ({
               value={formData.socials.instagram}
               onChange={e => handleSocialChange?.('instagram', e.target.value)}
               className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
-              placeholder='@username'
+              placeholder='username'
             />
           </div>
 
@@ -275,7 +302,7 @@ const ProfileTab = ({
               value={formData.socials.spotify}
               onChange={e => handleSocialChange?.('spotify', e.target.value)}
               className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
-              placeholder='Artist name or profile link'
+              placeholder='username'
             />
           </div>
 
@@ -288,7 +315,7 @@ const ProfileTab = ({
               value={formData.socials.soundcloud}
               onChange={e => handleSocialChange?.('soundcloud', e.target.value)}
               className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
-              placeholder='Artist name or profile link'
+              placeholder='username'
             />
           </div>
 
@@ -299,7 +326,7 @@ const ProfileTab = ({
               value={formData.socials.youtube}
               onChange={e => handleSocialChange?.('youtube', e.target.value)}
               className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
-              placeholder='Channel name or link'
+              placeholder='username'
             />
           </div>
         </div>

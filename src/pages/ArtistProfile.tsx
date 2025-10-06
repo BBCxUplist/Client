@@ -6,6 +6,7 @@ import MusicTab from '@/components/artist/MusicTab';
 // import ReviewsTab from "@/components/artist/ReviewsTab";
 import GalleryTab from '@/components/artist/GalleryTab';
 import BookingTab from '@/components/artist/BookingTab';
+import SocialLinks from '@/components/ui/SocialLinks';
 import { formatPrice } from '@/helper';
 import { useGetArtist } from '../hooks/useGetArtist';
 
@@ -91,12 +92,12 @@ const ArtistProfile = () => {
               </div>
 
               {/* Artist Name */}
-              <h1 className='font-mondwest text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4'>
+              <h1 className='font-mondwest text-3xl md:text-4xl lg:text-5xl font-bold text-white '>
                 {artist?.displayName}
               </h1>
-
+              <p className='text-white/70 mb-4'>@{artist.username}</p>
               {/* Genre Tags */}
-              <div className='flex flex-wrap gap-2 lg:mb-6'>
+              <div className='flex flex-wrap gap-2 mb-6'>
                 {artist?.genres?.map((genre, index) => (
                   <span
                     key={index}
@@ -108,6 +109,9 @@ const ArtistProfile = () => {
                   <span className='text-white/60'>No categories available</span>
                 )}
               </div>
+
+              {/* Social Media Links */}
+              <SocialLinks socials={artist?.socials} />
 
               {/* Booking Info */}
               <div className='bg-white/5 p-4 border border-white/10 hidden lg:block'>
