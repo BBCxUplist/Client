@@ -8,6 +8,7 @@ interface AuthState {
   role: 'user' | 'artist' | 'admin' | null;
   accessToken: string | null;
   refreshToken: string | null;
+  artistData: any | null;
 }
 
 interface Store extends AuthState {
@@ -21,6 +22,7 @@ interface Store extends AuthState {
   setAuth: (user: User, accessToken: string, refreshToken: string) => void;
   clearAuth: () => void;
   setRole: (role: 'user' | 'artist' | 'admin' | null) => void;
+  setArtistData: (artistData: any | null) => void;
   logout: () => void;
 }
 
@@ -38,6 +40,7 @@ export const useStore = create<Store>()(
       role: null,
       accessToken: null,
       refreshToken: null,
+      artistData: null,
 
       // Auth actions
       setUser: user =>
@@ -67,6 +70,8 @@ export const useStore = create<Store>()(
 
       setRole: role => set({ role }),
 
+      setArtistData: artistData => set({ artistData }),
+
       logout: () =>
         set({
           user: null,
@@ -74,6 +79,7 @@ export const useStore = create<Store>()(
           role: null,
           accessToken: null,
           refreshToken: null,
+          artistData: null,
         }),
     }),
     {
@@ -84,6 +90,7 @@ export const useStore = create<Store>()(
         role: state.role,
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
+        artistData: state.artistData,
       }),
     }
   )

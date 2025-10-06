@@ -1,7 +1,8 @@
 // pages/ArtistDashboard.tsx
-import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { artists } from '@/constants/artists';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useStore } from '@/stores/store';
+import { useGetArtistByEmail } from '@/hooks/useGetArtistByEmail';
 import { formatPrice } from '@/helper';
 import { dummyDashboardData } from '@/constants/dashboardData';
 import BookingModal from '@/components/ui/BookingModal';
@@ -12,12 +13,22 @@ import SettingsTab from '@/components/artistDashboard/SettingsTab';
 import { DashboardTab } from '@/types';
 
 const ArtistDashboard = () => {
-  const { username } = useParams();
+  const { user, setArtistData } = useStore();
   const [activeTab, setActiveTab] = useState<DashboardTab>(
     DashboardTab.OVERVIEW
   );
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Fetch artist data using email from authenticated user
+  const {
+    data: artistResponse,
+    isLoading,
+    error,
+  } = useGetArtistByEmail({
+    email: user?.email || '',
+    enabled: !!user?.email,
+  });
 
   // Settings states
   const [profileVisibility, setProfileVisibility] = useState(true);
@@ -27,10 +38,66 @@ const ArtistDashboard = () => {
   const [smsNotifications, setSmsNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(false);
 
-  // Find artist data (in real app, verify this matches logged-in user)
-  const artist = artists.find(a => a.slug === username);
+  // Get artist data from API response
+  const artist = artistResponse?.data;
   const dashboardData = dummyDashboardData;
 
+  // Store artist data in state when fetched
+  useEffect(() => {
+    if (artist) {
+      setArtistData(artist);
+    }
+  }, [artist, setArtistData]);
+
+  // Check if profile is incomplete and get missing fields
+  const getMissingFields = () => {
+    if (!artist) return [];
+    const missing = [];
+    if (!artist.displayName) missing.push('Display Name');
+    if (!artist.avatar) missing.push('Profile Picture');
+    if (!artist.bio) missing.push('Bio');
+    if (!artist.phone) missing.push('Phone Number');
+    if (!artist.location) missing.push('Location');
+    if (!artist.socials) missing.push('Social Media Links');
+    return missing;
+  };
+
+  const missingFields = getMissingFields();
+  const isProfileIncomplete = missingFields.length > 0;
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className='min-h-screen bg-neutral-950 text-white flex items-center justify-center'>
+        <div className='text-center'>
+          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4'></div>
+          <p className='text-white/60'>Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !artistResponse?.success) {
+    return (
+      <div className='min-h-screen bg-neutral-950 text-white flex items-center justify-center'>
+        <div className='text-center'>
+          <h1 className='text-2xl font-bold mb-2'>Unable to Load Dashboard</h1>
+          <p className='text-white/60 mb-4'>
+            {error?.message || 'Failed to fetch artist data'}
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className='bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 transition-colors'
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // No artist data
   if (!artist) {
     return (
       <div className='min-h-screen bg-neutral-950 text-white flex items-center justify-center'>
@@ -57,21 +124,49 @@ const ArtistDashboard = () => {
 
   return (
     <div className='w-full p-4 md:p-6 lg:p-8'>
+      {/* Profile Completion Warning */}
+      {isProfileIncomplete && (
+        <div className='bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-6'>
+          <div className='flex items-start gap-3'>
+            <div className='text-yellow-400 text-xl'>⚠️</div>
+            <div className='flex-1'>
+              <h3 className='text-yellow-400 font-semibold mb-1'>
+                Profile Incomplete
+              </h3>
+              <p className='text-white/70 text-sm mb-2'>
+                Your profile is missing important information. Complete your
+                profile to be more visible to potential clients.
+              </p>
+              <div className='text-white/60 text-xs mb-3'>
+                <strong>Missing:</strong> {missingFields.join(', ')}
+              </div>
+              <Link to='/dashboard/edit'>
+                <button className='bg-yellow-500 text-black px-4 py-2 text-sm font-semibold hover:bg-yellow-600 transition-colors'>
+                  Complete Profile
+                </button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Dashboard Header */}
       <div className='flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8'>
         <div>
           <h1 className='font-mondwest text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2'>
             YOUR DASHBOARD
           </h1>
-          <p className='text-white/70 text-lg'>Welcome back, {artist.name}</p>
+          <p className='text-white/70 text-lg'>
+            Welcome back, {artist.displayName || artist.username || 'Artist'}
+          </p>
         </div>
         <div className='flex flex-wrap gap-3 mt-4 lg:mt-0'>
-          <Link to={`/artist/${username}`}>
+          <Link to={`/artist/${artist.username}`}>
             <button className='bg-white/10 border border-white/30 text-white px-4 py-2 font-semibold hover:bg-white/20 transition-colors'>
               VIEW PUBLIC PROFILE
             </button>
           </Link>
-          <Link to={`/artist/${username}/edit`}>
+          <Link to='/dashboard/edit'>
             <button className='bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 transition-colors'>
               EDIT PROFILE
             </button>
@@ -80,7 +175,20 @@ const ArtistDashboard = () => {
       </div>
 
       {/* Quick Stats Grid */}
-      <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-8'>
+      <div className='grid grid-cols-1 md:grid-cols-4 gap-6 mb-8'>
+        <div className='bg-white/5 border border-white/10 p-6'>
+          <h3 className='text-white/70 text-sm mb-2'>Profile Status</h3>
+          <p
+            className={`text-2xl font-bold font-mondwest ${isProfileIncomplete ? 'text-yellow-400' : 'text-green-400'}`}
+          >
+            {isProfileIncomplete ? 'Incomplete' : 'Complete'}
+          </p>
+          <p
+            className={`text-xs mt-1 ${isProfileIncomplete ? 'text-yellow-400' : 'text-green-400'}`}
+          >
+            {isProfileIncomplete ? '⚠️ Missing info' : '✅ All set'}
+          </p>
+        </div>
         <div className='bg-white/5 border border-white/10 p-6'>
           <h3 className='text-white/70 text-sm mb-2'>Total Earnings</h3>
           <p className='text-3xl font-bold text-orange-500 font-mondwest'>

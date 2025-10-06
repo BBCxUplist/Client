@@ -1,7 +1,8 @@
 // pages/ArtistEdit.tsx
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { artists } from '@/constants/artists';
+import { useNavigate } from 'react-router-dom';
+import { useStore } from '@/stores/store';
+import { useUpdateArtistProfile } from '@/hooks/useUpdateArtistProfile';
 import Navbar from '@/components/landing/Navbar';
 import ProfileTab from '@/components/artistEdit/ProfileTab';
 import MusicTab from '@/components/artistEdit/MusicTab';
@@ -16,34 +17,90 @@ enum ArtistEditTab {
 }
 
 const ArtistEdit = () => {
-  const { username } = useParams();
   const navigate = useNavigate();
+  const { isAuthenticated, artistData } = useStore();
   const [activeTab, setActiveTab] = useState<ArtistEditTab>(
     ArtistEditTab.PROFILE
   );
 
-  // Find artist data from constants
-  const artist = artists.find(a => a.slug === username);
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/auth');
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Get artist data from state
+  const artist = artistData;
 
   // Form state
   const [formData, setFormData] = useState({
-    name: '',
     bio: '',
-    price: 0,
+    displayName: '',
+    username: '',
+    avatar: '',
+    phone: '',
+    location: '',
+    socials: {
+      twitter: '',
+      instagram: '',
+      spotify: '',
+      soundcloud: '',
+      youtube: '',
+    },
     genres: [] as string[],
-    isBookable: true,
+    price: 0,
   });
+
+  // Original data to track changes
+  const [originalData, setOriginalData] = useState({
+    bio: '',
+    displayName: '',
+    username: '',
+    avatar: '',
+    phone: '',
+    location: '',
+    socials: {
+      twitter: '',
+      instagram: '',
+      spotify: '',
+      soundcloud: '',
+      youtube: '',
+    },
+    genres: [] as string[],
+    price: 0,
+  });
+
+  // Update profile mutation
+  const updateProfileMutation = useUpdateArtistProfile();
+
+  // Message states
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Initialize form data when artist is found
   useEffect(() => {
     if (artist) {
-      setFormData({
-        name: artist.name,
+      const initialData = {
         bio: artist.bio || '',
-        price: artist.basePrice,
-        genres: artist.genres,
-        isBookable: artist.isBookable,
-      });
+        displayName: artist.displayName || '',
+        username: artist.username || '',
+        avatar: artist.avatar || '',
+        phone: artist.phone || '',
+        location: artist.location || '',
+        socials: artist.socials || {
+          twitter: '',
+          instagram: '',
+          spotify: '',
+          soundcloud: '',
+          youtube: '',
+        },
+        genres: [], // Will be populated from other sources
+        price: 0, // Will be populated from other sources
+      };
+
+      setFormData(initialData);
+      setOriginalData(initialData);
     }
   }, [artist]);
 
@@ -54,6 +111,16 @@ const ArtistEdit = () => {
     setFormData(prev => ({
       ...prev,
       [field]: value,
+    }));
+  };
+
+  const handleSocialChange = (socialPlatform: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      socials: {
+        ...prev.socials,
+        [socialPlatform]: value,
+      },
     }));
   };
 
@@ -71,25 +138,112 @@ const ArtistEdit = () => {
     }
   };
 
-  const handleSave = () => {
-    // In a real app, this would save to an API
-    console.log('Saving artist data:', formData);
-    alert('Changes saved successfully!');
+  // Function to get only changed fields
+  const getChangedFields = () => {
+    const changes: any = {};
+
+    // Check simple fields
+    const simpleFields = [
+      'bio',
+      'displayName',
+      'username',
+      'avatar',
+      'phone',
+      'location',
+      'price',
+    ];
+    simpleFields.forEach(field => {
+      if (
+        formData[field as keyof typeof formData] !==
+        originalData[field as keyof typeof originalData]
+      ) {
+        changes[field] = formData[field as keyof typeof formData];
+      }
+    });
+
+    // Check genres array
+    if (
+      JSON.stringify(formData.genres.sort()) !==
+      JSON.stringify(originalData.genres.sort())
+    ) {
+      changes.genres = formData.genres;
+    }
+
+    // Check socials object
+    const socialsChanged = Object.keys(formData.socials).some(
+      key =>
+        formData.socials[key as keyof typeof formData.socials] !==
+        originalData.socials[key as keyof typeof originalData.socials]
+    );
+
+    if (socialsChanged) {
+      changes.socials = formData.socials;
+    }
+
+    return changes;
+  };
+
+  const handleSave = async () => {
+    // Clear previous messages
+    setSuccessMessage('');
+    setErrorMessage('');
+
+    try {
+      // Get only changed fields
+      const changedFields = getChangedFields();
+
+      // Check if there are any changes
+      if (Object.keys(changedFields).length === 0) {
+        setSuccessMessage('No changes detected. Profile is up to date.');
+        return;
+      }
+
+      console.log('Sending only changed fields:', changedFields);
+
+      // Call the API with only changed fields
+      const result = await updateProfileMutation.mutateAsync(changedFields);
+
+      if (result.success) {
+        setSuccessMessage('Profile updated successfully!');
+        // Update original data to reflect the changes
+        setOriginalData(formData);
+        // Navigate back to dashboard after a short delay
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 2000);
+      } else {
+        setErrorMessage(
+          result.message || 'Failed to update profile. Please try again.'
+        );
+      }
+    } catch (error: any) {
+      console.error('Error updating profile:', error);
+      setErrorMessage(
+        error.message ||
+          'An error occurred while updating your profile. Please try again.'
+      );
+    }
   };
 
   const handleCancel = () => {
-    navigate(`/artist/${username}`);
+    navigate('/dashboard');
   };
 
+  // No artist data - redirect to dashboard to fetch data
   if (!artist) {
     return (
       <div className='min-h-screen bg-neutral-950 text-white flex items-center justify-center'>
         <div className='text-center'>
-          <h1 className='text-2xl font-bold mb-2'>Artist Not Found</h1>
-          <p className='text-white/60'>
-            Unable to load artist data for "{username}".
+          <h1 className='text-2xl font-bold mb-2'>Loading Profile Data</h1>
+          <p className='text-white/60 mb-4'>
+            Please visit your dashboard first to load your profile data.
           </p>
-          <p className='text-white/60 mt-2'>Try: /artist/divine/edit</p>
+          <button
+            onClick={() => navigate('/dashboard')}
+            className='bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 transition-colors'
+          >
+            Go to Dashboard
+          </button>
         </div>
       </div>
     );
@@ -119,12 +273,32 @@ const ArtistEdit = () => {
             </button>
             <button
               onClick={handleSave}
-              className='bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 transition-colors'
+              disabled={updateProfileMutation.isPending}
+              className='bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
             >
-              SAVE CHANGES
+              {updateProfileMutation.isPending ? 'SAVING...' : 'SAVE CHANGES'}
             </button>
           </div>
         </div>
+
+        {/* Success/Error Messages */}
+        {successMessage && (
+          <div className='bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-6'>
+            <div className='flex items-center gap-3'>
+              <div className='text-green-400 text-xl'>✅</div>
+              <p className='text-green-400'>{successMessage}</p>
+            </div>
+          </div>
+        )}
+
+        {errorMessage && (
+          <div className='bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6'>
+            <div className='flex items-center gap-3'>
+              <div className='text-red-400 text-xl'>❌</div>
+              <p className='text-red-400'>{errorMessage}</p>
+            </div>
+          </div>
+        )}
 
         {/* Navigation Tabs */}
         <div className='flex flex-wrap gap-4 mb-6 md:mb-8 border-b border-dashed border-white pb-4'>
@@ -157,6 +331,7 @@ const ArtistEdit = () => {
               formData={formData}
               handleInputChange={handleInputChange}
               handleGenreChange={handleGenreChange}
+              handleSocialChange={handleSocialChange}
             />
           )}
 
@@ -167,11 +342,6 @@ const ArtistEdit = () => {
           {activeTab === ArtistEditTab.GALLERY && (
             <GalleryTab artist={artist} />
           )}
-
-          {/* Booking Tab */}
-          {/* {activeTab === ArtistEditTab.BOOKING && (
-            <BookingTab formData={formData} handleInputChange={handleInputChange} />
-          )} */}
 
           {/* Settings Tab */}
           {activeTab === ArtistEditTab.SETTINGS && (

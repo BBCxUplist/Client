@@ -57,3 +57,26 @@ export interface AllArtistsResponse {
     hasMore: boolean;
   };
 }
+
+export interface ArtistByEmailResponse {
+  success: boolean;
+  message: string;
+  data: {
+    id: string;
+    role: string;
+    username: string;
+    useremail: string;
+    displayName: string | null;
+    avatar: string | null;
+    bio: string | null;
+    phone: string | null;
+    location: string | null;
+    socials: any | null;
+    isActive: boolean;
+    isAdmin: boolean;
+    is_linkpage_visible: boolean;
+    banned: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+}

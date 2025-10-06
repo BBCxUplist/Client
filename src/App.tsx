@@ -18,7 +18,7 @@ function App() {
           <Route path='/' element={<Landing />} />
           <Route path='/explore' element={<Explore />} />
           <Route path='/artist/:username' element={<ArtistProfile />} />
-          <Route path='/artist/:username/edit' element={<ArtistEdit />} />
+          <Route path='/dashboard/edit' element={<ArtistEdit />} />
           <Route path='/dashboard' element={<Dashboard />} />
           <Route path='/messages' element={<Messages />} />
           <Route path='/auth' element={<Auth />} />
