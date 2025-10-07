@@ -139,13 +139,13 @@ const AuthForm = ({
               >
                 {showConfirmPassword ? (
                   <img
-                    src='/icons/eyeOpen.png'
+                    src='/icons/eyeClosed.png'
                     alt='eye'
                     className='w-5 h-5 invert'
                   />
                 ) : (
                   <img
-                    src='/icons/eyeClosed.png'
+                    src='/icons/eyeOpen.png'
                     alt='eye-off'
                     className='w-5 h-5 invert'
                   />

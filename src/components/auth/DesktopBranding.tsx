@@ -6,7 +6,7 @@ interface DesktopBrandingProps {
 
 const DesktopBranding = ({ activeMode }: DesktopBrandingProps) => {
   return (
-    <div className='bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 p-8 xl:p-12 flex flex-col justify-between border-r border-dashed border-white/20'>
+    <div className='bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 p-8 xl:p-12 flex flex-col justify-between border-r border-dashed border-white/20 h-[calc(100vh-80px)] sticky top-[80px]'>
       {/* Top Section */}
       <div>
         <div className='mb-12'>
