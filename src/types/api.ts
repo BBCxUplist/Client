@@ -80,3 +80,44 @@ export interface ArtistByEmailResponse {
     updatedAt: string;
   };
 }
+
+export interface User {
+  id: string;
+  useremail: string;
+  username: string;
+  role: string;
+  bio: string | null;
+  displayName: string | null;
+  avatar: string | null;
+  phone: string | null;
+  location: string | null;
+  socials: Socials | null;
+  isActive: boolean;
+  isAdmin: boolean;
+  is_linkpage_visible: boolean;
+  banned: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserByEmailResponse {
+  success: boolean;
+  message: string;
+  data: User;
+}
+
+export interface UpdateUserProfileRequest {
+  username?: string;
+  bio?: string;
+  displayName?: string;
+  avatar?: string;
+  phone?: string;
+  location?: string;
+  socials?: Socials;
+}
+
+export interface UpdateUserProfileResponse {
+  success: boolean;
+  message: string;
+  data: User;
+}

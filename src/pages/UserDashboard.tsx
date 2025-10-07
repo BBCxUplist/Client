@@ -1,161 +1,114 @@
 // pages/UserDashboard.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/landing/Navbar';
 import { formatPrice } from '@/helper';
-
-// Dummy user dashboard data - in real app, fetch from API based on user ID
-const dummyUserData = {
-  user: {
-    id: 'user-123',
-    name: 'Vikash Gupta',
-    email: 'vikash@example.com',
-    avatar: '/images/user-placeholder.jpg',
-    memberSince: '2024-01-20',
-    location: 'Mumbai, Maharashtra',
-  },
-  stats: {
-    totalBookings: 12,
-    totalSpent: 850000,
-    averageRating: 4.6,
-    savedArtists: 8,
-    upcomingEvents: 2,
-    completedEvents: 10,
-  },
-  recentBookings: [
-    {
-      id: '1',
-      artistName: 'Rajesh Kumar',
-      artistSlug: 'rajesh-kumar',
-      artistAvatar: '/images/artist-1.jpg',
-      eventType: 'Wedding Reception',
-      date: '2025-01-15',
-      amount: 85000,
-      status: 'confirmed',
-      location: 'Mumbai',
-      rating: null,
-    },
-    {
-      id: '2',
-      artistName: 'Priya Singh',
-      artistSlug: 'priya-singh',
-      artistAvatar: '/images/artist-2.jpg',
-      eventType: 'Birthday Party',
-      date: '2025-02-20',
-      amount: 55000,
-      status: 'pending',
-      location: 'Delhi',
-      rating: null,
-    },
-    {
-      id: '3',
-      artistName: 'Amit Sharma',
-      artistSlug: 'amit-sharma',
-      artistAvatar: '/images/artist-3.jpg',
-      eventType: 'Anniversary Celebration',
-      date: '2024-12-15',
-      amount: 75000,
-      status: 'completed',
-      location: 'Pune',
-      rating: 5,
-    },
-    {
-      id: '4',
-      artistName: 'Neha Patel',
-      artistSlug: 'neha-patel',
-      artistAvatar: '/images/artist-4.jpg',
-      eventType: 'Corporate Event',
-      date: '2024-11-28',
-      amount: 120000,
-      status: 'completed',
-      location: 'Bangalore',
-      rating: 4,
-    },
-  ],
-  savedArtists: [
-    {
-      id: '1',
-      name: 'Rajesh Kumar',
-      slug: 'rajesh-kumar',
-      avatar: '/images/artist-1.jpg',
-      rating: 4.8,
-      price: 75000,
-      categories: ['Classical', 'Bollywood'],
-      isBookable: true,
-    },
-    {
-      id: '2',
-      name: 'Kavita Krishnamurthy',
-      slug: 'kavita-krishnamurthy',
-      avatar: '/images/artist-2.jpg',
-      rating: 4.9,
-      price: 150000,
-      categories: ['Classical', 'Devotional'],
-      isBookable: true,
-    },
-    {
-      id: '3',
-      name: 'Arijit Singh',
-      slug: 'arijit-singh',
-      avatar: '/images/artist-3.jpg',
-      rating: 4.7,
-      price: 200000,
-      categories: ['Bollywood', 'Romance'],
-      isBookable: false,
-    },
-  ],
-  upcomingEvents: [
-    {
-      id: '1',
-      artistName: 'Rajesh Kumar',
-      eventType: 'Wedding Reception',
-      date: '2025-01-15',
-      location: 'Mumbai',
-      amount: 85000,
-      status: 'confirmed',
-    },
-    {
-      id: '2',
-      artistName: 'Priya Singh',
-      eventType: 'Birthday Party',
-      date: '2025-02-20',
-      location: 'Delhi',
-      amount: 55000,
-      status: 'pending',
-    },
-  ],
-  recommendations: [
-    {
-      id: '1',
-      name: 'Sunidhi Chauhan',
-      slug: 'sunidhi-chauhan',
-      avatar: '/images/artist-rec-1.jpg',
-      rating: 4.8,
-      price: 180000,
-      categories: ['Bollywood', 'Pop'],
-      reason: 'Based on your previous bookings',
-    },
-    {
-      id: '2',
-      name: 'Shankar Mahadevan',
-      slug: 'shankar-mahadevan',
-      avatar: '/images/artist-rec-2.jpg',
-      rating: 4.9,
-      price: 220000,
-      categories: ['Classical', 'Fusion'],
-      reason: 'Trending in your area',
-    },
-  ],
-};
+import { useStore } from '@/stores/store';
+import { useGetUserByEmail, useUpdateUserProfile } from '@/hooks/user';
+import { logout, isAuthenticated } from '@/lib/apiClient';
+import { dummyUserDashboardData } from '@/constants/userDashboardData';
+import { useImageUpload } from '@/hooks/useImageUpload';
 
 const UserDashboard = () => {
   const navigate = useNavigate();
+  const { user } = useStore();
   const [activeTab, setActiveTab] = useState<
     'overview' | 'bookings' | 'saved' | 'settings'
   >('overview');
 
-  const userData = dummyUserData;
+  // Fetch user data using email from authenticated user
+  const {
+    data: userResponse,
+    isLoading,
+    error,
+  } = useGetUserByEmail({
+    email: user?.email || '',
+    enabled: !!user?.email && isAuthenticated(),
+  });
+
+  // Get user data from API response
+  const userData = userResponse?.data;
+  const dashboardData = dummyUserDashboardData;
+
+  // Profile update mutation
+  const updateProfileMutation = useUpdateUserProfile();
+
+  // Image upload hook
+  const {
+    uploading,
+    error: uploadError,
+    handleFileUpload,
+    uploadedUrl,
+    reset,
+  } = useImageUpload();
+
+  // Profile form state
+  const [profileForm, setProfileForm] = useState({
+    username: userData?.username || '',
+    displayName: userData?.displayName || '',
+    bio: userData?.bio || '',
+    phone: userData?.phone || '',
+    location: userData?.location || '',
+    avatar: userData?.avatar || '',
+  });
+
+  // Validation functions
+  const validateUsername = (username: string) => {
+    const usernameRegex = /^[a-z0-9._]+$/;
+    return usernameRegex.test(username);
+  };
+
+  const validatePhone = (phone: string) => {
+    const phoneRegex = /^[+]?[0-9\s\-()]+$/;
+    return phoneRegex.test(phone);
+  };
+
+  const handleUsernameChange = (value: string) => {
+    // Convert to lowercase and remove invalid characters
+    const cleanValue = value.toLowerCase().replace(/[^a-z0-9._]/g, '');
+    setProfileForm(prev => ({ ...prev, username: cleanValue }));
+  };
+
+  const handlePhoneChange = (value: string) => {
+    // Only allow numbers, spaces, hyphens, parentheses, and plus sign
+    const cleanValue = value.replace(/[^0-9\s\-()+]/g, '');
+    setProfileForm(prev => ({ ...prev, phone: cleanValue }));
+  };
+
+  const handleAvatarUpload = async (file: File) => {
+    try {
+      const result = await handleFileUpload(file, 'artist', 'avatars');
+      if (result.success && result.url) {
+        setProfileForm(prev => ({ ...prev, avatar: result.url! }));
+      }
+    } catch (error) {
+      console.error('Avatar upload failed:', error);
+    }
+  };
+
+  // Update form when userData changes
+  useEffect(() => {
+    if (userData) {
+      setProfileForm({
+        username: userData.username || '',
+        displayName: userData.displayName || '',
+        bio: userData.bio || '',
+        phone: userData.phone || '',
+        location: userData.location || '',
+        avatar: userData.avatar || '',
+      });
+    }
+  }, [userData]);
+
+  const handleProfileUpdate = async () => {
+    try {
+      await updateProfileMutation.mutateAsync(profileForm);
+      // Success feedback could be added here
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -172,10 +125,93 @@ const UserDashboard = () => {
     }
   };
 
-  const handleLogout = () => {
-    // Implement logout logic
-    navigate('/auth');
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Even if logout fails, redirect to auth page
+      navigate('/auth');
+    }
   };
+
+  // Check if user is authenticated
+  if (!isAuthenticated() || !user) {
+    return (
+      <div className='min-h-screen bg-neutral-950 text-white flex items-center justify-center'>
+        <div className='text-center'>
+          <h1 className='text-2xl font-bold mb-2'>Authentication Required</h1>
+          <p className='text-white/60 mb-4'>
+            Please log in to access your dashboard.
+          </p>
+          <button
+            onClick={() => navigate('/auth')}
+            className='bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 transition-colors'
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className='min-h-screen bg-neutral-950 text-white flex items-center justify-center'>
+        <div className='text-center'>
+          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4'></div>
+          <p className='text-white/60'>Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !userResponse?.success) {
+    const errorMessage = error?.message || 'Failed to fetch user data';
+    const isAuthError =
+      errorMessage.includes('not authenticated') ||
+      errorMessage.includes('401');
+
+    return (
+      <div className='min-h-screen bg-neutral-950 text-white flex items-center justify-center'>
+        <div className='text-center'>
+          <h1 className='text-2xl font-bold mb-2'>
+            {isAuthError ? 'Authentication Error' : 'Unable to Load Dashboard'}
+          </h1>
+          <p className='text-white/60 mb-4'>{errorMessage}</p>
+          {isAuthError ? (
+            <button
+              onClick={() => navigate('/auth')}
+              className='bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 transition-colors'
+            >
+              Go to Login
+            </button>
+          ) : (
+            <button
+              onClick={() => window.location.reload()}
+              className='bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 transition-colors'
+            >
+              Try Again
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // No user data
+  if (!userData) {
+    return (
+      <div className='min-h-screen bg-neutral-950 text-white flex items-center justify-center'>
+        <div className='text-center'>
+          <h1 className='text-2xl font-bold mb-2'>User Not Found</h1>
+          <p className='text-white/60'>Unable to load dashboard data.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='min-h-screen bg-neutral-950'>
@@ -188,8 +224,11 @@ const UserDashboard = () => {
             {/* User Avatar */}
             <div className='relative'>
               <img
-                src='https://i.pinimg.com/1200x/09/e4/0a/09e40a3f556058ae2f57ba22bce36f12.jpg'
-                alt={userData.user.name}
+                src={
+                  userData.avatar ||
+                  'https://i.pinimg.com/1200x/09/e4/0a/09e40a3f556058ae2f57ba22bce36f12.jpg'
+                }
+                alt={userData.displayName || userData.username}
                 className='w-20 h-20 lg:w-24 lg:h-24 object-cover'
                 onError={e => {
                   e.currentTarget.src = '/images/userNotFound.jpeg';
@@ -202,11 +241,13 @@ const UserDashboard = () => {
 
             <div>
               <h1 className='font-mondwest text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2'>
-                {userData.user.name}
+                {userData.displayName || userData.username}
               </h1>
-              <p className='text-white/70 text-lg'>{userData.user.location}</p>
+              <p className='text-white/70 text-lg'>
+                {userData.location || 'Location not set'}
+              </p>
               <p className='text-white/50 text-sm'>
-                Member since {userData.user.memberSince}
+                Member since {new Date(userData.createdAt).toLocaleDateString()}
               </p>
             </div>
           </div>
@@ -217,6 +258,12 @@ const UserDashboard = () => {
                 EXPLORE ARTISTS
               </button>
             </Link>
+            <button
+              onClick={() => setActiveTab('settings')}
+              className='bg-white/10 border border-white/30 text-white px-4 py-2 font-semibold hover:bg-white/20 transition-colors'
+            >
+              EDIT PROFILE
+            </button>
             <button
               onClick={handleLogout}
               className='bg-white/10 border border-white/30 text-white px-4 py-2 font-semibold hover:bg-white/20 transition-colors'
@@ -233,7 +280,7 @@ const UserDashboard = () => {
               Total Bookings
             </h3>
             <p className='text-xl md:text-2xl lg:text-3xl font-bold text-orange-500 font-mondwest'>
-              {userData.stats.totalBookings}
+              {dashboardData.stats.totalBookings}
             </p>
           </div>
           <div className='bg-white/5 border border-white/10 p-4 md:p-6'>
@@ -241,7 +288,7 @@ const UserDashboard = () => {
               Total Spent
             </h3>
             <p className='text-xl md:text-2xl lg:text-3xl font-bold text-orange-500 font-mondwest'>
-              {formatPrice(userData.stats.totalSpent)}
+              {formatPrice(dashboardData.stats.totalSpent)}
             </p>
           </div>
           <div className='bg-white/5 border border-white/10 p-4 md:p-6'>
@@ -249,7 +296,7 @@ const UserDashboard = () => {
               Avg Rating Given
             </h3>
             <p className='text-xl md:text-2xl lg:text-3xl font-bold text-orange-500 font-mondwest'>
-              ⭐ {userData.stats.averageRating}
+              ⭐ {dashboardData.stats.averageRating}
             </p>
           </div>
           <div className='bg-white/5 border border-white/10 p-4 md:p-6'>
@@ -257,19 +304,19 @@ const UserDashboard = () => {
               Saved Artists
             </h3>
             <p className='text-xl md:text-2xl lg:text-3xl font-bold text-orange-500 font-mondwest'>
-              {userData.stats.savedArtists}
+              {dashboardData.stats.savedArtists}
             </p>
           </div>
           <div className='bg-white/5 border border-white/10 p-4 md:p-6'>
             <h3 className='text-white/70 text-xs md:text-sm mb-2'>Upcoming</h3>
             <p className='text-xl md:text-2xl lg:text-3xl font-bold text-orange-500 font-mondwest'>
-              {userData.stats.upcomingEvents}
+              {dashboardData.stats.upcomingEvents}
             </p>
           </div>
           <div className='bg-white/5 border border-white/10 p-4 md:p-6'>
             <h3 className='text-white/70 text-xs md:text-sm mb-2'>Completed</h3>
             <p className='text-xl md:text-2xl lg:text-3xl font-bold text-orange-500 font-mondwest'>
-              {userData.stats.completedEvents}
+              {dashboardData.stats.completedEvents}
             </p>
           </div>
         </div>
@@ -316,9 +363,9 @@ const UserDashboard = () => {
                         View All →
                       </button>
                     </div>
-                    {userData.upcomingEvents.length > 0 ? (
+                    {dashboardData.upcomingEvents.length > 0 ? (
                       <div className='space-y-4'>
-                        {userData.upcomingEvents.map(event => (
+                        {dashboardData.upcomingEvents.map((event: any) => (
                           <div
                             key={event.id}
                             className='flex items-center justify-between p-4 bg-white/5 border border-white/10'
@@ -367,45 +414,47 @@ const UserDashboard = () => {
                       Recent Activity
                     </h3>
                     <div className='space-y-4'>
-                      {userData.recentBookings.slice(0, 3).map(booking => (
-                        <div
-                          key={booking.id}
-                          className='flex items-center gap-4 p-4 bg-white/5 border border-white/10'
-                        >
-                          <img
-                            src={booking.artistAvatar}
-                            alt={booking.artistName}
-                            className='w-12 h-12 object-cover'
-                            onError={e => {
-                              e.currentTarget.src =
-                                '/images/artistNotFound.jpeg';
-                            }}
-                          />
-                          <div className='flex-1'>
-                            <p className='text-white font-semibold'>
-                              {booking.eventType}
-                            </p>
-                            <p className='text-white/60 text-sm'>
-                              {booking.artistName} • {booking.date}
-                            </p>
+                      {dashboardData.recentBookings
+                        .slice(0, 3)
+                        .map((booking: any) => (
+                          <div
+                            key={booking.id}
+                            className='flex items-center gap-4 p-4 bg-white/5 border border-white/10'
+                          >
+                            <img
+                              src={booking.artistAvatar}
+                              alt={booking.artistName}
+                              className='w-12 h-12 object-cover'
+                              onError={e => {
+                                e.currentTarget.src =
+                                  '/images/artistNotFound.jpeg';
+                              }}
+                            />
+                            <div className='flex-1'>
+                              <p className='text-white font-semibold'>
+                                {booking.eventType}
+                              </p>
+                              <p className='text-white/60 text-sm'>
+                                {booking.artistName} • {booking.date}
+                              </p>
+                            </div>
+                            <div className='text-right'>
+                              <span
+                                className={`px-2 py-1 text-xs font-semibold border ${getStatusColor(
+                                  booking.status
+                                )}`}
+                              >
+                                {booking.status.toUpperCase()}
+                              </span>
+                              {booking.status === 'completed' &&
+                                !booking.rating && (
+                                  <button className='block mt-1 text-orange-500 hover:text-orange-400 text-xs'>
+                                    Rate Artist
+                                  </button>
+                                )}
+                            </div>
                           </div>
-                          <div className='text-right'>
-                            <span
-                              className={`px-2 py-1 text-xs font-semibold border ${getStatusColor(
-                                booking.status
-                              )}`}
-                            >
-                              {booking.status.toUpperCase()}
-                            </span>
-                            {booking.status === 'completed' &&
-                              !booking.rating && (
-                                <button className='block mt-1 text-orange-500 hover:text-orange-400 text-xs'>
-                                  Rate Artist
-                                </button>
-                              )}
-                          </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   </div>
                 </div>
@@ -418,7 +467,7 @@ const UserDashboard = () => {
                       Recommended Artists
                     </h3>
                     <div className='space-y-4'>
-                      {userData.recommendations.map(artist => (
+                      {dashboardData.recommendations.map((artist: any) => (
                         <Link
                           key={artist.id}
                           to={`/artist/${artist.slug}`}
@@ -525,7 +574,7 @@ const UserDashboard = () => {
               </div>
 
               <div className='grid gap-6'>
-                {userData.recentBookings.map(booking => (
+                {dashboardData.recentBookings.map((booking: any) => (
                   <div
                     key={booking.id}
                     className='bg-white/5 border border-white/10 p-6'
@@ -606,7 +655,7 @@ const UserDashboard = () => {
               </h3>
 
               <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-                {userData.savedArtists.map(artist => (
+                {dashboardData.savedArtists.map((artist: any) => (
                   <div
                     key={artist.id}
                     className='bg-white/5 border border-white/10 p-4'
@@ -633,14 +682,16 @@ const UserDashboard = () => {
                           ⭐ {artist.rating}
                         </p>
                         <div className='flex flex-wrap gap-1 mt-2'>
-                          {artist.categories.map((category, index) => (
-                            <span
-                              key={index}
-                              className='bg-white/10 text-white text-xs px-2 py-1'
-                            >
-                              {category}
-                            </span>
-                          ))}
+                          {artist.categories.map(
+                            (category: any, index: number) => (
+                              <span
+                                key={index}
+                                className='bg-white/10 text-white text-xs px-2 py-1'
+                              >
+                                {category}
+                              </span>
+                            )
+                          )}
                         </div>
                       </div>
                       <button className='text-red-400 hover:text-red-300 ml-2'>
@@ -690,13 +741,42 @@ const UserDashboard = () => {
                   <div className='space-y-4'>
                     <div>
                       <label className='block text-white/70 text-sm mb-2'>
-                        Full Name
+                        Username
                       </label>
                       <input
                         type='text'
-                        value={userData.user.name}
+                        value={profileForm.username}
+                        onChange={e => handleUsernameChange(e.target.value)}
+                        className={`w-full bg-white/5 border text-white p-3 ${
+                          profileForm.username &&
+                          !validateUsername(profileForm.username)
+                            ? 'border-red-500'
+                            : 'border-white/20'
+                        }`}
+                        placeholder='username (lowercase, numbers, dots, underscores only)'
+                      />
+                      {profileForm.username &&
+                        !validateUsername(profileForm.username) && (
+                          <p className='text-red-400 text-xs mt-1'>
+                            Username can only contain lowercase letters,
+                            numbers, dots, and underscores
+                          </p>
+                        )}
+                    </div>
+                    <div>
+                      <label className='block text-white/70 text-sm mb-2'>
+                        Display Name
+                      </label>
+                      <input
+                        type='text'
+                        value={profileForm.displayName}
+                        onChange={e =>
+                          setProfileForm(prev => ({
+                            ...prev,
+                            displayName: e.target.value,
+                          }))
+                        }
                         className='w-full bg-white/5 border border-white/20 text-white p-3'
-                        readOnly
                       />
                     </div>
                     <div>
@@ -705,10 +785,48 @@ const UserDashboard = () => {
                       </label>
                       <input
                         type='email'
-                        value={userData.user.email}
+                        value={userData.useremail}
                         className='w-full bg-white/5 border border-white/20 text-white p-3'
                         readOnly
                       />
+                    </div>
+                    <div>
+                      <label className='block text-white/70 text-sm mb-2'>
+                        Bio
+                      </label>
+                      <textarea
+                        value={profileForm.bio}
+                        onChange={e =>
+                          setProfileForm(prev => ({
+                            ...prev,
+                            bio: e.target.value,
+                          }))
+                        }
+                        className='w-full bg-white/5 border border-white/20 text-white p-3 h-20 resize-none'
+                        placeholder='Tell us about yourself...'
+                      />
+                    </div>
+                    <div>
+                      <label className='block text-white/70 text-sm mb-2'>
+                        Phone
+                      </label>
+                      <input
+                        type='tel'
+                        value={profileForm.phone}
+                        onChange={e => handlePhoneChange(e.target.value)}
+                        className={`w-full bg-white/5 border text-white p-3 ${
+                          profileForm.phone && !validatePhone(profileForm.phone)
+                            ? 'border-red-500'
+                            : 'border-white/20'
+                        }`}
+                        placeholder='+1 (555) 123-4567'
+                      />
+                      {profileForm.phone &&
+                        !validatePhone(profileForm.phone) && (
+                          <p className='text-red-400 text-xs mt-1'>
+                            Please enter a valid phone number
+                          </p>
+                        )}
                     </div>
                     <div>
                       <label className='block text-white/70 text-sm mb-2'>
@@ -716,12 +834,96 @@ const UserDashboard = () => {
                       </label>
                       <input
                         type='text'
-                        value={userData.user.location}
+                        value={profileForm.location}
+                        onChange={e =>
+                          setProfileForm(prev => ({
+                            ...prev,
+                            location: e.target.value,
+                          }))
+                        }
                         className='w-full bg-white/5 border border-white/20 text-white p-3'
                       />
                     </div>
-                    <button className='bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600'>
-                      UPDATE PROFILE
+                    <div>
+                      <label className='block text-white/70 text-sm mb-2'>
+                        Profile Picture
+                      </label>
+                      <div className='space-y-4'>
+                        {/* Current/Uploaded Image Preview */}
+                        {(uploadedUrl || profileForm.avatar) && (
+                          <div className='relative inline-block'>
+                            <img
+                              src={uploadedUrl || profileForm.avatar}
+                              alt='Profile preview'
+                              className='w-32 h-32 object-cover rounded-lg border border-white/20'
+                            />
+                            <button
+                              type='button'
+                              onClick={() => {
+                                reset();
+                                setProfileForm(prev => ({
+                                  ...prev,
+                                  avatar: '',
+                                }));
+                              }}
+                              className='absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600 transition-colors'
+                            >
+                              ×
+                            </button>
+                          </div>
+                        )}
+
+                        {/* File Input */}
+                        <input
+                          type='file'
+                          accept='image/*'
+                          onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              handleAvatarUpload(file);
+                            }
+                          }}
+                          className='hidden'
+                          id='avatar-upload'
+                        />
+                        <label
+                          htmlFor='avatar-upload'
+                          className='inline-flex items-center px-4 py-2 bg-white/10 border border-white/20 text-white rounded cursor-pointer hover:bg-white/20 transition-colors'
+                        >
+                          {uploading ? (
+                            <>
+                              <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2'></div>
+                              Uploading...
+                            </>
+                          ) : (
+                            <>📷 Choose Photo</>
+                          )}
+                        </label>
+
+                        {uploadError && (
+                          <p className='text-red-400 text-xs'>{uploadError}</p>
+                        )}
+
+                        <p className='text-white/50 text-xs'>
+                          Upload a profile picture (JPG, PNG, max 5MB)
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleProfileUpdate}
+                      disabled={
+                        updateProfileMutation.isPending ||
+                        uploading ||
+                        (!!profileForm.username &&
+                          !validateUsername(profileForm.username)) ||
+                        (!!profileForm.phone &&
+                          !validatePhone(profileForm.phone))
+                      }
+                      className='bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed'
+                    >
+                      {updateProfileMutation.isPending
+                        ? 'UPDATING...'
+                        : 'UPDATE PROFILE'}
                     </button>
                   </div>
                 </div>
