@@ -272,7 +272,14 @@ const ProfileTab = ({
 
         <div className='space-y-4'>
           <div>
-            <label className='block text-white/70 text-sm mb-2'>Twitter</label>
+            <label className='flex items-center gap-2 text-white/70 text-sm mb-2'>
+              <img
+                src='/icons/embeds/twitter.png'
+                alt='Twitter'
+                className='w-4 h-4'
+              />
+              Twitter
+            </label>
             <input
               type='text'
               value={formData.socials.twitter}
@@ -283,7 +290,12 @@ const ProfileTab = ({
           </div>
 
           <div>
-            <label className='block text-white/70 text-sm mb-2'>
+            <label className='flex items-center gap-2 text-white/70 text-sm mb-2'>
+              <img
+                src='/icons/embeds/instagram.png'
+                alt='Instagram'
+                className='w-4 h-4'
+              />
               Instagram
             </label>
             <input
@@ -296,7 +308,14 @@ const ProfileTab = ({
           </div>
 
           <div>
-            <label className='block text-white/70 text-sm mb-2'>Spotify</label>
+            <label className='flex items-center gap-2 text-white/70 text-sm mb-2'>
+              <img
+                src='/icons/embeds/spotify.png'
+                alt='Spotify'
+                className='w-4 h-4'
+              />
+              Spotify
+            </label>
             <input
               type='text'
               value={formData.socials.spotify}
@@ -307,7 +326,12 @@ const ProfileTab = ({
           </div>
 
           <div>
-            <label className='block text-white/70 text-sm mb-2'>
+            <label className='flex items-center gap-2 text-white/70 text-sm mb-2'>
+              <img
+                src='/icons/embeds/soundcloud.png'
+                alt='SoundCloud'
+                className='w-4 h-4'
+              />
               SoundCloud
             </label>
             <input
@@ -320,7 +344,14 @@ const ProfileTab = ({
           </div>
 
           <div>
-            <label className='block text-white/70 text-sm mb-2'>YouTube</label>
+            <label className='flex items-center gap-2 text-white/70 text-sm mb-2'>
+              <img
+                src='/icons/embeds/youtube.png'
+                alt='YouTube'
+                className='w-4 h-4'
+              />
+              YouTube
+            </label>
             <input
               type='text'
               value={formData.socials.youtube}

@@ -292,7 +292,7 @@ const ArtistEdit = () => {
   // No artist data - redirect to dashboard to fetch data
   if (!artist) {
     return (
-      <div className='min-h-screen bg-neutral-950 text-white flex items-center justify-center'>
+      <div className='min-h-screen bg-neutral-950 text-white flex items-center justify-center texture-bg'>
         <div className='text-center'>
           <h1 className='text-2xl font-bold mb-2'>Loading Profile Data</h1>
           <p className='text-white/60 mb-4'>
@@ -310,7 +310,7 @@ const ArtistEdit = () => {
   }
 
   return (
-    <div className='min-h-screen bg-neutral-950'>
+    <div className='min-h-screen bg-neutral-950 texture-bg  '>
       <Navbar />
 
       <div className='w-full p-4 md:p-6 lg:p-8 pb-24 md:pb-4'>

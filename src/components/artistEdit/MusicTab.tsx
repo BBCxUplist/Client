@@ -18,9 +18,13 @@ const MusicTab = ({ formData, handleInputChange }: MusicTabProps) => {
   const [embedUrl, setEmbedUrl] = useState('');
 
   const platforms = [
-    { value: 'youtube', label: 'YouTube' },
-    { value: 'soundcloud', label: 'SoundCloud' },
-    { value: 'spotify', label: 'Spotify' },
+    { value: 'youtube', label: 'YouTube', icon: '/icons/embeds/youtube.png' },
+    {
+      value: 'soundcloud',
+      label: 'SoundCloud',
+      icon: '/icons/embeds/soundcloud.png',
+    },
+    { value: 'spotify', label: 'Spotify', icon: '/icons/embeds/spotify.png' },
   ];
 
   const currentEmbeds = formData?.embeds || {
@@ -70,21 +74,30 @@ const MusicTab = ({ formData, handleInputChange }: MusicTabProps) => {
             <label className='block text-white/70 text-sm mb-2'>
               Select Platform
             </label>
-            <select
-              value={selectedPlatform}
-              onChange={e =>
-                setSelectedPlatform(
-                  e.target.value as 'youtube' | 'soundcloud' | 'spotify'
-                )
-              }
-              className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500'
-            >
-              {platforms.map(platform => (
-                <option key={platform.value} value={platform.value}>
-                  {platform.label}
-                </option>
-              ))}
-            </select>
+            <div className='relative'>
+              <select
+                value={selectedPlatform}
+                onChange={e =>
+                  setSelectedPlatform(
+                    e.target.value as 'youtube' | 'soundcloud' | 'spotify'
+                  )
+                }
+                className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 appearance-none pr-10'
+              >
+                {platforms.map(platform => (
+                  <option key={platform.value} value={platform.value}>
+                    {platform.label}
+                  </option>
+                ))}
+              </select>
+              <div className='absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none'>
+                <img
+                  src={platforms.find(p => p.value === selectedPlatform)?.icon}
+                  alt={selectedPlatform}
+                  className='w-4 h-4'
+                />
+              </div>
+            </div>
           </div>
 
           {/* Link Input */}
