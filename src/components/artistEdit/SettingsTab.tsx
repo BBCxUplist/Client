@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Toggle from '@/components/ui/Toggle';
-import type { Artist } from '@/types';
+import type { Artist } from '@/types/api';
 
 interface SettingsTabProps {
   artist: Artist;
@@ -28,7 +28,7 @@ const SettingsTab = ({ artist }: SettingsTabProps) => {
             </label>
             <input
               type='email'
-              value={artist.email || 'Not available'}
+              value={artist?.email || 'Not available'}
               className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500'
               readOnly
             />

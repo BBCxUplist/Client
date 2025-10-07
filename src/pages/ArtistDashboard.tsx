@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useStore } from '@/stores/store';
-import { useGetArtistByEmail } from '@/hooks/useGetArtistByEmail';
+import { useGetArtistByEmail } from '@/hooks/generic/useGetArtistByEmail';
 import { formatPrice } from '@/helper';
 import { dummyDashboardData } from '@/constants/dashboardData';
 import BookingModal from '@/components/ui/BookingModal';

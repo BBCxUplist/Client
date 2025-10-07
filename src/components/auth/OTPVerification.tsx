@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useRegisterAPI } from '@/hooks/useRegisterAPI';
+import { useRegisterAPI } from '@/hooks/login/useRegisterAPI';
 
 interface OTPVerificationProps {
   email: string;

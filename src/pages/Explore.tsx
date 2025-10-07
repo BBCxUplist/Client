@@ -1,10 +1,11 @@
 import Navbar from '@/components/landing/Navbar';
 import Sidebar from '@/components/explore/Sidebar';
-import { useAutoPaginatedArtists } from '@/hooks/useAutoPaginatedArtists';
+import { useAutoPaginatedArtists } from '@/hooks/generic/useAutoPaginatedArtists';
 import { useDebounce } from '@/hooks/useDebounce';
 import { motion } from 'framer-motion';
 import { useState, useMemo, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import type { Artist } from '@/types/api';
 
 enum ActivityTab {
   ALL = 'all',
@@ -53,8 +54,8 @@ const Explore = () => {
   // Get all unique genres from current artists for dynamic genre list
   const availableGenres = useMemo(() => {
     const genreSet = new Set<string>();
-    artists.forEach(artist => {
-      artist.genres.forEach(genre => genreSet.add(genre));
+    artists.forEach((artist: Artist) => {
+      artist.genres.forEach((genre: string) => genreSet.add(genre));
     });
     return Array.from(genreSet).sort();
   }, [artists]);
@@ -194,7 +195,7 @@ const Explore = () => {
             {/* Artists grid */}
             {!isLoading && !error && (
               <div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 divide-y divide-dashed divide-white'>
-                {artists.map((artist, index) => (
+                {artists.map((artist: Artist, index: number) => (
                   <Link
                     key={artist.id}
                     onMouseEnter={() => setIsHovered(index)}

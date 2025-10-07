@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '../lib/apiClient';
-import type { AllArtistsResponse } from '../types/api';
+import { apiClient } from '../../lib/apiClient';
+import type { AllArtistsResponse } from '../../types/api';
 
 interface UseSearchArtistsByGenreParams {
   genre: string;

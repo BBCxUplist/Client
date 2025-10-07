@@ -8,7 +8,7 @@ import GalleryTab from '@/components/artist/GalleryTab';
 import BookingTab from '@/components/artist/BookingTab';
 import SocialLinks from '@/components/ui/SocialLinks';
 import { formatPrice } from '@/helper';
-import { useGetArtist } from '../hooks/useGetArtist';
+import { useGetArtist } from '@/hooks/artist/useGetArtist';
 
 enum ArtistTab {
   MUSIC = 'music',
@@ -98,7 +98,7 @@ const ArtistProfile = () => {
               <p className='text-white/70 mb-4'>@{artist.username}</p>
               {/* Genre Tags */}
               <div className='flex flex-wrap gap-2 mb-6'>
-                {artist?.genres?.map((genre, index) => (
+                {artist?.genres?.map((genre: string, index: number) => (
                   <span
                     key={index}
                     className='bg-white/10 text-white px-3 py-2 text-sm border border-white/20'

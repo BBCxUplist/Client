@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { useGetAllArtists } from './useGetAllArtists';
-import { useGetBookableArtists } from './useGetBookableArtists';
-import { useSearchArtists } from './useSearchArtists';
+import { useGetAllArtists } from '../generic/useGetAllArtists';
+import { useGetBookableArtists } from '../generic/useGetBookableArtists';
+import { useSearchArtists } from '../generic/useSearchArtists';
 
 interface UseAutoPaginatedArtistsParams {
   isSearching: boolean;

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '../lib/apiClient';
-import type { FeaturedArtistsResponse } from '../types/api';
+import { apiClient } from '../../lib/apiClient';
+import type { FeaturedArtistsResponse } from '../../types/api';
 
 export const useGetFeaturedArtist = () => {
   return useQuery({

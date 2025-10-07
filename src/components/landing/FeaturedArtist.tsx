@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { useGetFeaturedArtist } from '../../hooks/useGetFeaturedArtist';
+import { useGetFeaturedArtist } from '@/hooks/generic/useGetFeaturedArtist';
+import type { Artist } from '@/types/api';
 
 const FeaturedArtist = () => {
   const { data, isLoading, error } = useGetFeaturedArtist();
@@ -69,7 +70,7 @@ const FeaturedArtist = () => {
         </h2>
 
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8'>
-          {artists.map(artist => (
+          {artists.map((artist: Artist) => (
             <Link
               key={artist.id}
               to={`/artist/${artist.username}`}
@@ -90,14 +91,16 @@ const FeaturedArtist = () => {
                 </h3>
 
                 <div className='flex flex-wrap gap-2'>
-                  {artist.genres.slice(0, 2).map((genre, index) => (
-                    <span
-                      key={index}
-                      className='bg-white/20 text-white px-3 py-1 text-sm'
-                    >
-                      {genre}
-                    </span>
-                  ))}
+                  {artist.genres
+                    .slice(0, 2)
+                    .map((genre: string, index: number) => (
+                      <span
+                        key={index}
+                        className='bg-white/20 text-white px-3 py-1 text-sm'
+                      >
+                        {genre}
+                      </span>
+                    ))}
                 </div>
               </div>
             </Link>

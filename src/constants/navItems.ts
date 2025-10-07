@@ -24,11 +24,6 @@ const navItems: NavItem[] = [
     id: 'featured-artists',
   },
   {
-    label: 'How It Works',
-    href: '/how-it-works',
-    id: 'how-it-works',
-  },
-  {
     label: 'Dashboard',
     href: '/dashboard',
   },

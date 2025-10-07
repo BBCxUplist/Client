@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '@/stores/store';
-import { useUpdateArtistProfile } from '@/hooks/useUpdateArtistProfile';
+import { useUpdateArtistProfile } from '@/hooks/artist/useUpdateArtistProfile';
 import Navbar from '@/components/landing/Navbar';
 import ProfileTab from '@/components/artistEdit/ProfileTab';
 import MusicTab from '@/components/artistEdit/MusicTab';
