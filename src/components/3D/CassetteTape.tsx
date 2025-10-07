@@ -1,7 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { useGLTF, useAnimations } from '@react-three/drei';
+import { useAnimations } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { Group } from 'three';
+import { useCassetteTapePreloader } from './ModelPreloader';
 
 interface CassetteTapeProps {
   position?: [number, number, number];
@@ -15,17 +16,10 @@ const CassetteTape: React.FC<CassetteTapeProps> = ({
   scale = 1,
 }) => {
   const groupRef = useRef<Group>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
-  const { scene, animations } = useGLTF(
-    '/casette_tape_recorder.glb',
-    true, // draco
-    true, // ktx2
-    error => {
-      console.error('Error loading GLB:', error);
-      setError('Failed to load 3D model');
-    }
-  );
+  // Use the preloaded model
+  const { scene, animations } = useCassetteTapePreloader();
 
   const { actions } = useAnimations(animations, groupRef);
 

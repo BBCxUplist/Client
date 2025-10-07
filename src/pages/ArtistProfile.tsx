@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import Navbar from '@/components/landing/Navbar';
 import AboutTab from '@/components/artist/AboutTab';
 import MusicTab from '@/components/artist/MusicTab';
@@ -9,6 +9,7 @@ import BookingTab from '@/components/artist/BookingTab';
 import SocialLinks from '@/components/ui/SocialLinks';
 import { formatPrice } from '@/helper';
 import { useGetArtist } from '@/hooks/artist/useGetArtist';
+import { useStore } from '@/stores/store';
 
 enum ArtistTab {
   MUSIC = 'music',
@@ -20,10 +21,36 @@ enum ArtistTab {
 const ArtistProfile = () => {
   const { username } = useParams();
   const [activeTab, setActiveTab] = useState<ArtistTab>(ArtistTab.MUSIC);
+  const { user } = useStore();
 
   // Fetch artist data from API
   const { data, isLoading, error } = useGetArtist(username || '');
   const artist = data?.data;
+
+  // Check if current user is viewing their own profile
+  // Compare by email since username might not be available in user object
+  const isOwnProfile = user?.email === artist?.email;
+
+  // Check if profile is incomplete and get missing fields
+  const getMissingFields = () => {
+    if (!artist) return [];
+    const missing = [];
+    if (!artist.displayName) missing.push('Display Name');
+    if (!artist.avatar) missing.push('Profile Picture');
+    if (!artist.bio) missing.push('Bio');
+    if (!artist.phone) missing.push('Phone Number');
+    if (!artist.location) missing.push('Location');
+    if (!artist.socials) missing.push('Social Media Links');
+    return missing;
+  };
+
+  const missingFields = getMissingFields();
+  const isProfileIncomplete = missingFields.length > 0;
+
+  // If user is viewing their own profile and booking tab is active, switch to music tab
+  if (isOwnProfile && activeTab === ArtistTab.BOOKING) {
+    setActiveTab(ArtistTab.MUSIC);
+  }
 
   if (isLoading) {
     return (
@@ -76,8 +103,8 @@ const ArtistProfile = () => {
               {/* Artist Image */}
               <div className='relative mb-6 sm:max-w-sm sm:mx-auto lg:max-w-none lg:mx-0'>
                 <img
-                  src={artist?.avatar}
-                  alt={artist?.displayName}
+                  src={artist?.avatar || '/images/artistNotFound.jpeg'}
+                  alt={artist?.displayName || 'Artist'}
                   className='w-full aspect-square object-cover'
                   draggable={false}
                   onError={e => {
@@ -92,7 +119,7 @@ const ArtistProfile = () => {
               </div>
 
               {/* Artist Name */}
-              <h1 className='font-mondwest text-3xl md:text-4xl lg:text-5xl font-bold text-white '>
+              <h1 className='font-mondwest text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2'>
                 {artist?.displayName}
               </h1>
               <p className='text-white/70 mb-4'>@{artist.username}</p>
@@ -141,7 +168,7 @@ const ArtistProfile = () => {
                 ArtistTab.MUSIC,
                 ArtistTab.GALLERY,
                 ArtistTab.ABOUT,
-                ArtistTab.BOOKING,
+                ...(isOwnProfile ? [] : [ArtistTab.BOOKING]),
               ].map(tab => (
                 <button
                   key={tab}
@@ -169,7 +196,7 @@ const ArtistProfile = () => {
               {activeTab === ArtistTab.GALLERY && (
                 <GalleryTab artist={{ photos: artist?.photos }} />
               )}
-              {activeTab === ArtistTab.BOOKING && (
+              {activeTab === ArtistTab.BOOKING && !isOwnProfile && (
                 <BookingTab
                   artist={{
                     id: artist?.id || '',
@@ -198,6 +225,15 @@ const ArtistProfile = () => {
             </button>
           </div>
         </div>
+
+        {/* Complete Profile Tag - Fixed Bottom Right */}
+        {isOwnProfile && isProfileIncomplete && (
+          <Link to='/dashboard/edit' className='fixed bottom-4 right-4 z-50'>
+            <span className='bg-orange-500 text-black px-3 py-2 text-sm font-semibold rounded-lg shadow-lg hover:bg-orange-600 transition-colors cursor-pointer'>
+              Complete Profile
+            </span>
+          </Link>
+        )}
       </div>
     </div>
   );

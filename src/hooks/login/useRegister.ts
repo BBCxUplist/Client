@@ -12,7 +12,7 @@ export const useRegister = (): UseRegisterReturn => {
     mutationFn: async ({ email, password, name, role }) => {
       try {
         const result = await register(email, password, {
-          name,
+          displayName: name, // Send name as displayName
           role,
         });
 
@@ -62,7 +62,7 @@ export const useRegisterWithValidation = (): UseRegisterReturn => {
 
       try {
         const result = await register(email, password, {
-          name,
+          displayName: name, // Send name as displayName
           role,
         });
 

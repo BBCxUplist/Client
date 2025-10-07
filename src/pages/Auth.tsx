@@ -38,6 +38,7 @@ const Auth = () => {
   const [verificationUserRole, setVerificationUserRole] = useState<
     'artist' | 'user'
   >('user');
+  const [verificationDisplayName, setVerificationDisplayName] = useState('');
 
   // Initialize hooks
   const registerMutation = useRegisterWithValidation();
@@ -144,6 +145,7 @@ const Auth = () => {
                   data: {
                     useremail: formData.email,
                     role: formData.isArtist ? 'artist' : 'user',
+                    displayName: formData.name,
                   },
                   token: result.session.access_token,
                 });
@@ -180,6 +182,7 @@ const Auth = () => {
             // Register API will be called after OTP verification
             setVerificationEmail(formData.email);
             setVerificationUserRole(formData.isArtist ? 'artist' : 'user');
+            setVerificationDisplayName(formData.name);
             setShowOTPVerification(true);
             setSuccessMessage('');
             setError('');
@@ -192,6 +195,7 @@ const Auth = () => {
                   data: {
                     useremail: formData.email,
                     role: formData.isArtist ? 'artist' : 'user',
+                    displayName: formData.name,
                   },
                   token: result.session.access_token,
                 });
@@ -246,6 +250,7 @@ const Auth = () => {
     setShowOTPVerification(false);
     setVerificationEmail('');
     setVerificationUserRole('user');
+    setVerificationDisplayName('');
     setError('');
     setSuccessMessage('');
   };
@@ -263,6 +268,7 @@ const Auth = () => {
     setShowOTPVerification(false);
     setVerificationEmail('');
     setVerificationUserRole('user');
+    setVerificationDisplayName('');
     setError('');
     setSuccessMessage('');
   };
@@ -320,12 +326,13 @@ const Auth = () => {
 
       <div className='w-full'>
         {/* Mobile/Tablet Layout */}
-        <div className='lg:hidden p-4 md:p-6'>
-          <div className='max-w-md mx-auto'>
+        <div className='lg:hidden p-4 md:p-6 min-h-[calc(100vh-80px)] flex flex-col justify-center'>
+          <div className='max-w-md mx-auto w-full'>
             {showOTPVerification ? (
               <OTPVerification
                 email={verificationEmail}
                 userRole={verificationUserRole}
+                displayName={verificationDisplayName}
                 onVerificationSuccess={handleOTPVerificationSuccess}
                 onBack={handleOTPVerificationBack}
               />
@@ -380,6 +387,7 @@ const Auth = () => {
                   <OTPVerification
                     email={verificationEmail}
                     userRole={verificationUserRole}
+                    displayName={verificationDisplayName}
                     onVerificationSuccess={handleOTPVerificationSuccess}
                     onBack={handleOTPVerificationBack}
                   />

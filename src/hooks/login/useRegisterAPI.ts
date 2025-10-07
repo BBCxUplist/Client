@@ -5,6 +5,7 @@ import type { AuthError } from '@/types/auth';
 export interface RegisterAPIData {
   useremail: string;
   role: 'artist' | 'user';
+  displayName: string;
 }
 
 export interface RegisterAPIResponse {

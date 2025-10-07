@@ -5,6 +5,7 @@ import { useRegisterAPI } from '@/hooks/login/useRegisterAPI';
 interface OTPVerificationProps {
   email: string;
   userRole: 'artist' | 'user';
+  displayName: string;
   onVerificationSuccess: () => void;
   onBack: () => void;
   className?: string;
@@ -13,6 +14,7 @@ interface OTPVerificationProps {
 const OTPVerification: React.FC<OTPVerificationProps> = ({
   email,
   userRole,
+  displayName,
   onVerificationSuccess,
   onBack,
   className = '',
@@ -21,7 +23,6 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
-  const [isMagicLinkSent, setIsMagicLinkSent] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Initialize register API hook
@@ -111,6 +112,7 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
             data: {
               useremail: email,
               role: userRole,
+              displayName: displayName,
             },
             token: data.session.access_token,
           });
@@ -156,133 +158,91 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
     }
   };
 
-  const handleSendMagicLink = async () => {
-    setIsVerifying(true);
-    setError('');
-
-    try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth?verified=true`,
-        },
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      setIsMagicLinkSent(true);
-      setResendCooldown(60); // 60 seconds cooldown
-    } catch (error: any) {
-      console.error('Magic link error:', error);
-      setError(error.message || 'Failed to send magic link');
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
   const isOtpComplete = otp.every(digit => digit !== '');
   const isLoading = registerAPIMutation.isPending;
 
   return (
-    <div className={`space-y-6 ${className}`}>
-      {/* Header */}
-      <div className='text-center'>
-        <h2 className='font-mondwest text-2xl xl:text-3xl font-bold text-white mb-2'>
-          VERIFY YOUR EMAIL
-        </h2>
-        <p className='text-white/70 text-sm'>
-          We've sent a 6-digit verification code to
-        </p>
-        <p className='text-orange-500 font-medium'>{email}</p>
-      </div>
-
-      {/* OTP Input Boxes */}
-      <div className='flex justify-center space-x-3'>
-        {otp.map((digit, index) => (
-          <input
-            key={index}
-            ref={el => {
-              inputRefs.current[index] = el;
-            }}
-            type='text'
-            inputMode='numeric'
-            pattern='[0-9]*'
-            maxLength={1}
-            value={digit}
-            onChange={e => handleOtpChange(index, e.target.value)}
-            onKeyDown={e => handleKeyDown(index, e)}
-            className='w-12 h-12 text-center text-xl font-bold border-2 border-white/30 rounded-lg bg-transparent text-white focus:border-orange-500 focus:outline-none transition-colors'
-            disabled={isLoading || isVerifying}
-          />
-        ))}
-      </div>
-
-      {/* Error Message */}
-      {error && (
+    <div
+      className={`min-h-[calc(100vh-200px)] flex flex-col justify-center ${className}`}
+    >
+      <div className='space-y-6'>
+        {/* Header */}
         <div className='text-center'>
-          <p className='text-red-400 text-sm'>{error}</p>
+          <h2 className='font-mondwest text-2xl xl:text-3xl font-bold text-white mb-2'>
+            VERIFY YOUR EMAIL
+          </h2>
+          <p className='text-white/70 text-sm'>
+            We've sent a 6-digit verification code to
+          </p>
+          <p className='text-orange-500 font-medium'>{email}</p>
         </div>
-      )}
 
-      {/* Magic Link Sent Message */}
-      {isMagicLinkSent && (
-        <div className='text-center p-4 bg-green-500/20 border border-green-500/30 rounded-lg'>
-          <p className='text-green-400 text-sm'>
-            Magic link sent! Check your email and click the link to verify your
-            account.
+        {/* OTP Input Boxes */}
+        <div className='flex justify-center space-x-3'>
+          {otp.map((digit, index) => (
+            <input
+              key={index}
+              ref={el => {
+                inputRefs.current[index] = el;
+              }}
+              type='text'
+              inputMode='numeric'
+              pattern='[0-9]*'
+              maxLength={1}
+              value={digit}
+              onChange={e => handleOtpChange(index, e.target.value)}
+              onKeyDown={e => handleKeyDown(index, e)}
+              className='w-12 h-12 text-center text-xl font-bold border-2 border-white/30 rounded-lg bg-transparent text-white focus:border-orange-500 focus:outline-none transition-colors'
+              disabled={isLoading || isVerifying}
+            />
+          ))}
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className='text-center'>
+            <p className='text-red-400 text-sm'>{error}</p>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className='space-y-3'>
+          <button
+            onClick={handleVerifyOtp}
+            disabled={!isOtpComplete || isLoading || isVerifying}
+            className='w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-500/50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors'
+          >
+            {isLoading || isVerifying ? 'Verifying...' : 'Verify Code'}
+          </button>
+
+          <div className='flex space-x-3'>
+            <button
+              onClick={handleResendOtp}
+              disabled={resendCooldown > 0 || isLoading}
+              className='flex-1 py-2 px-4 border border-white/30 hover:border-white/50 disabled:border-white/20 disabled:cursor-not-allowed text-white text-sm rounded-lg transition-colors'
+            >
+              {resendCooldown > 0
+                ? `Resend in ${resendCooldown}s`
+                : 'Resend Code'}
+            </button>
+          </div>
+
+          <button
+            onClick={onBack}
+            disabled={isLoading}
+            className='w-full py-2 px-4 text-white/60 hover:text-white text-sm transition-colors'
+          >
+            ← Back to Registration
+          </button>
+        </div>
+
+        {/* Help Text */}
+        <div className='text-center'>
+          <p className='text-white/40 text-xs'>
+            Didn't receive the code? Check your spam folder or try the magic
+            link option.
           </p>
         </div>
-      )}
-
-      {/* Action Buttons */}
-      <div className='space-y-3'>
-        <button
-          onClick={handleVerifyOtp}
-          disabled={!isOtpComplete || isLoading || isVerifying}
-          className='w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-500/50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors'
-        >
-          {isLoading || isVerifying ? 'Verifying...' : 'Verify Code'}
-        </button>
-
-        <div className='flex space-x-3'>
-          <button
-            onClick={handleResendOtp}
-            disabled={resendCooldown > 0 || isLoading}
-            className='flex-1 py-2 px-4 border border-white/30 hover:border-white/50 disabled:border-white/20 disabled:cursor-not-allowed text-white text-sm rounded-lg transition-colors'
-          >
-            {resendCooldown > 0
-              ? `Resend in ${resendCooldown}s`
-              : 'Resend Code'}
-          </button>
-
-          <button
-            onClick={handleSendMagicLink}
-            disabled={resendCooldown > 0 || isLoading}
-            className='flex-1 py-2 px-4 border border-white/30 hover:border-white/50 disabled:border-white/20 disabled:cursor-not-allowed text-white text-sm rounded-lg transition-colors'
-          >
-            {resendCooldown > 0
-              ? `Send Link in ${resendCooldown}s`
-              : 'Send Magic Link'}
-          </button>
-        </div>
-
-        <button
-          onClick={onBack}
-          disabled={isLoading}
-          className='w-full py-2 px-4 text-white/60 hover:text-white text-sm transition-colors'
-        >
-          ← Back to Registration
-        </button>
-      </div>
-
-      {/* Help Text */}
-      <div className='text-center'>
-        <p className='text-white/40 text-xs'>
-          Didn't receive the code? Check your spam folder or try the magic link
-          option.
-        </p>
       </div>
     </div>
   );

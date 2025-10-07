@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Environment, PerspectiveCamera, Html } from '@react-three/drei';
 import CassetteTape from './CassetteTape';
+import { CassetteTapePreloader } from './ModelPreloader';
 
 interface Scene3DProps {
   className?: string;
@@ -40,6 +41,9 @@ const Scene3D = ({ className = '' }: Scene3DProps) => {
           shadow-mapSize-height={2048}
         />
         <pointLight position={[-20, -20, -20]} intensity={0.5} />
+
+        {/* Preloader - loads the model in background */}
+        <CassetteTapePreloader />
 
         {/* 3D Object with Suspense */}
         <Suspense fallback={<LoadingFallback />}>
