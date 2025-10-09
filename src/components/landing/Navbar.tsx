@@ -13,7 +13,7 @@ interface NavItem {
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { isAuthenticated, user, logout } = useStore();
+  const { isAuthenticated, user, logout, setAuthMode } = useStore();
 
   const handleMouseEnter = () => {
     setIsMenuOpen(true);
@@ -23,11 +23,24 @@ const Navbar = () => {
     setIsMenuOpen(false);
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setIsMenuOpen(false);
+      // Redirect to home page
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if logout fails, clear local state and redirect
+      setIsMenuOpen(false);
+      window.location.href = '/';
+    }
+  };
+
+  const handleAuthClick = (mode: 'signin' | 'register') => {
+    setAuthMode(mode);
     setIsMenuOpen(false);
-    // Optionally redirect to home page
-    window.location.href = '/';
+    window.location.href = '/auth';
   };
 
   const handleNavClick = (item: NavItem) => {
@@ -192,12 +205,18 @@ const Navbar = () => {
                     ) : (
                       contactItems.map((item, index) => (
                         <div key={index} className='p-1 flex-grow '>
-                          <Link
-                            to={item.href}
+                          <button
+                            onClick={() =>
+                              handleAuthClick(
+                                item.label.toLowerCase().replace(' ', '') as
+                                  | 'signin'
+                                  | 'register'
+                              )
+                            }
                             className=' p-1 block w-full rounded-sm hover:bg-black hover:text-orange-500'
                           >
                             {item.label}
-                          </Link>
+                          </button>
                         </div>
                       ))
                     )}

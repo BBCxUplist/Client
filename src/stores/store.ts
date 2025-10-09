@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { supabase } from '@/lib/supabase';
 import type { User } from '@/types/auth';
 
 interface AuthState {
@@ -9,6 +10,7 @@ interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
   artistData: any | null;
+  authMode: 'signin' | 'register' | null;
 }
 
 interface Store extends AuthState {
@@ -23,6 +25,7 @@ interface Store extends AuthState {
   clearAuth: () => void;
   setRole: (role: 'user' | 'artist' | 'admin' | null) => void;
   setArtistData: (artistData: any | null) => void;
+  setAuthMode: (mode: 'signin' | 'register' | null) => void;
   logout: () => void;
 }
 
@@ -41,6 +44,7 @@ export const useStore = create<Store>()(
       accessToken: null,
       refreshToken: null,
       artistData: null,
+      authMode: null,
 
       // Auth actions
       setUser: user =>
@@ -72,7 +76,11 @@ export const useStore = create<Store>()(
 
       setArtistData: artistData => set({ artistData }),
 
-      logout: () =>
+      setAuthMode: authMode => set({ authMode }),
+
+      logout: async () => {
+        await supabase.auth.signOut();
+
         set({
           user: null,
           isAuthenticated: false,
@@ -80,7 +88,9 @@ export const useStore = create<Store>()(
           accessToken: null,
           refreshToken: null,
           artistData: null,
-        }),
+          authMode: null,
+        });
+      },
     }),
     {
       name: 'auth-storage',
@@ -91,6 +101,7 @@ export const useStore = create<Store>()(
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
         artistData: state.artistData,
+        authMode: state.authMode,
       }),
     }
   )

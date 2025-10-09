@@ -12,6 +12,7 @@ import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
 import { QueryProvider } from './providers/QueryProvider';
 import GlobalModelPreloader from './components/3D/GlobalModelPreloader';
+import AuthStateListener from './components/auth/AuthStateListener';
 
 function App() {
   return (
@@ -19,6 +20,9 @@ function App() {
       <div>
         {/* Global 3D Model Preloader */}
         <GlobalModelPreloader />
+
+        {/* Auth State Listener for Google Login */}
+        <AuthStateListener />
 
         <Routes>
           <Route path='/' element={<Landing />} />

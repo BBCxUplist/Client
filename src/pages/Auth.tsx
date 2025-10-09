@@ -6,6 +6,7 @@ import { resetPassword } from '@/lib/supabase';
 import { useRegisterWithValidation } from '@/hooks/login/useRegister';
 import { useLogin, useGoogleLogin } from '@/hooks/login/useLogin';
 import { useRegisterAPI } from '@/hooks/login/useRegisterAPI';
+import { useArtistSelection } from '@/hooks/login/useArtistSelection';
 import AuthHeader from '@/components/auth/AuthHeader';
 import ModeToggle from '@/components/auth/ModeToggle';
 import AuthForm from '@/components/auth/AuthForm';
@@ -14,13 +15,14 @@ import AuthMessages from '@/components/auth/AuthMessages';
 import AuthFooter from '@/components/auth/AuthFooter';
 import DesktopBranding from '@/components/auth/DesktopBranding';
 import OTPVerification from '@/components/auth/OTPVerification';
+import ArtistSelectionModal from '@/components/auth/ArtistSelectionModal';
 import { useStore } from '@/stores/store';
 import type { FormData, AuthMode } from '@/components/auth/types';
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useStore();
-  const [activeMode, setActiveMode] = useState<AuthMode>('signin');
+  const { isAuthenticated, authMode, setAuthMode, setAuth } = useStore();
+  const [activeMode, setActiveMode] = useState<AuthMode>(authMode || 'signin');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState<FormData>({
@@ -39,12 +41,19 @@ const Auth = () => {
     'artist' | 'user'
   >('user');
   const [verificationDisplayName, setVerificationDisplayName] = useState('');
+  const [showArtistSelection, setShowArtistSelection] = useState(false);
+  const [pendingUserData, setPendingUserData] = useState<{
+    user: any;
+    accessToken: string;
+    refreshToken: string;
+  } | null>(null);
 
   // Initialize hooks
   const registerMutation = useRegisterWithValidation();
   const loginMutation = useLogin();
   const googleLoginMutation = useGoogleLogin();
   const registerAPIMutation = useRegisterAPI();
+  const artistSelectionMutation = useArtistSelection();
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -52,6 +61,13 @@ const Auth = () => {
       navigate('/dashboard');
     }
   }, [isAuthenticated, navigate]);
+
+  // Clear auth mode from store when component mounts (since we've used it to set initial state)
+  useEffect(() => {
+    if (authMode) {
+      setAuthMode(null);
+    }
+  }, [authMode, setAuthMode]);
 
   // ... (keep all existing functions - handleInputChange, validateForm, handleSubmit, switchMode, onGoogleLogin, onForgotPassword)
   const handleInputChange = (
@@ -118,7 +134,40 @@ const Auth = () => {
           password: formData.password,
         });
         console.log('Login successful:', result);
-        // Navigation will be handled by useEffect when isAuthenticated changes
+
+        // Check if user already has a role set
+        const userRole = result.user.user_metadata?.role;
+        if (userRole) {
+          // User already has a role, set auth state directly
+          const userData = {
+            id: result.user.id,
+            email: result.user.email,
+            name: result.user.user_metadata?.name || '',
+            role: userRole,
+            created_at: result.user.created_at,
+            updated_at: result.user.updated_at,
+          };
+          setAuth(
+            userData,
+            result.session.access_token,
+            result.session.refresh_token
+          );
+        } else {
+          // User doesn't have a role, show artist selection modal
+          setPendingUserData({
+            user: {
+              id: result.user.id,
+              email: result.user.email,
+              name: result.user.user_metadata?.name || '',
+              role: 'user', // temporary
+              created_at: result.user.created_at,
+              updated_at: result.user.updated_at,
+            },
+            accessToken: result.session.access_token,
+            refreshToken: result.session.refresh_token,
+          });
+          setShowArtistSelection(true);
+        }
       } else {
         const role = formData.isArtist ? 'artist' : 'user';
         const result = await registerMutation.mutateAsync({
@@ -305,19 +354,56 @@ const Auth = () => {
     }
   };
 
+  const handleArtistSelection = async (isArtist: boolean) => {
+    if (!pendingUserData) return;
+
+    try {
+      await artistSelectionMutation.mutateAsync({
+        user: pendingUserData.user,
+        accessToken: pendingUserData.accessToken,
+        refreshToken: pendingUserData.refreshToken,
+        isArtist,
+      });
+
+      setShowArtistSelection(false);
+      setPendingUserData(null);
+      setSuccessMessage(
+        'Welcome to UPLIST! Your account has been set up successfully.'
+      );
+
+      // Navigate to dashboard after successful artist selection
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1000);
+    } catch (error: any) {
+      console.error('Artist selection error:', error);
+      setError(
+        error.message || 'Failed to set up your account. Please try again.'
+      );
+    }
+  };
+
+  const handleArtistSelectionClose = () => {
+    setShowArtistSelection(false);
+    setPendingUserData(null);
+    setError('Please complete your account setup to continue.');
+  };
+
   // Get loading state from mutations
   const isLoading =
     registerMutation.isPending ||
     loginMutation.isPending ||
     googleLoginMutation.isPending ||
-    registerAPIMutation.isPending;
+    registerAPIMutation.isPending ||
+    artistSelectionMutation.isPending;
 
   // Handle mutation errors
   const mutationError =
     registerMutation.error ||
     loginMutation.error ||
     googleLoginMutation.error ||
-    registerAPIMutation.error;
+    registerAPIMutation.error ||
+    artistSelectionMutation.error;
   const displayError = error || mutationError?.message || '';
 
   return (
@@ -488,6 +574,15 @@ const Auth = () => {
           </div>
         </div>
       </div>
+
+      {/* Artist Selection Modal */}
+      <ArtistSelectionModal
+        isOpen={showArtistSelection}
+        onClose={handleArtistSelectionClose}
+        onSelect={handleArtistSelection}
+        useremail={pendingUserData?.user?.email || ''}
+        userName={pendingUserData?.user?.name || ''}
+      />
     </div>
   );
 };
