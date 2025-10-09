@@ -95,3 +95,14 @@ export const useAuthStatus = () => {
     refetchOnWindowFocus: true,
   });
 };
+
+
+export interface AuthUser {
+  id: string;
+  name: string;
+  username?: string;
+  email?: string;
+  avatar?: string;
+  role?: string;
+}
+
