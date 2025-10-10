@@ -18,7 +18,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, user, role } = useStore();
+  const { isAuthenticated, user } = useStore();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
 
@@ -60,7 +60,12 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
         }
 
         // Check role-based access
-        if (allowedRoles.length > 0 && role && !allowedRoles.includes(role)) {
+        const userRole = user?.role;
+        if (
+          allowedRoles.length > 0 &&
+          userRole &&
+          !allowedRoles.includes(userRole)
+        ) {
           // User doesn't have required role, redirect to unauthorized page
           navigate('/unauthorized', { replace: true });
           return;
@@ -80,7 +85,6 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
   }, [
     isAuthenticated,
     user,
-    role,
     location.pathname,
     navigate,
     requireAuth,

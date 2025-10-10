@@ -9,7 +9,6 @@ const GlobalModelPreloader = () => {
   useEffect(() => {
     // Preload the cassette tape model when the component mounts
     preloadCassetteTape();
-    console.log('🎵 Preloading cassette tape 3D model...');
   }, []);
 
   // This component doesn't render anything

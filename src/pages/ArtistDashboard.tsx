@@ -13,7 +13,7 @@ import SettingsTab from '@/components/artistDashboard/SettingsTab';
 import { DashboardTab } from '@/types';
 
 const ArtistDashboard = () => {
-  const { user, setArtistData } = useStore();
+  const { user, setUser } = useStore();
   const [activeTab, setActiveTab] = useState<DashboardTab>(
     DashboardTab.OVERVIEW
   );
@@ -44,10 +44,17 @@ const ArtistDashboard = () => {
 
   // Store artist data in state when fetched
   useEffect(() => {
-    if (artist) {
-      setArtistData(artist);
+    if (artist && user && !user.username) {
+      // Only update if we don't already have artist data to prevent infinite loops
+      const updatedUser = {
+        ...user,
+        ...artist,
+        role: (artist.role as 'user' | 'artist' | 'admin') || 'artist',
+      };
+      setUser(updatedUser);
     }
-  }, [artist, setArtistData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [artist, setUser]); // Intentionally exclude 'user' to prevent infinite loop
 
   // Check if profile is incomplete and get missing fields
   const getMissingFields = () => {
@@ -86,12 +93,12 @@ const ArtistDashboard = () => {
           <p className='text-white/60 mb-4'>
             {error?.message || 'Failed to fetch artist data'}
           </p>
-          <button
-            onClick={() => window.location.reload()}
+          <Link
+            to='/'
             className='bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 transition-colors'
           >
-            Try Again
-          </button>
+            Go to home
+          </Link>
         </div>
       </div>
     );

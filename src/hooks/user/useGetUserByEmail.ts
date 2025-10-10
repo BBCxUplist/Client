@@ -12,26 +12,24 @@ export const useGetUserByEmail = ({
   email,
   enabled = true,
 }: UseGetUserByEmailProps) => {
-  const { isAuthenticated: storeIsAuthenticated, accessToken } = useStore();
+  const { isAuthenticated: storeIsAuthenticated } = useStore();
 
   return useQuery<UserByEmailResponse, Error>({
     queryKey: ['user', 'email', email],
     queryFn: async () => {
-      // Check if user is authenticated and has a token
-      if (!storeIsAuthenticated || !accessToken) {
-        throw new Error('User not authenticated');
-      }
-
       const response = await apiClient.get<UserByEmailResponse>(
         `/users/email/${email}`
       );
       return response.data;
     },
-    enabled: enabled && !!email && storeIsAuthenticated && !!accessToken,
+    enabled: enabled && !!email && storeIsAuthenticated,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: (failureCount, error) => {
       // Don't retry if it's an authentication error
-      if (error.message === 'User not authenticated') {
+      if (
+        error.message?.includes('401') ||
+        error.message?.includes('not authenticated')
+      ) {
         return false;
       }
       return failureCount < 2;

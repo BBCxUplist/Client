@@ -6,8 +6,11 @@ import ArtistDashboard from './ArtistDashboard';
 import AdminDashboard from './AdminDashboard';
 
 const Dashboard = () => {
-  const { role, isAuthenticated } = useStore();
+  const { user, isAuthenticated } = useStore();
   const navigate = useNavigate();
+
+  // Get role directly from user object to avoid function recreation
+  const userRole = user?.role;
 
   useEffect(() => {
     // Redirect to auth if not authenticated
@@ -17,14 +20,14 @@ const Dashboard = () => {
     }
 
     // If no role is set, redirect to auth
-    if (!role) {
+    if (!userRole) {
       navigate('/auth');
       return;
     }
-  }, [isAuthenticated, role, navigate]);
+  }, [isAuthenticated, userRole, navigate]);
 
   // Show loading or redirect if not authenticated
-  if (!isAuthenticated || !role) {
+  if (!isAuthenticated || !userRole) {
     return (
       <div className='min-h-screen flex items-center justify-center bg-black'>
         <div className='text-white'>Loading...</div>
@@ -33,7 +36,7 @@ const Dashboard = () => {
   }
 
   // Render appropriate dashboard based on role
-  switch (role) {
+  switch (userRole) {
     case 'user':
       return <UserDashboard />;
     case 'artist':

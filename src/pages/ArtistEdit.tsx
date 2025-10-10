@@ -19,20 +19,20 @@ enum ArtistEditTab {
 
 const ArtistEdit = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, artistData } = useStore();
+  const { isAuthenticated, user } = useStore();
   const [activeTab, setActiveTab] = useState<ArtistEditTab>(
     ArtistEditTab.PROFILE
   );
 
-  // Redirect if not authenticated
+  // Redirect if not authenticated or not an artist
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || user?.role !== 'artist') {
       navigate('/auth');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user?.role, navigate]);
 
-  // Get artist data from state
-  const artist = artistData;
+  // Get artist data from consolidated user state
+  const artist = user;
 
   // Form state
   const [formData, setFormData] = useState({
@@ -113,10 +113,10 @@ const ArtistEdit = () => {
         },
         genres: artist.genres || [],
         price: artist.basePrice || 0,
-        embeds: artist.embeds || {
-          youtube: [],
-          soundcloud: [],
-          spotify: [],
+        embeds: {
+          youtube: artist.embeds?.youtube || [],
+          soundcloud: artist.embeds?.soundcloud || [],
+          spotify: artist.embeds?.spotify || [],
         },
         photos: artist.photos || [],
       };
@@ -387,7 +387,7 @@ const ArtistEdit = () => {
           {/* Profile Tab */}
           {activeTab === ArtistEditTab.PROFILE && (
             <ProfileTab
-              artist={artist}
+              artist={artist as any}
               formData={formData}
               handleInputChange={handleInputChange}
               handleGenreChange={handleGenreChange}
@@ -406,7 +406,7 @@ const ArtistEdit = () => {
           {/* Gallery Tab */}
           {activeTab === ArtistEditTab.GALLERY && (
             <GalleryTab
-              artist={artist}
+              artist={artist as any}
               formData={formData}
               handleInputChange={handleInputChange}
             />
@@ -414,7 +414,7 @@ const ArtistEdit = () => {
 
           {/* Settings Tab */}
           {activeTab === ArtistEditTab.SETTINGS && (
-            <SettingsTab artist={artist} />
+            <SettingsTab artist={artist as any} />
           )}
         </div>
       </div>

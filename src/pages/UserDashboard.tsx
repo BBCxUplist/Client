@@ -6,13 +6,13 @@ import Navbar from '@/components/landing/Navbar';
 import { formatPrice } from '@/helper';
 import { useStore } from '@/stores/store';
 import { useGetUserByEmail, useUpdateUserProfile } from '@/hooks/user';
-import { logout, isAuthenticated } from '@/lib/apiClient';
+import { logout } from '@/lib/apiClient';
 import { dummyUserDashboardData } from '@/constants/userDashboardData';
 import { useImageUpload } from '@/hooks/useImageUpload';
 
 const UserDashboard = () => {
   const navigate = useNavigate();
-  const { user } = useStore();
+  const { user, isAuthenticated } = useStore();
   const [activeTab, setActiveTab] = useState<
     'overview' | 'bookings' | 'saved' | 'settings'
   >('overview');
@@ -24,7 +24,7 @@ const UserDashboard = () => {
     error,
   } = useGetUserByEmail({
     email: user?.email || '',
-    enabled: !!user?.email && isAuthenticated(),
+    enabled: !!user?.email && isAuthenticated,
   });
 
   // Get user data from API response
@@ -136,7 +136,7 @@ const UserDashboard = () => {
   };
 
   // Check if user is authenticated
-  if (!isAuthenticated() || !user) {
+  if (!isAuthenticated || !user) {
     return (
       <div className='min-h-screen bg-neutral-950 text-white flex items-center justify-center'>
         <div className='text-center'>

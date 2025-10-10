@@ -27,7 +27,7 @@ interface UpdateArtistProfileResponse {
 }
 
 export const useUpdateArtistProfile = () => {
-  const { accessToken, user, setArtistData, artistData } = useStore();
+  const { user, setUser } = useStore();
   const queryClient = useQueryClient();
 
   return useMutation<
@@ -38,25 +38,20 @@ export const useUpdateArtistProfile = () => {
     mutationFn: async profileData => {
       const response = await apiClient.patch<UpdateArtistProfileResponse>(
         '/artists/update-profile',
-        profileData,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
+        profileData
       );
       return response.data;
     },
     onSuccess: (data, variables) => {
       console.log('Profile updated successfully:', data);
 
-      // Update artist data in state with the new data
-      if (artistData) {
-        const updatedArtistData = {
-          ...artistData,
+      // Update user data in state with the new data
+      if (user) {
+        const updatedUser = {
+          ...user,
           ...variables,
         };
-        setArtistData(updatedArtistData);
+        setUser(updatedUser);
       }
 
       // Invalidate and refetch artist data
