@@ -1,45 +1,50 @@
 // Store-related types for the application
+import type { Role } from '@/types';
 
 // Consolidated user interface that handles both regular users and artists
-// Includes both Supabase auth fields and backend data
+// Combines User and Artist types with additional Supabase auth fields
 export interface ConsolidatedUser {
   // Core user fields (from Supabase auth)
   id: string;
   email?: string;
   name?: string;
-  role?: 'user' | 'artist' | 'admin';
+  role?: Role;
+
+  // User fields (from User type)
+  avatar?: string | null;
+  description?: string;
+  phone?: string | null;
+  location?: string | null;
+  bio?: string | null;
+  socials?: any;
+  banned?: boolean;
+  createdAt?: string;
+
+  // Artist fields (from Artist type)
+  slug?: string;
+  embeds?: any;
+  photos?: string[];
+  basePrice?: number;
+  genres?: string[];
+  isBookable?: boolean;
+  appealStatus?: 'pending' | 'approved' | 'rejected';
+  featured?: boolean;
 
   // Backend user fields (populated after API calls)
   username?: string;
   useremail?: string;
   displayName?: string | null;
-  avatar?: string | null;
-  bio?: string | null;
-  phone?: string | null;
-  location?: string | null;
-  socials?: any;
   isActive?: boolean;
   isAdmin?: boolean;
-  banned?: boolean;
   saved_artists?: string[];
-  // Additional artist fields
-  slug?: string;
-  photos?: string[];
-  basePrice?: number;
-  genres?: string[];
-  embeds?: {
-    youtube?: string[];
-    soundcloud?: string[];
-    spotify?: string[];
-  };
+  updatedAt?: string;
+
   // Additional artist properties
-  isBookable?: boolean;
-  appealStatus?: string;
   artistType?: string;
-  featured?: boolean;
   isActiveArtist?: boolean;
   isApproved?: boolean;
   isAvailable?: boolean;
+  isLinkpageVisible?: boolean;
 }
 
 export interface AuthState {
@@ -62,7 +67,7 @@ export interface AuthActions {
   // Helper methods
   getAccessToken: () => string | null;
   getRefreshToken: () => string | null;
-  getRole: () => 'user' | 'artist' | 'admin';
+  getRole: () => Role;
   isArtist: () => boolean;
   isAdmin: () => boolean;
 }

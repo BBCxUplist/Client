@@ -4,6 +4,9 @@ import { devtools } from 'zustand/middleware';
 import { supabase } from '@/lib/supabase';
 import { tokenCookies, userDataCookies } from '@/lib/cookieUtils';
 import type { Store, ConsolidatedUser } from '@/types/store';
+import type { Role } from '@/types';
+
+// Force TypeScript recompilation
 
 export const useStore = create<Store>()(
   devtools(
@@ -85,7 +88,7 @@ export const useStore = create<Store>()(
         // Helper methods
         getAccessToken: () => tokenCookies.getAccessToken(),
         getRefreshToken: () => tokenCookies.getRefreshToken(),
-        getRole: () => get().user?.role || 'user',
+        getRole: (): Role => get().user?.role || 'user',
         isArtist: () => get().user?.role === 'artist',
         isAdmin: () => get().user?.role === 'admin',
       }),

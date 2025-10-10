@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '@/stores/store';
 import { useUpdateArtistProfile } from '@/hooks/artist/useUpdateArtistProfile';
+import { useGetArtistProfile } from '@/hooks/artist/useGetArtistProfile';
 import Navbar from '@/components/landing/Navbar';
 import ProfileTab from '@/components/artistEdit/ProfileTab';
 import MusicTab from '@/components/artistEdit/MusicTab';
@@ -31,8 +32,15 @@ const ArtistEdit = () => {
     }
   }, [isAuthenticated, user?.role, navigate]);
 
-  // Get artist data from consolidated user state
-  const artist = user;
+  // Fetch artist profile data
+  const {
+    data: artistResponse,
+    isLoading: isArtistLoading,
+    error: artistError,
+  } = useGetArtistProfile();
+
+  // Get artist data from API response or fallback to store user data
+  const artist = artistResponse?.data || user;
 
   // Form state
   const [formData, setFormData] = useState({
@@ -96,7 +104,7 @@ const ArtistEdit = () => {
 
   // Initialize form data when artist is found
   useEffect(() => {
-    if (artist) {
+    if (artist && artist.id) {
       const initialData = {
         bio: artist.bio || '',
         displayName: artist.displayName || '',
@@ -111,20 +119,20 @@ const ArtistEdit = () => {
           soundcloud: '',
           youtube: '',
         },
-        genres: artist.genres || [],
-        price: artist.basePrice || 0,
+        genres: (artist as any).genres || [],
+        price: (artist as any).basePrice || 0,
         embeds: {
-          youtube: artist.embeds?.youtube || [],
-          soundcloud: artist.embeds?.soundcloud || [],
-          spotify: artist.embeds?.spotify || [],
+          youtube: (artist as any).embeds?.youtube || [],
+          soundcloud: (artist as any).embeds?.soundcloud || [],
+          spotify: (artist as any).embeds?.spotify || [],
         },
-        photos: artist.photos || [],
+        photos: (artist as any).photos || [],
       };
 
       setFormData(initialData);
       setOriginalData(initialData);
     }
-  }, [artist]);
+  }, [artist?.id, artist?.username, artist?.displayName, artist]); // Include artist to satisfy ESLint
 
   const handleInputChange = (
     field: string,
@@ -289,14 +297,49 @@ const ArtistEdit = () => {
     setShowCancelModal(false);
   };
 
+  // Loading state
+  if (isArtistLoading) {
+    return (
+      <div className='min-h-screen bg-neutral-950 text-white flex items-center justify-center texture-bg'>
+        <div className='text-center'>
+          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4'></div>
+          <h1 className='text-2xl font-bold mb-2'>Loading Profile Data</h1>
+          <p className='text-white/60'>
+            Please wait while we load your artist profile...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (artistError) {
+    return (
+      <div className='min-h-screen bg-neutral-950 text-white flex items-center justify-center texture-bg'>
+        <div className='text-center'>
+          <h1 className='text-2xl font-bold mb-2'>Error Loading Profile</h1>
+          <p className='text-white/60 mb-4'>
+            {artistError.message || 'Failed to load your artist profile.'}
+          </p>
+          <button
+            onClick={() => navigate('/dashboard')}
+            className='bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 transition-colors'
+          >
+            Go to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // No artist data - redirect to dashboard to fetch data
   if (!artist) {
     return (
       <div className='min-h-screen bg-neutral-950 text-white flex items-center justify-center texture-bg'>
         <div className='text-center'>
-          <h1 className='text-2xl font-bold mb-2'>Loading Profile Data</h1>
+          <h1 className='text-2xl font-bold mb-2'>No Profile Data</h1>
           <p className='text-white/60 mb-4'>
-            Please visit your dashboard first to load your profile data.
+            Unable to load your artist profile. Please try again.
           </p>
           <button
             onClick={() => navigate('/dashboard')}

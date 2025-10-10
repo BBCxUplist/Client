@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import Navbar from '@/components/landing/Navbar';
 import { formatPrice } from '@/helper';
 import { useStore } from '@/stores/store';
-import { useGetUserByEmail, useUpdateUserProfile } from '@/hooks/user';
+import { useGetUserProfile, useUpdateUserProfile } from '@/hooks/user';
 import { logout } from '@/lib/apiClient';
 import { dummyUserDashboardData } from '@/constants/userDashboardData';
 import { useImageUpload } from '@/hooks/useImageUpload';
@@ -17,15 +17,8 @@ const UserDashboard = () => {
     'overview' | 'bookings' | 'saved' | 'settings'
   >('overview');
 
-  // Fetch user data using email from authenticated user
-  const {
-    data: userResponse,
-    isLoading,
-    error,
-  } = useGetUserByEmail({
-    email: user?.email || '',
-    enabled: !!user?.email && isAuthenticated,
-  });
+  // Fetch user profile data
+  const { data: userResponse, isLoading, error } = useGetUserProfile();
 
   // Get user data from API response
   const userData = userResponse?.data;
@@ -247,7 +240,10 @@ const UserDashboard = () => {
                 {userData.location || 'Location not set'}
               </p>
               <p className='text-white/50 text-sm'>
-                Member since {new Date(userData.createdAt).toLocaleDateString()}
+                Member since{' '}
+                {userData.createdAt
+                  ? new Date(userData.createdAt).toLocaleDateString()
+                  : 'Unknown'}
               </p>
             </div>
           </div>

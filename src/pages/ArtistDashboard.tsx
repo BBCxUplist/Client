@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useStore } from '@/stores/store';
-import { useGetArtistByEmail } from '@/hooks/generic/useGetArtistByEmail';
+import { useGetArtistProfile } from '@/hooks/artist/useGetArtistProfile';
 import { formatPrice } from '@/helper';
 import { dummyDashboardData } from '@/constants/dashboardData';
 import BookingModal from '@/components/ui/BookingModal';
@@ -20,15 +20,8 @@ const ArtistDashboard = () => {
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Fetch artist data using email from authenticated user
-  const {
-    data: artistResponse,
-    isLoading,
-    error,
-  } = useGetArtistByEmail({
-    email: user?.email || '',
-    enabled: !!user?.email,
-  });
+  // Fetch artist profile data
+  const { data: artistResponse, isLoading, error } = useGetArtistProfile();
 
   // Settings states
   const [profileVisibility, setProfileVisibility] = useState(true);

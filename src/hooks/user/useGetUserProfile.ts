@@ -2,33 +2,25 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import { useStore } from '@/stores/store';
-import type { UserByEmailResponse } from '@/types/api';
 import type { ConsolidatedUser } from '@/types/store';
 
-interface UseGetUserByEmailProps {
-  email: string;
-  enabled?: boolean;
+interface UserProfileResponse {
+  success: boolean;
+  message: string;
+  data: ConsolidatedUser;
 }
 
-export const useGetUserByEmail = ({
-  email,
-  enabled = true,
-}: UseGetUserByEmailProps) => {
-  const {
-    isAuthenticated: storeIsAuthenticated,
-    user: currentUser,
-    setUser,
-  } = useStore();
+export const useGetUserProfile = () => {
+  const { isAuthenticated, user: currentUser, setUser } = useStore();
 
-  const query = useQuery<UserByEmailResponse, Error>({
-    queryKey: ['user', 'email', email],
+  const query = useQuery<UserProfileResponse, Error>({
+    queryKey: ['user', 'profile'],
     queryFn: async () => {
-      const response = await apiClient.get<UserByEmailResponse>(
-        `/users/email/${email}`
-      );
+      const response =
+        await apiClient.get<UserProfileResponse>('/users/profile');
       return response.data;
     },
-    enabled: enabled && !!email && storeIsAuthenticated,
+    enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: (failureCount, error) => {
       // Don't retry if it's an authentication error
@@ -42,7 +34,7 @@ export const useGetUserByEmail = ({
     },
   });
 
-  // Update store state when user data is fetched
+  // Update store state when user profile data is fetched
   useEffect(() => {
     if (query.data?.success && query.data.data && currentUser) {
       // Only update if we don't already have the backend data to prevent infinite loops
@@ -55,8 +47,6 @@ export const useGetUserByEmail = ({
           // Ensure we keep the original email and name from Supabase auth
           email: currentUser.email,
           name: currentUser.name,
-          // Cast role to the correct type
-          role: apiData.role as 'user' | 'artist' | 'admin',
           // Handle null values properly
           avatar: apiData.avatar || undefined,
           bio: apiData.bio || undefined,

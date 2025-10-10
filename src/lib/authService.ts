@@ -29,7 +29,7 @@ interface BackendUser extends User {
     spotify?: string[];
   };
   isBookable?: boolean;
-  appealStatus?: string;
+  appealStatus?: 'pending' | 'approved' | 'rejected';
   artistType?: string;
   featured?: boolean;
   isActiveArtist?: boolean;

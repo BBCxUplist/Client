@@ -2,33 +2,25 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import { useStore } from '@/stores/store';
-import type { UserByEmailResponse } from '@/types/api';
 import type { ConsolidatedUser } from '@/types/store';
 
-interface UseGetUserByEmailProps {
-  email: string;
-  enabled?: boolean;
+interface ArtistProfileResponse {
+  success: boolean;
+  message: string;
+  data: ConsolidatedUser;
 }
 
-export const useGetUserByEmail = ({
-  email,
-  enabled = true,
-}: UseGetUserByEmailProps) => {
-  const {
-    isAuthenticated: storeIsAuthenticated,
-    user: currentUser,
-    setUser,
-  } = useStore();
+export const useGetArtistProfile = () => {
+  const { isAuthenticated, user: currentUser, setUser } = useStore();
 
-  const query = useQuery<UserByEmailResponse, Error>({
-    queryKey: ['user', 'email', email],
+  const query = useQuery<ArtistProfileResponse, Error>({
+    queryKey: ['artist', 'profile'],
     queryFn: async () => {
-      const response = await apiClient.get<UserByEmailResponse>(
-        `/users/email/${email}`
-      );
+      const response =
+        await apiClient.get<ArtistProfileResponse>('/artists/profile');
       return response.data;
     },
-    enabled: enabled && !!email && storeIsAuthenticated,
+    enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: (failureCount, error) => {
       // Don't retry if it's an authentication error
@@ -42,12 +34,12 @@ export const useGetUserByEmail = ({
     },
   });
 
-  // Update store state when user data is fetched
+  // Update store state when artist profile data is fetched
   useEffect(() => {
     if (query.data?.success && query.data.data && currentUser) {
       // Only update if we don't already have the backend data to prevent infinite loops
-      if (!currentUser.username && !currentUser.useremail) {
-        // Merge the fetched user data with current user state
+      if (!currentUser.username && !currentUser.slug) {
+        // Merge the fetched artist data with current user state
         const apiData = query.data.data;
         const updatedUser: ConsolidatedUser = {
           ...currentUser,
@@ -55,14 +47,17 @@ export const useGetUserByEmail = ({
           // Ensure we keep the original email and name from Supabase auth
           email: currentUser.email,
           name: currentUser.name,
-          // Cast role to the correct type
-          role: apiData.role as 'user' | 'artist' | 'admin',
           // Handle null values properly
           avatar: apiData.avatar || undefined,
           bio: apiData.bio || undefined,
           phone: apiData.phone || undefined,
           location: apiData.location || undefined,
           displayName: apiData.displayName || undefined,
+          // Cast appealStatus to the correct type
+          appealStatus: apiData.appealStatus as
+            | 'pending'
+            | 'approved'
+            | 'rejected',
         };
         setUser(updatedUser);
       }
