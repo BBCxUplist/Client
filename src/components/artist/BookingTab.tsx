@@ -13,10 +13,14 @@ import {
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { formatPrice } from '@/helper';
+import { useCreateBooking } from '@/hooks/booking/useCreateBooking';
 import type { BookingTabData } from '../../types/tabs';
 
 interface BookingTabProps {
-  artist: BookingTabData;
+  artist: BookingTabData & {
+    isAvailable?: boolean;
+    isApproved?: boolean;
+  };
 }
 
 const BookingTab = ({ artist }: BookingTabProps) => {
@@ -34,17 +38,12 @@ const BookingTab = ({ artist }: BookingTabProps) => {
     contactPhone: '',
   });
 
-  const [artistResponse, setArtistResponse] = useState<{
-    isAvailable: boolean | null;
-    message: string;
-    alternativeDates: Date[];
-    quotedPrice: number | null;
-  }>({
-    isAvailable: null,
-    message: '',
-    alternativeDates: [],
-    quotedPrice: null,
-  });
+  // Booking API hook
+  const createBookingMutation = useCreateBooking();
+
+  // Success/Error message states
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleInputChange = (field: string, value: string) => {
     setBookingForm(prev => ({
@@ -56,36 +55,72 @@ const BookingTab = ({ artist }: BookingTabProps) => {
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
     setIsCalendarOpen(false);
-
-    // Simulate artist response after date selection
-    setTimeout(() => {
-      const isAvailable = Math.random() > 0.3; // 70% chance available
-      setArtistResponse({
-        isAvailable,
-        message: isAvailable
-          ? `Great! I'm available on ${
-              date ? format(date, 'MMMM do, yyyy') : 'that date'
-            }. Let's make your event amazing!`
-          : `Sorry, I'm not available on ${
-              date ? format(date, 'MMMM do, yyyy') : 'that date'
-            }. But I have alternative dates available.`,
-        alternativeDates: isAvailable
-          ? []
-          : [
-              new Date(Date.now() + 86400000 * 2), // +2 days
-              new Date(Date.now() + 86400000 * 5), // +5 days
-              new Date(Date.now() + 86400000 * 7), // +7 days
-            ],
-        quotedPrice: isAvailable
-          ? artist.basePrice + Math.floor(Math.random() * 10000)
-          : null,
-      });
-    }, 1500);
   };
 
-  const handleBookingSubmit = () => {
-    console.log('Booking submitted:', { selectedDate, bookingForm, artist });
-    // Handle booking submission logic here
+  const handleBookingSubmit = async () => {
+    // Clear previous messages
+    setSuccessMessage('');
+    setErrorMessage('');
+
+    if (!selectedDate) {
+      setErrorMessage('Please select an event date');
+      return;
+    }
+
+    // Validate phone number length
+    if (
+      bookingForm.contactPhone.length < 10 ||
+      bookingForm.contactPhone.length > 15
+    ) {
+      setErrorMessage('Phone number must be between 10-15 digits');
+      return;
+    }
+
+    try {
+      // Prepare booking data according to API requirements
+      const bookingData = {
+        artistId: artist.id,
+        eventDate: selectedDate.toISOString(),
+        eventType: bookingForm.eventType,
+        duration: parseInt(bookingForm.duration) || 0,
+        expectedGuests: parseInt(bookingForm.guests) || 0,
+        budgetRange: bookingForm.budget,
+        eventLocation: bookingForm.location,
+        specialRequirements: bookingForm.message,
+        contactName: bookingForm.contactName,
+        contactEmail: bookingForm.contactEmail,
+        contactPhone: bookingForm.contactPhone,
+      };
+
+      console.log('Submitting booking:', bookingData);
+
+      // Call the booking API
+      const result = await createBookingMutation.mutateAsync(bookingData);
+
+      if (result.success === true || result.success === undefined) {
+        setSuccessMessage(
+          'Booking request submitted successfully! We will get back to you soon.'
+        );
+        // Reset form
+        setBookingForm({
+          eventType: '',
+          duration: '',
+          guests: '',
+          budget: '',
+          location: '',
+          message: '',
+          contactName: '',
+          contactEmail: '',
+          contactPhone: '',
+        });
+        setSelectedDate(undefined);
+      } else {
+        setErrorMessage(result.message || 'Failed to submit booking request');
+      }
+    } catch (error: any) {
+      console.error('Error submitting booking:', error);
+      setErrorMessage(error.message || 'Failed to submit booking request');
+    }
   };
 
   return (
@@ -98,6 +133,25 @@ const BookingTab = ({ artist }: BookingTabProps) => {
       <h3 className='text-2xl md:text-3xl font-semibold text-orange-500 mb-6 font-mondwest'>
         Book {artist.displayName}
       </h3>
+
+      {/* Success/Error Messages */}
+      {successMessage && (
+        <div className='bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-6'>
+          <div className='flex items-center gap-3'>
+            <div className='text-green-400 text-xl'>✅</div>
+            <p className='text-green-400'>{successMessage}</p>
+          </div>
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className='bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6'>
+          <div className='flex items-center gap-3'>
+            <div className='text-red-400 text-xl'>❌</div>
+            <p className='text-red-400'>{errorMessage}</p>
+          </div>
+        </div>
+      )}
 
       {/* Booking Status */}
       <div className='bg-white/5 p-4 border border-white/10'>
@@ -121,7 +175,7 @@ const BookingTab = ({ artist }: BookingTabProps) => {
         </div>
       </div>
 
-      {artist.isBookable && (
+      {artist.isBookable && artist.isAvailable && artist.isApproved && (
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8'>
           {/* Left Column - Booking Form */}
           <div className='space-y-6'>
@@ -185,10 +239,11 @@ const BookingTab = ({ artist }: BookingTabProps) => {
                 </div>
                 <div>
                   <label className='block text-white/70 text-sm mb-2'>
-                    Duration *
+                    Duration (Hours) *
                   </label>
                   <Input
-                    placeholder='2 hours, 3 hours, etc.'
+                    type='number'
+                    placeholder='2'
                     value={bookingForm.duration}
                     onChange={e =>
                       handleInputChange('duration', e.target.value)
@@ -201,7 +256,8 @@ const BookingTab = ({ artist }: BookingTabProps) => {
                     Expected Guests
                   </label>
                   <Input
-                    placeholder='50, 100, 200, etc.'
+                    type='number'
+                    placeholder='50'
                     value={bookingForm.guests}
                     onChange={e => handleInputChange('guests', e.target.value)}
                     className='bg-white/5 border-white/20 text-white placeholder:text-white/50'
@@ -283,105 +339,33 @@ const BookingTab = ({ artist }: BookingTabProps) => {
                   Phone Number *
                 </label>
                 <Input
-                  type='tel'
-                  placeholder='+91 98765 43210'
+                  type='number'
+                  placeholder='9876543210'
                   value={bookingForm.contactPhone}
                   onChange={e =>
                     handleInputChange('contactPhone', e.target.value)
                   }
-                  className='bg-white/5 border-white/20 text-white placeholder:text-white/50'
+                  className={`bg-white/5 border-white/20 text-white placeholder:text-white/50 ${
+                    bookingForm.contactPhone &&
+                    (bookingForm.contactPhone.length < 10 ||
+                      bookingForm.contactPhone.length > 15)
+                      ? 'border-red-500/50'
+                      : ''
+                  }`}
                 />
+                {bookingForm.contactPhone &&
+                  (bookingForm.contactPhone.length < 10 ||
+                    bookingForm.contactPhone.length > 15) && (
+                    <p className='text-red-400 text-xs mt-1'>
+                      Phone number must be between 10-15 digits
+                    </p>
+                  )}
               </div>
             </div>
           </div>
 
-          {/* Right Column - Artist Response & Summary */}
+          {/* Right Column - Booking Summary */}
           <div className='space-y-6'>
-            {selectedDate && (
-              <div>
-                <h4 className='text-xl font-semibold text-white mb-4 font-mondwest'>
-                  Artist Response
-                </h4>
-
-                {artistResponse.isAvailable !== null ? (
-                  <div
-                    className={`bg-white/5 p-6 border ${
-                      artistResponse.isAvailable
-                        ? 'border-green-500/30'
-                        : 'border-red-500/30'
-                    }`}
-                  >
-                    <div className='flex items-center mb-3'>
-                      <div
-                        className={`w-3 h-3 mr-3 ${
-                          artistResponse.isAvailable
-                            ? 'bg-green-500'
-                            : 'bg-red-500'
-                        }`}
-                      ></div>
-                      <p
-                        className={`font-semibold ${
-                          artistResponse.isAvailable
-                            ? 'text-green-400'
-                            : 'text-red-400'
-                        }`}
-                      >
-                        {artistResponse.isAvailable
-                          ? 'AVAILABLE'
-                          : 'NOT AVAILABLE'}
-                      </p>
-                    </div>
-                    <p className='text-white/80 mb-4'>
-                      {artistResponse.message}
-                    </p>
-
-                    {artistResponse.quotedPrice && (
-                      <div className='bg-white/5 p-4 mb-4'>
-                        <p className='text-white/70 text-sm mb-1'>
-                          Quoted Price for this Event
-                        </p>
-                        <p className='text-2xl font-bold text-orange-500 font-mondwest'>
-                          {formatPrice(artistResponse.quotedPrice)}
-                        </p>
-                      </div>
-                    )}
-
-                    {artistResponse.alternativeDates.length > 0 && (
-                      <div>
-                        <p className='text-white/70 text-sm mb-2'>
-                          Alternative Dates Available:
-                        </p>
-                        <div className='space-y-2'>
-                          {artistResponse.alternativeDates.map(
-                            (altDate, index) => (
-                              <Button
-                                key={index}
-                                variant='outline'
-                                size='sm'
-                                onClick={() => handleDateSelect(altDate)}
-                                className='mr-2 mb-2 bg-white/5 border-white/20 text-white hover:bg-orange-500/20'
-                              >
-                                {format(altDate, 'MMM dd, yyyy')}
-                              </Button>
-                            )
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className='bg-white/5 p-6 border border-white/10'>
-                    <div className='animate-pulse'>
-                      <p className='text-white/70'>Checking availability...</p>
-                      <div className='w-full h-2 bg-white/10 mt-2'>
-                        <div className='h-2 bg-orange-500 animate-pulse'></div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
             {/* Booking Summary */}
             <div>
               <h4 className='text-xl font-semibold text-white mb-4 font-mondwest'>
@@ -430,13 +414,21 @@ const BookingTab = ({ artist }: BookingTabProps) => {
               onClick={handleBookingSubmit}
               className='w-full bg-orange-500 text-black hover:bg-orange-600 font-semibold py-3'
               disabled={
+                createBookingMutation.isPending ||
                 !selectedDate ||
                 !bookingForm.eventType ||
+                !bookingForm.duration ||
+                !bookingForm.location ||
                 !bookingForm.contactName ||
-                !bookingForm.contactEmail
+                !bookingForm.contactEmail ||
+                !bookingForm.contactPhone ||
+                bookingForm.contactPhone.length < 10 ||
+                bookingForm.contactPhone.length > 15
               }
             >
-              SEND BOOKING REQUEST
+              {createBookingMutation.isPending
+                ? 'SUBMITTING...'
+                : 'SEND BOOKING REQUEST'}
             </Button>
           </div>
         </div>
@@ -445,14 +437,34 @@ const BookingTab = ({ artist }: BookingTabProps) => {
       {!artist.isBookable && (
         <div className='text-center py-12'>
           <p className='text-white/60 text-lg mb-4'>
-            This artist is currently unavailable for bookings
+            This artist is currently not accepting bookings
           </p>
-          <Button
-            variant='outline'
-            className='border-white/30 text-white hover:bg-white/10'
-          >
-            Get Notified When Available
-          </Button>
+        </div>
+      )}
+
+      {!artist.isApproved && (
+        <div className='text-center py-12'>
+          <div className='flex items-center justify-center mb-4'>
+            <img
+              src='/icons/badge.svg'
+              alt='Approval Badge'
+              className='w-12 h-12 opacity-50 mr-3'
+            />
+            <p className='text-white/60 text-lg'>
+              This artist is not yet approved
+            </p>
+          </div>
+          <p className='text-white/40 text-sm mb-6'>
+            This artist is currently under review and not accepting bookings.
+          </p>
+        </div>
+      )}
+
+      {!artist.isAvailable && artist.isBookable && artist.isApproved && (
+        <div className='text-center py-12'>
+          <p className='text-white/60 text-lg mb-4'>
+            This artist is currently not available
+          </p>
         </div>
       )}
     </motion.div>

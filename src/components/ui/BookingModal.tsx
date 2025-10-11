@@ -24,7 +24,7 @@ const BookingModal = ({ isOpen, onClose, booking }: BookingModalProps) => {
   if (!isOpen) return null;
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
+    <div className='fixed inset-0 z-50 flex items-center justify-center p-4 '>
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -39,7 +39,7 @@ const BookingModal = ({ isOpen, onClose, booking }: BookingModalProps) => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className='relative w-full max-w-2xl bg-neutral-900 border border-white/20 p-6 max-h-[90vh] overflow-y-auto'
+        className='relative w-full max-w-2xl bg-neutral-900 border border-white/20 p-6 pr-3 max-h-[90vh] overflow-y-auto '
       >
         {/* Header */}
         <div className='flex items-center justify-between mb-6'>

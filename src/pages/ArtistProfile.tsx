@@ -90,6 +90,34 @@ const ArtistProfile = () => {
     );
   }
 
+  // Show banned message if artist is banned
+  if (artist.banned) {
+    return (
+      <div className='min-h-screen bg-neutral-950 text-white'>
+        <Navbar />
+        <div className='flex items-center justify-center h-[calc(100vh-100px)]'>
+          <div className='text-center'>
+            <div className='w-32 h-32 mx-auto mb-4 flex items-center justify-center'>
+              <img src='/icons/ban.svg' alt='Banned' className='w-16 h-16' />
+            </div>
+            <h1 className='text-2xl text-white font-bold mb-2'>
+              Artist Banned
+            </h1>
+            <p className='text-white/60 mb-6'>
+              This artist has been banned and their profile is no longer
+              available.
+            </p>
+            <Link to='/explore'>
+              <button className='bg-orange-500 text-black px-6 py-3 font-semibold hover:bg-orange-600 transition-colors'>
+                EXPLORE OTHER ARTISTS
+              </button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className='min-h-screen '>
       <Navbar />
@@ -111,9 +139,25 @@ const ArtistProfile = () => {
                     e.currentTarget.src = '/images/artistNotFound.jpeg';
                   }}
                 />
+                {/* Approved Badge */}
+                {artist?.isApproved && (
+                  <div className='absolute top-4 right-4'>
+                    <img
+                      src='/icons/badge.svg'
+                      alt='Approved Artist'
+                      className='w-8 h-8'
+                    />
+                  </div>
+                )}
+                {/* Availability Status */}
                 {artist?.isAvailable && (
                   <div className='absolute bottom-4 left-4 bg-orange-500 text-black px-3 py-2 text-sm font-semibold'>
                     AVAILABLE
+                  </div>
+                )}
+                {!artist?.isAvailable && (
+                  <div className='absolute bottom-4 left-4 bg-gray-500 text-white px-3 py-2 text-sm font-semibold'>
+                    NOT AVAILABLE
                   </div>
                 )}
               </div>
@@ -203,6 +247,8 @@ const ArtistProfile = () => {
                     displayName: artist?.displayName || '',
                     basePrice: artist?.basePrice || 0,
                     isBookable: artist?.isBookable || false,
+                    isAvailable: artist?.isAvailable || false,
+                    isApproved: artist?.isApproved || false,
                     location: artist?.location,
                   }}
                 />

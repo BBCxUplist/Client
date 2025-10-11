@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useStore } from '@/stores/store';
 import { useGetArtistProfile } from '@/hooks/artist/useGetArtistProfile';
+import { useGetBookings } from '@/hooks/booking/useGetBookings';
 import { formatPrice } from '@/helper';
 import { dummyDashboardData } from '@/constants/dashboardData';
 import BookingModal from '@/components/ui/BookingModal';
@@ -11,9 +12,10 @@ import BookingsTab from '@/components/artistDashboard/BookingsTab';
 import AnalyticsTab from '@/components/artistDashboard/AnalyticsTab';
 import SettingsTab from '@/components/artistDashboard/SettingsTab';
 import { DashboardTab } from '@/types';
+import { Info } from 'lucide-react';
 
 const ArtistDashboard = () => {
-  const { user, setUser } = useStore();
+  const { user, setUser, logout } = useStore();
   const [activeTab, setActiveTab] = useState<DashboardTab>(
     DashboardTab.OVERVIEW
   );
@@ -22,6 +24,9 @@ const ArtistDashboard = () => {
 
   // Fetch artist profile data
   const { data: artistResponse, isLoading, error } = useGetArtistProfile();
+
+  // Fetch bookings data
+  const { data: bookingsResponse } = useGetBookings();
 
   // Settings states
   const [profileVisibility, setProfileVisibility] = useState(true);
@@ -33,7 +38,31 @@ const ArtistDashboard = () => {
 
   // Get artist data from API response
   const artist = artistResponse?.data;
-  const dashboardData = dummyDashboardData;
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout error:', error);
+      window.location.href = '/';
+    }
+  };
+
+  // Use real bookings data if available, otherwise fallback to dummy data
+  const realBookings = bookingsResponse?.data || [];
+  const dashboardData = {
+    ...dummyDashboardData,
+    recentBookings:
+      realBookings.length > 0
+        ? realBookings
+        : dummyDashboardData.recentBookings,
+    stats: {
+      ...dummyDashboardData.stats,
+      totalBookings:
+        realBookings.length || dummyDashboardData.stats.totalBookings,
+    },
+  };
 
   // Store artist data in state when fetched
   useEffect(() => {
@@ -109,6 +138,30 @@ const ArtistDashboard = () => {
     );
   }
 
+  // Show banned message if artist is banned
+  if (artist.banned) {
+    return (
+      <div className='min-h-screen bg-neutral-950 text-white flex items-center justify-center'>
+        <div className='text-center'>
+          <div className='w-32 h-32 mx-auto mb-4 flex items-center justify-center'>
+            <img src='/icons/ban.svg' alt='Banned' className='w-16 h-16' />
+          </div>
+          <h1 className='text-2xl text-white font-bold mb-2'>You Are Banned</h1>
+          <p className='text-white/60 mb-6'>
+            Your account has been banned and you no longer have access to the
+            dashboard.
+          </p>
+          <button
+            onClick={handleLogout}
+            className='bg-orange-500 text-black px-6 py-3 font-semibold hover:bg-orange-600 transition-colors'
+          >
+            LOGOUT
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'confirmed':
@@ -145,6 +198,46 @@ const ArtistDashboard = () => {
                   Complete Profile
                 </button>
               </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Approval Status Warning */}
+      {!artist?.isApproved && (
+        <div className='bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-6'>
+          <div className='flex items-start gap-3'>
+            <div className='text-blue-400 text-xl'>
+              {' '}
+              <Info className='w-8 h-8' />
+            </div>
+            <div className='flex-1'>
+              <h3 className='text-blue-400 font-semibold mb-1'>
+                Get Approved to Receive Bookings
+              </h3>
+              <p className='text-white/70 text-sm mb-2'>
+                Complete your profile and get approved to start receiving
+                booking requests from clients.
+              </p>
+              <div className='flex gap-3'>
+                {isProfileIncomplete && (
+                  <Link to='/dashboard/edit'>
+                    <button className='bg-blue-500 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-600 transition-colors'>
+                      Complete Profile First
+                    </button>
+                  </Link>
+                )}
+                {!isProfileIncomplete && (
+                  <button
+                    onClick={() =>
+                      console.log('Request approval for artist:', artist?.id)
+                    }
+                    className='bg-blue-500 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-600 transition-colors'
+                  >
+                    Request Approval
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

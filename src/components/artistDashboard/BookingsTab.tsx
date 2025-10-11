@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { formatPrice } from '@/helper';
+import { useGetBookings } from '@/hooks/booking/useGetBookings';
+import { format } from 'date-fns';
 
 interface BookingsTabProps {
   dashboardData: any;
@@ -7,6 +8,46 @@ interface BookingsTabProps {
 }
 
 const BookingsTab = ({ dashboardData, getStatusColor }: BookingsTabProps) => {
+  // Fetch bookings from API
+  const { data: bookingsResponse, isLoading, error } = useGetBookings();
+
+  // Use API data if available, otherwise fallback to dummy data
+  const bookings = bookingsResponse?.data || dashboardData.recentBookings;
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className='space-y-6'
+      >
+        <div className='text-center py-12'>
+          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4'></div>
+          <p className='text-white/60'>Loading bookings...</p>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className='space-y-6'
+      >
+        <div className='text-center py-12'>
+          <p className='text-red-400 mb-4'>Failed to load bookings</p>
+          <p className='text-white/60 text-sm'>{error.message}</p>
+        </div>
+      </motion.div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -61,31 +102,43 @@ const BookingsTab = ({ dashboardData, getStatusColor }: BookingsTabProps) => {
             </tr>
           </thead>
           <tbody>
-            {dashboardData.recentBookings.map((booking: any) => (
-              <tr key={booking.id} className='border-b border-white/5'>
-                <td className='p-4 text-white'>{booking.eventType}</td>
-                <td className='p-4 text-white'>{booking.clientName}</td>
-                <td className='p-4 text-white'>{booking.date}</td>
-                <td className='p-4 text-white/60'>{booking.location}</td>
-                <td className='p-4 text-orange-500 font-semibold'>
-                  {formatPrice(booking.amount)}
-                </td>
-                <td className='p-4'>
-                  <span
-                    className={`px-3 py-1 text-xs font-semibold border ${getStatusColor(
-                      booking.status
-                    )}`}
-                  >
-                    {booking.status.toUpperCase()}
-                  </span>
-                </td>
-                <td className='p-4'>
-                  <button className='text-orange-500 hover:text-orange-400 text-sm'>
-                    View Details
-                  </button>
+            {bookings.length > 0 ? (
+              bookings.map((booking: any) => (
+                <tr key={booking.id} className='border-b border-white/5'>
+                  <td className='p-4 text-white'>{booking.eventType}</td>
+                  <td className='p-4 text-white'>{booking.contactName}</td>
+                  <td className='p-4 text-white'>
+                    {booking.eventDate
+                      ? format(new Date(booking.eventDate), 'MMM dd, yyyy')
+                      : 'N/A'}
+                  </td>
+                  <td className='p-4 text-white/60'>{booking.eventLocation}</td>
+                  <td className='p-4 text-orange-500 font-semibold'>
+                    {booking.budgetRange || 'TBD'}
+                  </td>
+                  <td className='p-4'>
+                    <span
+                      className={`px-3 py-1 text-xs font-semibold border ${getStatusColor(
+                        booking.status
+                      )}`}
+                    >
+                      {booking.status.toUpperCase()}
+                    </span>
+                  </td>
+                  <td className='p-4'>
+                    <button className='text-orange-500 hover:text-orange-400 text-sm'>
+                      View Details
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={7} className='p-8 text-center text-white/60'>
+                  No bookings found
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>

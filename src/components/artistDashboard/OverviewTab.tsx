@@ -43,10 +43,11 @@ const OverviewTab = ({
               >
                 <div className='flex-1'>
                   <p className='text-white font-semibold'>
-                    {booking.clientName}
+                    {booking.contactName || booking.clientName}
                   </p>
                   <p className='text-white/60 text-sm'>
-                    {`${booking.clientName.toLowerCase().replace(' ', '.')}@example.com`}
+                    {booking.contactEmail ||
+                      `${(booking.contactName || booking.clientName || '').toLowerCase().replace(' ', '.')}@example.com`}
                   </p>
                 </div>
                 <div>
@@ -54,12 +55,14 @@ const OverviewTab = ({
                     onClick={() => {
                       setSelectedBooking({
                         ...booking,
-                        clientEmail: `${booking.clientName.toLowerCase().replace(' ', '.')}@example.com`,
-                        duration: '3 hours',
-                        guests: '150',
-                        message:
-                          'Looking forward to having you perform at our special event. We would love to discuss the music selection and any special arrangements.',
-                        contactPhone: '+91 98765 43210',
+                        clientEmail:
+                          booking.contactEmail ||
+                          `${(booking.contactName || booking.clientName || '').toLowerCase().replace(' ', '.')}@example.com`,
+                        duration: `${booking.duration || 3} hours`,
+                        guests: booking.expectedGuests || 150,
+                        message: booking.specialRequirements,
+                        contactPhone:
+                          booking.contactPhone || booking.clientPhone,
                       });
                       setIsModalOpen(true);
                     }}
