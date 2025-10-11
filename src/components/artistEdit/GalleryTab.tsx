@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import type { Artist } from '@/types';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { saveToGallery } from '@/lib/apiClient';
 
 interface GalleryTabProps {
   artist: Artist;
-  formData?: {
-    photos?: string[];
-  };
+  formData?: { photos?: string[] };
   handleInputChange?: (field: string, value: any) => void;
 }
 
@@ -33,13 +32,22 @@ const GalleryTab = ({
     ) as string[];
 
     if (uploadedUrls.length > 0) {
+      // Optimistically update UI
       handleInputChange('photos', [...currentPhotos, ...uploadedUrls]);
+
+      // Persist to backend
+      try {
+        await saveToGallery(uploadedUrls);
+        // toast.success?.('Photos added to gallery');
+      } catch (e: any) {
+        console.error(e);
+        // toast.error?.(e?.message || 'Failed to add photos');
+      }
     }
   };
 
   const handleRemovePhoto = (index: number) => {
     if (!handleInputChange) return;
-
     const updatedPhotos = currentPhotos.filter((_, i) => i !== index);
     handleInputChange('photos', updatedPhotos);
   };
@@ -48,17 +56,16 @@ const GalleryTab = ({
     e.preventDefault();
     setDragOver(true);
   };
-
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
   };
-
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
     handleFileSelect(e.dataTransfer.files);
   };
+
   return (
     <div className='space-y-8'>
       {/* Current Photos */}

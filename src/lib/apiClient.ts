@@ -108,3 +108,12 @@ export const isTokenExpired = (): boolean => {
 export const verifyToken = async (): Promise<boolean> => {
   return authService.verifyToken();
 };
+
+export const saveToGallery = async (urls: string[]) => {
+  if (!Array.isArray(urls) || urls.length === 0)
+    return { msg: 'No URLs to save' };
+  const { data } = await apiClient.post('/api/v1/artists/gallery', {
+    photoUrls: urls,
+  });
+  return data; // { msg, data: Artist }
+};
