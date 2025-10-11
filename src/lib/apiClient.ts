@@ -112,7 +112,7 @@ export const verifyToken = async (): Promise<boolean> => {
 export const saveToGallery = async (urls: string[]) => {
   if (!Array.isArray(urls) || urls.length === 0)
     return { msg: 'No URLs to save' };
-  const { data } = await apiClient.post('/api/v1/artists/gallery', {
+  const { data } = await apiClient.post('/artists/gallery', {
     photoUrls: urls,
   });
   return data; // { msg, data: Artist }
