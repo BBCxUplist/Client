@@ -168,7 +168,14 @@ const ArtistEdit = () => {
     }
   };
 
-  // Function to get only changed fields
+  const handleGalleryChange = (photos: string[]) => {
+    setFormData(prev => ({
+      ...prev,
+      photos,
+    }));
+  };
+
+  // Function to get only changed fields (excluding gallery photos)
   const getChangedFields = () => {
     const changes: any = {};
 
@@ -223,13 +230,8 @@ const ArtistEdit = () => {
       changes.embeds = formData.embeds;
     }
 
-    // Check photos array
-    if (
-      JSON.stringify(formData.photos.sort()) !==
-      JSON.stringify(originalData.photos.sort())
-    ) {
-      changes.photos = formData.photos;
-    }
+    // Note: photos are now handled separately via gallery API
+    // We don't include photos in profile updates anymore
 
     return changes;
   };
@@ -452,6 +454,7 @@ const ArtistEdit = () => {
               artist={artist as any}
               formData={formData}
               handleInputChange={handleInputChange}
+              onGalleryChange={handleGalleryChange}
             />
           )}
 

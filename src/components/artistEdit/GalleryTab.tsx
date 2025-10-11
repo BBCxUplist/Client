@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import type { Artist } from '@/types';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import {
+  useAddGalleryPhotos,
+  useDeleteGalleryPhoto,
+} from '@/hooks/artist/useGalleryOperations';
 
 interface GalleryTabProps {
   artist: Artist;
@@ -8,20 +12,32 @@ interface GalleryTabProps {
     photos?: string[];
   };
   handleInputChange?: (field: string, value: any) => void;
+  onGalleryChange?: (photos: string[]) => void;
 }
 
 const GalleryTab = ({
   artist,
   formData,
   handleInputChange,
+  onGalleryChange,
 }: GalleryTabProps) => {
   const { uploading, error, handleFileUpload } = useImageUpload();
   const [dragOver, setDragOver] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  // Gallery API hooks
+  const addGalleryPhotosMutation = useAddGalleryPhotos();
+  const deleteGalleryPhotoMutation = useDeleteGalleryPhoto();
 
   const currentPhotos = formData?.photos || artist.photos || [];
 
   const handleFileSelect = async (files: FileList | null) => {
-    if (!files || !handleInputChange) return;
+    if (!files) return;
+
+    // Clear previous messages
+    setSuccessMessage('');
+    setErrorMessage('');
 
     const uploadPromises = Array.from(files).map(async file => {
       const result = await handleFileUpload(file, 'artist', 'gallery');
@@ -33,15 +49,61 @@ const GalleryTab = ({
     ) as string[];
 
     if (uploadedUrls.length > 0) {
-      handleInputChange('photos', [...currentPhotos, ...uploadedUrls]);
+      try {
+        // Call the gallery API to add photos
+        const result = await addGalleryPhotosMutation.mutateAsync({
+          photoUrls: uploadedUrls,
+        });
+
+        if (result.success) {
+          setSuccessMessage(
+            `Successfully added ${uploadedUrls.length} photo(s) to gallery!`
+          );
+          // Update local state
+          if (handleInputChange) {
+            handleInputChange('photos', [...currentPhotos, ...uploadedUrls]);
+          }
+          if (onGalleryChange) {
+            onGalleryChange([...currentPhotos, ...uploadedUrls]);
+          }
+        } else {
+          setErrorMessage(result.message || 'Failed to add photos to gallery');
+        }
+      } catch (error: any) {
+        console.error('Error adding photos to gallery:', error);
+        setErrorMessage(error.message || 'Failed to add photos to gallery');
+      }
     }
   };
 
-  const handleRemovePhoto = (index: number) => {
-    if (!handleInputChange) return;
+  const handleRemovePhoto = async (index: number) => {
+    // Clear previous messages
+    setSuccessMessage('');
+    setErrorMessage('');
 
-    const updatedPhotos = currentPhotos.filter((_, i) => i !== index);
-    handleInputChange('photos', updatedPhotos);
+    try {
+      // Call the gallery API to delete photo by index
+      const result = await deleteGalleryPhotoMutation.mutateAsync(index);
+
+      if (result.success) {
+        setSuccessMessage('Photo removed from gallery successfully!');
+        // Update local state
+        const updatedPhotos = currentPhotos.filter((_, i) => i !== index);
+        if (handleInputChange) {
+          handleInputChange('photos', updatedPhotos);
+        }
+        if (onGalleryChange) {
+          onGalleryChange(updatedPhotos);
+        }
+      } else {
+        setErrorMessage(
+          result.message || 'Failed to remove photo from gallery'
+        );
+      }
+    } catch (error: any) {
+      console.error('Error removing photo from gallery:', error);
+      setErrorMessage(error.message || 'Failed to remove photo from gallery');
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -61,6 +123,25 @@ const GalleryTab = ({
   };
   return (
     <div className='space-y-8'>
+      {/* Success/Error Messages */}
+      {successMessage && (
+        <div className='bg-green-500/10 border border-green-500/30 rounded-lg p-4'>
+          <div className='flex items-center gap-3'>
+            <div className='text-green-400 text-xl'>✅</div>
+            <p className='text-green-400'>{successMessage}</p>
+          </div>
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className='bg-red-500/10 border border-red-500/30 rounded-lg p-4'>
+          <div className='flex items-center gap-3'>
+            <div className='text-red-400 text-xl'>❌</div>
+            <p className='text-red-400'>{errorMessage}</p>
+          </div>
+        </div>
+      )}
+
       {/* Current Photos */}
       {currentPhotos.length > 0 && (
         <div className='bg-white/5 border border-white/10 p-6'>
