@@ -18,9 +18,7 @@ function App() {
   return (
     <QueryProvider>
       <div>
-        {/* Global 3D Model Preloader */}
         <GlobalModelPreloader />
-
         {/* Auth State Listener for Google Login */}
         <AuthStateListener />
 

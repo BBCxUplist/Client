@@ -1,34 +1,32 @@
 import { useState, useRef } from 'react';
-import {
-  Paperclip,
-  Smile,
-  Send,
-  X,
-  FileText,
-  Image,
-  Music,
-} from 'lucide-react';
+import { Send, Smile } from 'lucide-react';
 
 interface MessageInputProps {
-  onSendMessage: (
-    content: string,
-    type?: 'text' | 'file' | 'image',
-    file?: File
-  ) => void;
+  onSendMessage: (content: string) => void;
+  onTypingChange?: (isTyping: boolean) => void;
 }
 
-const MessageInput = ({ onSendMessage }: MessageInputProps) => {
+const MessageInput = ({ onSendMessage, onTypingChange }: MessageInputProps) => {
   const [message, setMessage] = useState('');
-  const [isFileMenuOpen, setIsFileMenuOpen] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const imageInputRef = useRef<HTMLInputElement>(null);
-  const audioInputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isTypingRef = useRef(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (message.trim()) {
       onSendMessage(message.trim());
       setMessage('');
+
+      // Stop typing indicator
+      if (onTypingChange && isTypingRef.current) {
+        onTypingChange(false);
+        isTypingRef.current = false;
+      }
+
+      // Clear timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
     }
   };
 
@@ -39,119 +37,53 @@ const MessageInput = ({ onSendMessage }: MessageInputProps) => {
     }
   };
 
-  const handleFileUpload = (file: File, type: 'file' | 'image' | 'audio') => {
-    if (file) {
-      const fileType = type === 'image' ? 'image' : 'file';
-      onSendMessage(file.name, fileType, file);
-      setIsFileMenuOpen(false);
-    }
-  };
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setMessage(value);
 
-  const triggerFileInput = (
-    inputRef: React.RefObject<HTMLInputElement | null>
-  ) => {
-    inputRef.current?.click();
+    if (!onTypingChange) return;
+
+    // Start typing indicator
+    if (value.trim() && !isTypingRef.current) {
+      onTypingChange(true);
+      isTypingRef.current = true;
+    }
+
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Set new timeout to stop typing after 2 seconds of inactivity
+    if (value.trim()) {
+      typingTimeoutRef.current = setTimeout(() => {
+        if (onTypingChange && isTypingRef.current) {
+          onTypingChange(false);
+          isTypingRef.current = false;
+        }
+      }, 2000);
+    } else {
+      // Stop typing immediately if input is empty
+      if (isTypingRef.current) {
+        onTypingChange(false);
+        isTypingRef.current = false;
+      }
+    }
   };
 
   return (
     <div className='p-4 border-t border-white/10 bg-neutral-900'>
-      {/* File upload inputs (hidden) */}
-      <input
-        ref={fileInputRef}
-        type='file'
-        accept='.pdf,.doc,.docx,.txt,.zip,.rar'
-        className='hidden'
-        onChange={e => {
-          const file = e.target.files?.[0];
-          if (file) handleFileUpload(file, 'file');
-          e.target.value = '';
-        }}
-      />
-      <input
-        ref={imageInputRef}
-        type='file'
-        accept='image/*'
-        className='hidden'
-        onChange={e => {
-          const file = e.target.files?.[0];
-          if (file) handleFileUpload(file, 'image');
-          e.target.value = '';
-        }}
-      />
-      <input
-        ref={audioInputRef}
-        type='file'
-        accept='audio/*'
-        className='hidden'
-        onChange={e => {
-          const file = e.target.files?.[0];
-          if (file) handleFileUpload(file, 'audio');
-          e.target.value = '';
-        }}
-      />
-
-      {/* File menu */}
-      {isFileMenuOpen && (
-        <div className='mb-4 bg-white/5 border border-white/10 p-3'>
-          <div className='flex items-center justify-between mb-3'>
-            <h4 className='text-sm font-semibold text-white'>Share a file</h4>
-            <button
-              onClick={() => setIsFileMenuOpen(false)}
-              className='text-white/60 hover:text-white'
-            >
-              <X className='w-4 h-4' />
-            </button>
-          </div>
-          <div className='grid grid-cols-3 gap-3'>
-            <button
-              onClick={() => triggerFileInput(fileInputRef)}
-              className='flex flex-col items-center gap-2 p-3 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors'
-            >
-              <FileText className='w-6 h-6 text-blue-400' />
-              <span className='text-xs text-white/80'>Document</span>
-            </button>
-            <button
-              onClick={() => triggerFileInput(imageInputRef)}
-              className='flex flex-col items-center gap-2 p-3 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors'
-            >
-              <Image className='w-6 h-6 text-green-400' />
-              <span className='text-xs text-white/80'>Photo</span>
-            </button>
-            <button
-              onClick={() => triggerFileInput(audioInputRef)}
-              className='flex flex-col items-center gap-2 p-3 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors'
-            >
-              <Music className='w-6 h-6 text-purple-400' />
-              <span className='text-xs text-white/80'>Audio</span>
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Message input */}
       <form onSubmit={handleSubmit} className='flex items-end gap-3'>
-        {/* Attachment button */}
-        <button
-          type='button'
-          onClick={() => setIsFileMenuOpen(!isFileMenuOpen)}
-          className={`flex-shrink-0 p-3 border transition-all duration-300 ${
-            isFileMenuOpen
-              ? 'bg-orange-500 text-black border-orange-500'
-              : 'bg-white/5 text-white/60 border-white/20 hover:bg-white/10 hover:text-white'
-          }`}
-        >
-          <Paperclip className='w-5 h-5' />
-        </button>
-
         {/* Text input */}
         <div className='flex-1 relative'>
           <textarea
             value={message}
-            onChange={e => setMessage(e.target.value)}
+            onChange={handleChange}
             onKeyPress={handleKeyPress}
             placeholder='Type a message...'
             rows={1}
-            className='w-full bg-white/5 border border-white/20 text-white placeholder:text-white/50 p-3 pr-12 resize-none focus:border-orange-500 focus:outline-none transition-colors min-h-[48px] max-h-32 -mb-2'
+            className='w-full bg-white/5 border border-white/20 text-white placeholder:text-white/50 p-3 pr-12 resize-none focus:border-orange-500 focus:outline-none transition-colors min-h-[48px] max-h-32'
             style={{
               height: 'auto',
               minHeight: '48px',

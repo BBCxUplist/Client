@@ -1,103 +1,168 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MessageCircle } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import Navbar from '@/components/landing/Navbar';
 import ChatList from '@/components/messages/ChatList';
 import ChatWindow from '@/components/messages/ChatWindow';
-import { dummyChats, currentUser } from '@/constants/messagesData';
-import type { Chat, Message } from '@/constants/messagesData';
+import { useStore } from '@/stores/store';
+import { useConversations, CHAT_QUERY_KEYS } from '@/hooks/useChat';
+import { useChatWebSocket } from '@/hooks/useChatWebSocket';
+import type { Message } from '@/types/chat';
 
 const Messages = () => {
-  const [chats, setChats] = useState<Chat[]>(dummyChats);
-  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const { user } = useStore();
+  const queryClient = useQueryClient();
+  const [selectedConversationId, setSelectedConversationId] = useState<
+    string | null
+  >(null);
   const [isMobileView, setIsMobileView] = useState(false);
+  const [typingUsers, setTypingUsers] = useState<Record<string, boolean>>({});
 
-  const selectedChat = chats.find(chat => chat.id === selectedChatId);
+  // Fetch conversations
+  const { data: conversationsData, isLoading } = useConversations();
 
-  const handleChatSelect = (chatId: string) => {
-    setSelectedChatId(chatId);
+  // WebSocket connection
+  const {
+    isConnected,
+    joinConversation,
+    leaveConversation,
+    sendMessage,
+    sendTypingIndicator,
+  } = useChatWebSocket({
+    onMessage: (message: Message) => {
+      // Update message history cache
+      queryClient.setQueryData(
+        CHAT_QUERY_KEYS.messageHistory(message.conversationId),
+        (oldData: any) => {
+          if (!oldData) return { items: [message], hasMore: false };
+
+          // Check if message already exists
+          const exists = oldData.items.some(
+            (m: Message) => m.id === message.id
+          );
+          if (exists) return oldData;
+
+          return {
+            ...oldData,
+            items: [...oldData.items, message],
+          };
+        }
+      );
+
+      // Update conversations list
+      queryClient.invalidateQueries({
+        queryKey: CHAT_QUERY_KEYS.conversations(user!.id),
+      });
+    },
+    onTyping: (conversationId, userId, isTyping) => {
+      setTypingUsers(prev => ({
+        ...prev,
+        [`${conversationId}-${userId}`]: isTyping,
+      }));
+
+      // Clear typing indicator after 3 seconds
+      if (isTyping) {
+        setTimeout(() => {
+          setTypingUsers(prev => ({
+            ...prev,
+            [`${conversationId}-${userId}`]: false,
+          }));
+        }, 3000);
+      }
+    },
+    onError: (error, code) => {
+      console.error('Chat error:', error, code);
+      // You can show a toast notification here
+    },
+  });
+
+  const selectedConversation = conversationsData?.conversations.find(
+    conv => conv.id === selectedConversationId
+  );
+
+  // Join conversation when selected
+  useEffect(() => {
+    if (selectedConversationId && isConnected) {
+      joinConversation(selectedConversationId);
+
+      return () => {
+        leaveConversation(selectedConversationId);
+      };
+    }
+  }, [
+    selectedConversationId,
+    isConnected,
+    joinConversation,
+    leaveConversation,
+  ]);
+
+  const handleChatSelect = (conversationId: string) => {
+    setSelectedConversationId(conversationId);
     setIsMobileView(true);
-
-    // Mark messages as read when chat is selected
-    setChats(prevChats =>
-      prevChats.map(chat =>
-        chat.id === chatId
-          ? {
-              ...chat,
-              unreadCount: 0,
-              messages: chat.messages.map(msg => ({ ...msg, isRead: true })),
-            }
-          : chat
-      )
-    );
   };
 
-  const handleSendMessage = (
-    content: string,
-    type: 'text' | 'file' | 'image' = 'text',
-    file?: File
-  ) => {
-    if (!selectedChatId || !content.trim()) return;
+  const handleSendMessage = (content: string) => {
+    if (!selectedConversationId || !content.trim()) return;
 
-    const newMessage: Message = {
-      id: `msg-${Date.now()}`,
-      senderId: currentUser.id,
-      senderName: currentUser.name,
-      senderAvatar: currentUser.avatar,
-      content: content.trim(),
-      timestamp: new Date().toISOString(),
-      type,
-      fileName: file?.name,
-      fileSize: file ? `${(file.size / 1024 / 1024).toFixed(1)} MB` : undefined,
-      fileUrl: file ? URL.createObjectURL(file) : undefined,
-      isRead: false,
-    };
+    sendMessage(selectedConversationId, content.trim());
+  };
 
-    setChats(prevChats =>
-      prevChats.map(chat =>
-        chat.id === selectedChatId
-          ? {
-              ...chat,
-              messages: [...chat.messages, newMessage],
-              lastMessage: type === 'file' ? `📎 ${file?.name}` : content,
-              lastMessageTime: newMessage.timestamp,
-            }
-          : chat
-      )
-    );
+  const handleTyping = (isTyping: boolean) => {
+    if (!selectedConversationId) return;
+    sendTypingIndicator(selectedConversationId, isTyping);
   };
 
   const handleBackToList = () => {
     setIsMobileView(false);
-    setSelectedChatId(null);
+    setSelectedConversationId(null);
   };
+
+  if (!user) {
+    return (
+      <div className='min-h-screen bg-neutral-950 flex items-center justify-center'>
+        <p className='text-white'>Please login to view messages</p>
+      </div>
+    );
+  }
 
   return (
     <div className='min-h-screen bg-neutral-950'>
       <Navbar />
 
       <div className='h-[calc(100vh-80px)] flex'>
-        {/* Chat List - Hidden on mobile when chat is selected */}
+        {/* Chat List */}
         <div
           className={`${isMobileView ? 'hidden' : 'block'} lg:block w-full lg:w-1/3 xl:w-1/4 border-r border-white/10`}
         >
           <ChatList
-            chats={chats}
-            selectedChatId={selectedChatId}
+            conversations={conversationsData?.conversations || []}
+            selectedConversationId={selectedConversationId}
             onChatSelect={handleChatSelect}
+            isLoading={isLoading}
+            isConnected={isConnected}
           />
         </div>
 
-        {/* Chat Window - Hidden on mobile when no chat is selected */}
+        {/* Chat Window */}
         <div
-          className={`${!selectedChatId ? 'hidden' : 'block'} lg:block flex-1`}
+          className={`${!selectedConversationId ? 'hidden' : 'block'} lg:block flex-1`}
         >
-          {selectedChat ? (
+          {selectedConversation ? (
             <ChatWindow
-              chat={selectedChat}
-              currentUser={currentUser}
+              conversationId={selectedConversation.id}
+              conversation={selectedConversation}
+              currentUser={
+                user as { id: string; name: string; avatar?: string }
+              }
               onSendMessage={handleSendMessage}
+              onTyping={handleTyping}
               onBack={handleBackToList}
               showBackButton={isMobileView}
+              isTyping={
+                typingUsers[
+                  `${selectedConversation.id}-${selectedConversation.participantId}`
+                ] || false
+              }
             />
           ) : (
             <div className='hidden lg:flex h-full items-center justify-center texture-bg'>

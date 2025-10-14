@@ -1,21 +1,29 @@
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { Search } from 'lucide-react';
-import type { Chat } from '@/constants/messagesData';
+import { Search, Wifi, WifiOff } from 'lucide-react';
+import type { Conversation } from '@/types/chat';
 
 interface ChatListProps {
-  chats: Chat[];
-  selectedChatId: string | null;
-  onChatSelect: (chatId: string) => void;
+  conversations: Conversation[];
+  selectedConversationId: string | null;
+  onChatSelect: (conversationId: string) => void;
+  isLoading?: boolean;
+  isConnected?: boolean;
 }
 
-const ChatList = ({ chats, selectedChatId, onChatSelect }: ChatListProps) => {
+const ChatList = ({
+  conversations,
+  selectedConversationId,
+  onChatSelect,
+  isLoading,
+  isConnected,
+}: ChatListProps) => {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredChats = chats.filter(
-    chat =>
-      chat.participantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      chat.lastMessage.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredConversations = conversations.filter(
+    conv =>
+      conv.participantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      conv.lastMessage?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const formatTime = (timestamp: string) => {
@@ -26,6 +34,11 @@ const ChatList = ({ chats, selectedChatId, onChatSelect }: ChatListProps) => {
     }
   };
 
+  const totalUnread = conversations.reduce(
+    (acc, conv) => acc + (conv.unreadCount || 0),
+    0
+  );
+
   return (
     <div className='h-full flex flex-col bg-neutral-900'>
       {/* Header */}
@@ -34,10 +47,27 @@ const ChatList = ({ chats, selectedChatId, onChatSelect }: ChatListProps) => {
           <h1 className='font-mondwest text-2xl lg:text-3xl font-bold text-white'>
             Messages
           </h1>
-          <div className='flex items-center gap-2'>
-            <span className='text-white/60 text-sm'>
-              {chats.reduce((acc, chat) => acc + chat.unreadCount, 0)} unread
-            </span>
+          <div className='flex items-center gap-3'>
+            {/* Connection Status */}
+            <div
+              className={`flex items-center gap-1 ${
+                isConnected ? 'text-green-400' : 'text-red-400'
+              }`}
+              title={isConnected ? 'Connected' : 'Disconnected'}
+            >
+              {isConnected ? (
+                <Wifi className='w-4 h-4' />
+              ) : (
+                <WifiOff className='w-4 h-4' />
+              )}
+            </div>
+
+            {/* Unread Count */}
+            {totalUnread > 0 && (
+              <span className='text-white/60 text-sm'>
+                {totalUnread} unread
+              </span>
+            )}
           </div>
         </div>
 
@@ -56,19 +86,24 @@ const ChatList = ({ chats, selectedChatId, onChatSelect }: ChatListProps) => {
 
       {/* Chat List */}
       <div className='flex-1 overflow-y-auto'>
-        {filteredChats.length === 0 ? (
+        {isLoading ? (
+          <div className='p-6 text-center'>
+            <div className='animate-spin w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full mx-auto'></div>
+            <p className='text-white/60 mt-4'>Loading conversations...</p>
+          </div>
+        ) : filteredConversations.length === 0 ? (
           <div className='p-6 text-center'>
             <p className='text-white/60'>
               {searchTerm ? 'No conversations found' : 'No messages yet'}
             </p>
           </div>
         ) : (
-          filteredChats.map(chat => (
+          filteredConversations.map(conv => (
             <div
-              key={chat.id}
-              onClick={() => onChatSelect(chat.id)}
+              key={conv.id}
+              onClick={() => onChatSelect(conv.id)}
               className={`p-4 border-b border-white/5 cursor-pointer transition-all duration-200 hover:bg-white/5 ${
-                selectedChatId === chat.id
+                selectedConversationId === conv.id
                   ? 'bg-orange-500/10 border-l-4 border-l-orange-500'
                   : ''
               }`}
@@ -77,8 +112,10 @@ const ChatList = ({ chats, selectedChatId, onChatSelect }: ChatListProps) => {
                 {/* Avatar */}
                 <div className='flex-shrink-0'>
                   <img
-                    src={chat.participantAvatar}
-                    alt={chat.participantName}
+                    src={
+                      conv.participantAvatar ?? '/images/artistNotFound.jpeg'
+                    }
+                    alt={conv.participantName}
                     className='w-12 h-12 object-cover border border-white/20'
                     onError={e => {
                       e.currentTarget.src = '/images/artistNotFound.jpeg';
@@ -90,25 +127,27 @@ const ChatList = ({ chats, selectedChatId, onChatSelect }: ChatListProps) => {
                 <div className='flex-1 min-w-0'>
                   <div className='flex items-center justify-between mb-1'>
                     <h3 className='font-semibold text-white truncate'>
-                      {chat.participantName}
+                      {conv.participantName}
                     </h3>
                     <div className='flex items-center gap-2 flex-shrink-0'>
                       <span className='text-xs text-white/50'>
-                        {formatTime(chat.lastMessageTime)}
+                        {formatTime(conv.lastMessageTime)}
                       </span>
-                      {chat.unreadCount > 0 && (
+                      {conv.unreadCount && conv.unreadCount > 0 && (
                         <div className='bg-orange-500 text-black text-xs font-bold px-2 py-1 min-w-[20px] h-5 flex items-center justify-center'>
-                          {chat.unreadCount > 99 ? '99+' : chat.unreadCount}
+                          {conv.unreadCount > 99 ? '99+' : conv.unreadCount}
                         </div>
                       )}
                     </div>
                   </div>
                   <p
                     className={`text-sm truncate ${
-                      chat.unreadCount > 0 ? 'text-white' : 'text-white/60'
+                      conv.unreadCount && conv.unreadCount > 0
+                        ? 'text-white'
+                        : 'text-white/60'
                     }`}
                   >
-                    {chat.lastMessage}
+                    {conv.lastMessage || 'No messages yet'}
                   </p>
                 </div>
               </div>
