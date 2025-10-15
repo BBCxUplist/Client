@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { tokenCookies, userDataCookies } from '@/lib/cookieUtils';
 import type { Store, ConsolidatedUser } from '@/types/store';
 import type { Role } from '@/types';
+import type { Artist } from '@/types/api';
 
 // Force TypeScript recompilation
 
@@ -16,6 +17,12 @@ export const useStore = create<Store>()(
         user: null,
         isAuthenticated: false,
         authMode: null,
+
+        // Artist cache state
+        artistCache: {} as Record<
+          string,
+          { artists: Artist[]; hasMore: boolean; timestamp: number }
+        >,
 
         // Auth actions
         setUser: (user: ConsolidatedUser | null) => {
@@ -83,6 +90,36 @@ export const useStore = create<Store>()(
             isAuthenticated: false,
             authMode: null,
           });
+        },
+
+        // Artist cache actions
+        setArtistCache: (key: string, artists: Artist[], hasMore: boolean) => {
+          set(state => ({
+            artistCache: {
+              ...state.artistCache,
+              [key]: {
+                artists,
+                hasMore,
+                timestamp: Date.now(),
+              },
+            },
+          }));
+        },
+
+        getArtistCache: (key: string) => {
+          const cache = get().artistCache[key];
+          if (!cache) return null;
+
+          // Cache expires after 5 minutes
+          if (Date.now() - cache.timestamp > 5 * 60 * 1000) {
+            return null;
+          }
+
+          return cache;
+        },
+
+        clearArtistCache: () => {
+          set({ artistCache: {} });
         },
 
         // Helper methods

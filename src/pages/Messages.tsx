@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MessageCircle } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/landing/Navbar';
 import ChatList from '@/components/messages/ChatList';
 import ChatWindow from '@/components/messages/ChatWindow';
@@ -11,6 +12,7 @@ import type { Message } from '@/types/chat';
 
 const Messages = () => {
   const { user } = useStore();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedConversationId, setSelectedConversationId] = useState<
     string | null
@@ -117,12 +119,15 @@ const Messages = () => {
     setSelectedConversationId(null);
   };
 
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+    }
+  }, [user, navigate]);
+
   if (!user) {
-    return (
-      <div className='min-h-screen bg-neutral-950 flex items-center justify-center'>
-        <p className='text-white'>Please login to view messages</p>
-      </div>
-    );
+    return null; // Component will redirect, so return null
   }
 
   return (

@@ -1,6 +1,6 @@
 import Navbar from '@/components/landing/Navbar';
 import Sidebar from '@/components/explore/Sidebar';
-import { useAutoPaginatedArtists } from '@/hooks/generic/useAutoPaginatedArtists';
+import { useOptimizedArtists } from '@/hooks/generic/useOptimizedArtists';
 import { useDebounce } from '@/hooks/useDebounce';
 import { motion } from 'framer-motion';
 import { useState, useMemo, useEffect } from 'react';
@@ -35,8 +35,8 @@ const Explore = () => {
   const isSearching = debouncedSearchTerm.trim().length > 0;
   const isBookableFilter = filters.activeTab === ActivityTab.BOOKABLE;
 
-  // Use simplified hook that handles API calls and client-side genre filtering
-  const { artists, isLoading, error, hasMore } = useAutoPaginatedArtists({
+  // Use optimized hook with caching and prefetching
+  const { artists, isLoading, error, hasMore } = useOptimizedArtists({
     isSearching,
     isBookableFilter,
     searchQuery: debouncedSearchTerm,
@@ -209,6 +209,9 @@ const Explore = () => {
                         src={artist.avatar || '/images/artistNotFound.jpeg'}
                         alt={artist.displayName}
                         className='w-full aspect-square object-cover rounded'
+                        onError={e => {
+                          e.currentTarget.src = '/images/artistNotFound.jpeg';
+                        }}
                       />
                     </div>
 
@@ -219,6 +222,9 @@ const Explore = () => {
                           src={artist.avatar || '/images/artistNotFound.jpeg'}
                           alt={artist.displayName}
                           className='w-full aspect-square object-cover rounded'
+                          onError={e => {
+                            e.currentTarget.src = '/images/artistNotFound.jpeg';
+                          }}
                         />
                       </div>
                     )}
@@ -239,6 +245,9 @@ const Explore = () => {
                         }}
                         transition={{ duration: 0.2, ease: 'easeOut' }}
                         className='absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 hidden lg:group-hover:block aspect-square w-4/5 object-cover z-10'
+                        onError={e => {
+                          e.currentTarget.src = '/images/artistNotFound.jpeg';
+                        }}
                       />
                     )}
 

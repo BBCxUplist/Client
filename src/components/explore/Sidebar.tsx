@@ -33,31 +33,26 @@ const Sidebar = ({
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
   // Use available genres from props, fallback to default list
-  const genres =
+  const genres = (
     availableGenres && availableGenres.length > 0
       ? availableGenres
       : [
-          'Hip-Hop',
-          'Rap',
-          'Bollywood',
+          'Afrobeats',
+          'Afrotech',
+          'Drill',
+          'DnB',
+          'Garage',
+          'Grime',
+          'Hip Hop',
+          'House',
           'Producer',
-          'Regional Music',
-          'Independent Artist',
-          'Live Performance',
-          'Battle Rap',
-          'Storytelling',
-          'Pop Rap',
-          'Commercial Music',
-          'Alternative Rap',
-          'Underground',
-          'Viral Artist',
-          'Street Rap',
-          'Music Producer',
-          'MTV Hustle',
-          'Regional Rap',
-          'Fusion',
+          'Rap',
           'Traditional',
-        ];
+          'UKG',
+          'Jungle',
+          'MC',
+        ]
+  ).sort((a, b) => a.localeCompare(b));
 
   const handleTabChange = (tab: ActivityTab) => {
     setActiveTab(tab);

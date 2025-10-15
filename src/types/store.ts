@@ -1,5 +1,6 @@
 // Store-related types for the application
 import type { Role } from '@/types';
+import type { Artist } from '@/types/api';
 
 // Consolidated user interface that handles both regular users and artists
 // Combines User and Artist types with additional Supabase auth fields
@@ -51,6 +52,10 @@ export interface AuthState {
   user: ConsolidatedUser | null;
   isAuthenticated: boolean;
   authMode: 'signin' | 'register' | null;
+  artistCache: Record<
+    string,
+    { artists: Artist[]; hasMore: boolean; timestamp: number }
+  >;
 }
 
 export interface AuthActions {
@@ -63,6 +68,13 @@ export interface AuthActions {
   logout: () => Promise<void>;
   setUser: (user: ConsolidatedUser) => void;
   setAuthMode: (mode: 'signin' | 'register' | null) => void;
+
+  // Artist cache actions
+  setArtistCache: (key: string, artists: Artist[], hasMore: boolean) => void;
+  getArtistCache: (
+    key: string
+  ) => { artists: Artist[]; hasMore: boolean; timestamp: number } | null;
+  clearArtistCache: () => void;
 
   // Helper methods
   getAccessToken: () => string | null;
