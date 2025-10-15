@@ -61,6 +61,25 @@ const HowItWorks = () => {
             </div>
           ))}
         </div>
+
+        {/* Disclaimer */}
+        <div className='mt-12 md:mt-16 p-4 md:p-6 bg-orange-500/10 border border-orange-500/20 rounded-lg'>
+          <p className='text-white/90 text-sm md:text-base leading-relaxed text-center'>
+            <span className='font-semibold text-orange-500'>Disclaimer:</span>{' '}
+            Some artist profiles on the explorer are created from publicly
+            available information for discovery purposes; artists can claim,
+            manage, or request removal of their profile at any time. Message the{' '}
+            <a
+              href='https://www.instagram.com/upl1st/'
+              target='_blank'
+              rel='noopener noreferrer'
+              className=' underline hover:text-orange-400 transition-colors duration-200'
+            >
+              UPLIST Instagram account
+            </a>{' '}
+            for requests.
+          </p>
+        </div>
       </div>
     </div>
   );

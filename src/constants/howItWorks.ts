@@ -13,24 +13,24 @@ export const howItWorksContent: HowItWorksContent = {
     {
       title: 'Discover Artists',
       description:
-        'Browse through our curated collection of talented artists across various genres and styles. Find the perfect match for your event or project.',
+        'Browse artists across location, genres and styles with the explore page - find their profiles, hear their music and like the ones that inspire you.',
     },
     {
-      title: 'Book & Connect',
+      title: 'Connect & Book',
       description:
-        'Send booking requests to your chosen artists. Negotiate terms, discuss requirements, and finalize details through our secure platform.',
+        'For event organizers, our featured artists are verified and bookable, with curated profiles that make it simple to find and hire the right talent for any stage. Send booking requests to your chosen artists. Negotiate terms, discuss requirements, and finalise details through our secure platform.',
     },
     {
-      title: 'Enjoy & Rate',
+      title: 'Enjoy & Share Your',
       description:
-        'Experience amazing performances and collaborations. Share your feedback and help other users discover great artists.',
+        'Experience unforgettable performances and collaborations. Celebrate the music, follow your favorite artists and share your discoveries with the community.',
     },
   ],
   artist: [
     {
       title: 'Create Profile',
       description:
-        'Set up your artist profile with portfolio, pricing, and availability. Showcase your unique style and connect with potential clients.',
+        'Set up or claim your pre-made artist profile to showcase your portfolio, music, and unique style. You can choose to be discoverable only, letting fans and organizers explore your work - or request to become bookable, where once approved you’ll receive a featured profile and be ready for gigs. Link your profile on your social media to make it even easier for new audiences to find you.',
     },
     {
       title: 'Receive Bookings',

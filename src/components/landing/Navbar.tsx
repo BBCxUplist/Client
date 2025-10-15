@@ -94,9 +94,9 @@ const Navbar = () => {
       </Link>
       <img
         src='/logo/logo.png'
-        alt='menu'
+        alt='logo'
         draggable={false}
-        className='h-8 md:h-12'
+        className='h-10 md:h-14'
       />
 
       {/* Menu Button and Dropdown Container */}

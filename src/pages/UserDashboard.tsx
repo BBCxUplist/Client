@@ -217,14 +217,11 @@ const UserDashboard = () => {
             {/* User Avatar */}
             <div className='relative'>
               <img
-                src={
-                  userData.avatar ||
-                  'https://i.pinimg.com/1200x/09/e4/0a/09e40a3f556058ae2f57ba22bce36f12.jpg'
-                }
+                src={userData.avatar || '/images/artistNotFound.jpeg'}
                 alt={userData.displayName || userData.username}
                 className='w-20 h-20 lg:w-24 lg:h-24 object-cover'
                 onError={e => {
-                  e.currentTarget.src = '/images/userNotFound.jpeg';
+                  e.currentTarget.src = '/images/artistNotFound.jpeg';
                 }}
               />
               <div className='absolute -bottom-2 -right-2 bg-orange-500 text-black px-2 py-1 text-xs font-semibold'>
@@ -285,14 +282,6 @@ const UserDashboard = () => {
             </h3>
             <p className='text-xl md:text-2xl lg:text-3xl font-bold text-orange-500 font-mondwest'>
               {formatPrice(dashboardData.stats.totalSpent)}
-            </p>
-          </div>
-          <div className='bg-white/5 border border-white/10 p-4 md:p-6'>
-            <h3 className='text-white/70 text-xs md:text-sm mb-2'>
-              Avg Rating Given
-            </h3>
-            <p className='text-xl md:text-2xl lg:text-3xl font-bold text-orange-500 font-mondwest'>
-              ⭐ {dashboardData.stats.averageRating}
             </p>
           </div>
           <div className='bg-white/5 border border-white/10 p-4 md:p-6'>

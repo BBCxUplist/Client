@@ -66,19 +66,19 @@ const DesktopBranding = ({ activeMode }: DesktopBrandingProps) => {
         <div className='grid grid-cols-3 gap-8 text-center'>
           <div>
             <p className='text-3xl font-bold text-orange-500 font-mondwest'>
-              10K+
+              10
             </p>
             <p className='text-white/60 text-sm mt-1'>VERIFIED ARTISTS</p>
           </div>
           <div>
             <p className='text-3xl font-bold text-orange-500 font-mondwest'>
-              50K+
+              ~
             </p>
             <p className='text-white/60 text-sm mt-1'>SUCCESSFUL BOOKINGS</p>
           </div>
           <div>
             <p className='text-3xl font-bold text-orange-500 font-mondwest'>
-              25+
+              5+
             </p>
             <p className='text-white/60 text-sm mt-1'>COUNTRIES</p>
           </div>

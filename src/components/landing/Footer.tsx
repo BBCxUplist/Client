@@ -16,16 +16,18 @@ const Footer = () => {
           <div>
             <div className='flex flex-wrap gap-4 md:gap-6 lg:gap-8 mb-4 md:mb-6'>
               <a
-                href='#'
+                href='https://www.instagram.com/upl1st/'
+                target='_blank'
+                rel='noopener noreferrer'
                 className='text-white hover:text-orange-500 transition-colors duration-300 font-semibold text-sm md:text-base'
               >
-                TWITTER
+                INSTAGRAM
               </a>
               <a
                 href='#'
                 className='text-white hover:text-orange-500 transition-colors duration-300 font-semibold text-sm md:text-base'
               >
-                LINKEDIN
+                TWITTER
               </a>
               <a
                 href='#'
