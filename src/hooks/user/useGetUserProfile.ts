@@ -21,7 +21,7 @@ export const useGetUserProfile = () => {
       return response.data;
     },
     enabled: isAuthenticated,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 30 * 1000, // 30 seconds
     retry: (failureCount, error) => {
       // Don't retry if it's an authentication error
       if (

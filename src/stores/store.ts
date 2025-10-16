@@ -150,7 +150,7 @@ export const useStore = create<Store>()(
             isActive: state.user?.isActive,
             isAdmin: state.user?.isAdmin,
             banned: state.user?.banned,
-            saved_artists: state.user?.saved_artists,
+            savedArtists: state.user?.savedArtists,
             // Additional artist fields
             slug: state.user?.slug,
             photos: state.user?.photos,

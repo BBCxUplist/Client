@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/apiClient';
 import toast from 'react-hot-toast';
@@ -19,7 +18,6 @@ export const useSaveArtist = ({
   onSuccess,
   onError,
 }: UseSaveArtistProps) => {
-  const [isSaved, setIsSaved] = useState(false);
   const queryClient = useQueryClient();
 
   const saveArtistMutation = useMutation({
@@ -29,11 +27,12 @@ export const useSaveArtist = ({
     },
     onSuccess: (data: SaveArtistResponse) => {
       if (data.success) {
-        setIsSaved(true);
         toast.success('Artist saved to your favorites!');
         onSuccess?.();
-        // Invalidate relevant queries to refresh data
+        // Invalidate relevant queries to refresh data after API success
         queryClient.invalidateQueries({ queryKey: ['saved-artists'] });
+        queryClient.invalidateQueries({ queryKey: ['artist'] });
+        queryClient.invalidateQueries({ queryKey: ['user'] });
       } else {
         toast.error(data.message || 'Failed to save artist');
       }
@@ -47,16 +46,17 @@ export const useSaveArtist = ({
 
   const unsaveArtistMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiClient.post(`/users/save-artist/${artistId}`);
+      const response = await apiClient.delete(`/users/save-artist/${artistId}`);
       return response.data;
     },
     onSuccess: (data: SaveArtistResponse) => {
       if (data.success) {
-        setIsSaved(false);
         toast.success('Artist removed from your favorites!');
         onSuccess?.();
-        // Invalidate relevant queries to refresh data
+        // Invalidate relevant queries to refresh data after API success
         queryClient.invalidateQueries({ queryKey: ['saved-artists'] });
+        queryClient.invalidateQueries({ queryKey: ['artist'] });
+        queryClient.invalidateQueries({ queryKey: ['user'] });
       } else {
         toast.error(data.message || 'Failed to remove artist');
       }
@@ -68,19 +68,9 @@ export const useSaveArtist = ({
     },
   });
 
-  const toggleSave = () => {
-    if (isSaved) {
-      unsaveArtistMutation.mutate();
-    } else {
-      saveArtistMutation.mutate();
-    }
-  };
-
   return {
-    isSaved,
-    toggleSave,
-    isLoading: saveArtistMutation.isPending || unsaveArtistMutation.isPending,
     saveArtist: saveArtistMutation.mutate,
     unsaveArtist: unsaveArtistMutation.mutate,
+    isLoading: saveArtistMutation.isPending || unsaveArtistMutation.isPending,
   };
 };

@@ -21,7 +21,7 @@ export const useGetArtist = (username: string) => {
       return response.data as ArtistResponse;
     },
     enabled: !!username,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 30 * 1000, // 30 seconds
   });
 
   // Update store state when artist data is fetched

@@ -11,7 +11,9 @@ import SocialLinks from '@/components/ui/SocialLinks';
 import { formatPrice } from '@/helper';
 import { useGetArtist } from '@/hooks/artist/useGetArtist';
 import { useSaveArtist } from '@/hooks/artist/useSaveArtist';
+import { useGetUserProfile } from '@/hooks/user/useGetUserProfile';
 import { useStore } from '@/stores/store';
+import type { Artist } from '@/types/api';
 
 enum ArtistTab {
   MUSIC = 'music',
@@ -30,10 +32,13 @@ const ArtistProfile = () => {
   const { data, isLoading, error } = useGetArtist(username || '');
   const artist = data?.data;
 
+  // Fetch user profile to get saved artists (will be refreshed after API calls)
+  const { data: userProfileData } = useGetUserProfile();
+
   // Save artist hook
   const {
-    isSaved,
-    toggleSave,
+    saveArtist,
+    unsaveArtist,
     isLoading: isSaving,
   } = useSaveArtist({
     artistId: artist?.id || '',
@@ -44,6 +49,23 @@ const ArtistProfile = () => {
       console.error('Error saving artist:', error);
     },
   });
+
+  // Check if artist is saved by current user
+  // Use userProfileData (refreshed after API calls) for accurate state
+  const savedArtists =
+    userProfileData?.data?.savedArtists || user?.savedArtists;
+  const isSaved = savedArtists?.some(
+    (savedArtist: Artist) => savedArtist.id === artist?.id
+  );
+
+  // Toggle save function
+  const toggleSave = () => {
+    if (isSaved) {
+      unsaveArtist();
+    } else {
+      saveArtist();
+    }
+  };
 
   // Check if current user is viewing their own profile
   // Compare by username, email, and id for more accurate identification
