@@ -37,7 +37,7 @@ export interface ConsolidatedUser {
   displayName?: string | null;
   isActive?: boolean;
   isAdmin?: boolean;
-  saved_artists?: string[];
+  savedArtists?: Artist[];
   updatedAt?: string;
 
   // Additional artist properties

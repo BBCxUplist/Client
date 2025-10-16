@@ -16,7 +16,7 @@ const FeaturedArtist = () => {
             Featured Artists
           </h2>
 
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8'>
+          <div className='grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8'>
             {Array.from({ length: 8 }).map((_, index) => (
               <div key={index} className='relative group'>
                 <div className='relative mb-4 overflow-hidden'>
@@ -69,7 +69,7 @@ const FeaturedArtist = () => {
           Featured Artists
         </h2>
 
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8'>
+        <div className='grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8'>
           {artists.map((artist: Artist) => (
             <Link
               key={artist.id}

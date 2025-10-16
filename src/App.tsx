@@ -13,6 +13,7 @@ import Privacy from './pages/Privacy';
 import { QueryProvider } from './providers/QueryProvider';
 import GlobalModelPreloader from './components/3D/GlobalModelPreloader';
 import AuthStateListener from './components/auth/AuthStateListener';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
@@ -21,7 +22,7 @@ function App() {
         <GlobalModelPreloader />
         {/* Auth State Listener for Google Login */}
         <AuthStateListener />
-
+        <Toaster />
         <Routes>
           <Route path='/' element={<Landing />} />
           <Route path='/explore' element={<Explore />} />

@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { Star } from 'lucide-react';
 import Navbar from '@/components/landing/Navbar';
 import AboutTab from '@/components/artist/AboutTab';
 import MusicTab from '@/components/artist/MusicTab';
-// import ReviewsTab from "@/components/artist/ReviewsTab";
 import GalleryTab from '@/components/artist/GalleryTab';
 import RiderTab from '@/components/artist/RiderTab';
 import BookingTab from '@/components/artist/BookingTab';
 import SocialLinks from '@/components/ui/SocialLinks';
 import { formatPrice } from '@/helper';
 import { useGetArtist } from '@/hooks/artist/useGetArtist';
+import { useSaveArtist } from '@/hooks/artist/useSaveArtist';
 import { useStore } from '@/stores/store';
 
 enum ArtistTab {
@@ -29,9 +30,27 @@ const ArtistProfile = () => {
   const { data, isLoading, error } = useGetArtist(username || '');
   const artist = data?.data;
 
+  // Save artist hook
+  const {
+    isSaved,
+    toggleSave,
+    isLoading: isSaving,
+  } = useSaveArtist({
+    artistId: artist?.id || '',
+    onSuccess: () => {
+      // Optional: Add any additional success logic
+    },
+    onError: error => {
+      console.error('Error saving artist:', error);
+    },
+  });
+
   // Check if current user is viewing their own profile
-  // Compare by username for more accurate identification
-  const isOwnProfile = user?.username === artist?.username;
+  // Compare by username, email, and id for more accurate identification
+  const isOwnProfile =
+    user?.username === artist?.username ||
+    user?.email === artist?.email ||
+    user?.id === artist?.id;
 
   // Check if profile is incomplete and get missing fields
   const getMissingFields = () => {
@@ -141,16 +160,6 @@ const ArtistProfile = () => {
                     e.currentTarget.src = '/images/artistNotFound.jpeg';
                   }}
                 />
-                {/* Approved Badge */}
-                {artist?.isApproved && (
-                  <div className='absolute top-4 right-4'>
-                    <img
-                      src='/icons/badge.svg'
-                      alt='Approved Artist'
-                      className='w-8 h-8'
-                    />
-                  </div>
-                )}
                 {/* Availability Status */}
                 {artist?.isAvailable && (
                   <div className='absolute bottom-4 left-4 bg-orange-500 text-black px-3 py-2 text-sm font-semibold'>
@@ -168,32 +177,38 @@ const ArtistProfile = () => {
               <h1 className='font-mondwest text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2'>
                 {artist?.displayName}
               </h1>
-              <p className='text-white/70 mb-2'>@{artist.username}</p>
-              {/* Location */}
-              {artist?.location && (
-                <p className='text-white/60 mb-4 flex items-center gap-2'>
-                  <svg
-                    className='w-4 h-4'
-                    fill='none'
-                    stroke='currentColor'
-                    viewBox='0 0 24 24'
+              <div className='flex items-center gap-2 mb-2'>
+                <p className='text-white/70 '>@{artist.username}</p>
+                {/* Approved Badge */}
+                {artist?.isApproved && (
+                  <img
+                    src='/icons/badge.svg'
+                    alt='Approved Artist'
+                    className='w-5 h-5'
+                  />
+                )}
+                {/* Save Artist Star - Only show for other users */}
+                {!isOwnProfile && (
+                  <button
+                    onClick={toggleSave}
+                    disabled={isSaving}
+                    className='p-1 hover:bg-white/10 rounded-full transition-colors duration-200'
+                    title={
+                      isSaved ? 'Remove from favorites' : 'Add to favorites'
+                    }
                   >
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth={2}
-                      d='M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z'
+                    <Star
+                      size={20}
+                      className={`transition-colors duration-200 ${
+                        isSaved
+                          ? 'fill-orange-500 text-orange-400'
+                          : 'text-white/70 hover:text-orange-400'
+                      }`}
                     />
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth={2}
-                      d='M15 11a3 3 0 11-6 0 3 3 0 016 0z'
-                    />
-                  </svg>
-                  {artist.location}
-                </p>
-              )}
+                  </button>
+                )}
+              </div>
+
               {/* Genre Tags */}
               <div className='flex flex-wrap gap-2 mb-6'>
                 {artist?.genres?.map((genre: string, index: number) => (
@@ -210,6 +225,17 @@ const ArtistProfile = () => {
 
               {/* Social Media Links */}
               <SocialLinks socials={artist?.socials} />
+
+              {/* Edit Profile Button - Only for own profile */}
+              {isOwnProfile && (
+                <div className='bg-white/5 p-4 border border-white/10 hidden lg:block'>
+                  <Link to='/dashboard/edit'>
+                    <button className='w-full bg-orange-500 text-black py-3 font-semibold hover:bg-orange-600 transition-colors duration-300 text-sm md:text-base'>
+                      EDIT PROFILE
+                    </button>
+                  </Link>
+                </div>
+              )}
 
               {/* Booking Info */}
               {!isOwnProfile && (
@@ -313,6 +339,17 @@ const ArtistProfile = () => {
                 BOOK NOW
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Sticky Edit Profile Bar (Mobile) - Only for own profile */}
+        {isOwnProfile && (
+          <div className='fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-sm p-4 border-t border-white/20 lg:hidden'>
+            <Link to='/dashboard/edit'>
+              <button className='w-full bg-orange-500 text-black py-3 font-semibold hover:bg-orange-600 transition-colors'>
+                EDIT PROFILE
+              </button>
+            </Link>
           </div>
         )}
 

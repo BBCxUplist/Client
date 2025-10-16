@@ -30,7 +30,7 @@ const HeroSection = () => {
             src='/icons/search.png'
             alt='search'
             draggable={false}
-            className='absolute right-4 top-1/2 transform -translate-y-1/2 md:w-24 md:h-24 w-16 h-16 bg-black texture-bg cursor-pointer hover:opacity-80 transition-opacity'
+            className='absolute right-4 top-1/2 transform -translate-y-1/2 md:w-24 md:h-24 w-16 h-16 z-10 cursor-pointer hover:opacity-80 transition-opacity'
           />
         </div>
       </div>
