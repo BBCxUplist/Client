@@ -5,6 +5,7 @@ import AboutTab from '@/components/artist/AboutTab';
 import MusicTab from '@/components/artist/MusicTab';
 // import ReviewsTab from "@/components/artist/ReviewsTab";
 import GalleryTab from '@/components/artist/GalleryTab';
+import RiderTab from '@/components/artist/RiderTab';
 import BookingTab from '@/components/artist/BookingTab';
 import SocialLinks from '@/components/ui/SocialLinks';
 import { formatPrice } from '@/helper';
@@ -15,6 +16,7 @@ enum ArtistTab {
   MUSIC = 'music',
   GALLERY = 'gallery',
   ABOUT = 'about',
+  RIDER = 'rider',
   BOOKING = 'booking',
 }
 
@@ -28,8 +30,8 @@ const ArtistProfile = () => {
   const artist = data?.data;
 
   // Check if current user is viewing their own profile
-  // Compare by email since username might not be available in user object
-  const isOwnProfile = user?.email === artist?.email;
+  // Compare by username for more accurate identification
+  const isOwnProfile = user?.username === artist?.username;
 
   // Check if profile is incomplete and get missing fields
   const getMissingFields = () => {
@@ -166,7 +168,32 @@ const ArtistProfile = () => {
               <h1 className='font-mondwest text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2'>
                 {artist?.displayName}
               </h1>
-              <p className='text-white/70 mb-4'>@{artist.username}</p>
+              <p className='text-white/70 mb-2'>@{artist.username}</p>
+              {/* Location */}
+              {artist?.location && (
+                <p className='text-white/60 mb-4 flex items-center gap-2'>
+                  <svg
+                    className='w-4 h-4'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z'
+                    />
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M15 11a3 3 0 11-6 0 3 3 0 016 0z'
+                    />
+                  </svg>
+                  {artist.location}
+                </p>
+              )}
               {/* Genre Tags */}
               <div className='flex flex-wrap gap-2 mb-6'>
                 {artist?.genres?.map((genre: string, index: number) => (
@@ -185,22 +212,26 @@ const ArtistProfile = () => {
               <SocialLinks socials={artist?.socials} />
 
               {/* Booking Info */}
-              <div className='bg-white/5 p-4 border border-white/10 hidden lg:block'>
-                <div className='flex flex-col gap-4'>
-                  <div>
-                    <p className='text-white/70 text-sm mb-1'>Booking Price</p>
-                    <p className='text-xl md:text-2xl font-bold text-orange-500 font-mondwest'>
-                      {formatPrice(artist?.basePrice)}
-                    </p>
+              {!isOwnProfile && (
+                <div className='bg-white/5 p-4 border border-white/10 hidden lg:block'>
+                  <div className='flex flex-col gap-4'>
+                    <div>
+                      <p className='text-white/70 text-sm mb-1'>
+                        Booking Price
+                      </p>
+                      <p className='text-xl md:text-2xl font-bold text-orange-500 font-mondwest'>
+                        {formatPrice(artist?.basePrice)}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setActiveTab(ArtistTab.BOOKING)}
+                      className='w-full bg-orange-500 text-black py-3 font-semibold hover:bg-orange-600 transition-colors duration-300 text-sm md:text-base'
+                    >
+                      BOOK NOW
+                    </button>
                   </div>
-                  <button
-                    onClick={() => setActiveTab(ArtistTab.BOOKING)}
-                    className='w-full bg-orange-500 text-black py-3 font-semibold hover:bg-orange-600 transition-colors duration-300 text-sm md:text-base'
-                  >
-                    BOOK NOW
-                  </button>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
@@ -212,6 +243,7 @@ const ArtistProfile = () => {
                 ArtistTab.MUSIC,
                 ArtistTab.GALLERY,
                 ArtistTab.ABOUT,
+                ArtistTab.RIDER,
                 ...(isOwnProfile ? [] : [ArtistTab.BOOKING]),
               ].map(tab => (
                 <button
@@ -231,14 +263,24 @@ const ArtistProfile = () => {
             {/* Content Sections */}
             <div className='min-h-[400px]'>
               {activeTab === ArtistTab.ABOUT && (
-                <AboutTab artist={{ bio: artist?.bio }} />
+                <AboutTab
+                  artist={{ bio: artist?.bio, location: artist?.location }}
+                />
               )}
               {activeTab === ArtistTab.MUSIC && (
-                <MusicTab artist={{ embeds: artist?.embeds }} />
+                <MusicTab
+                  artist={{
+                    embeds: artist?.embeds,
+                    playlists: (artist as any)?.playlists,
+                  }}
+                />
               )}
               {/* {activeTab === "reviews" && <ReviewsTab artist={artist} />} */}
               {activeTab === ArtistTab.GALLERY && (
                 <GalleryTab artist={{ photos: artist?.photos }} />
+              )}
+              {activeTab === ArtistTab.RIDER && (
+                <RiderTab artist={{ rider: (artist as any)?.rider }} />
               )}
               {activeTab === ArtistTab.BOOKING && !isOwnProfile && (
                 <BookingTab
@@ -258,19 +300,21 @@ const ArtistProfile = () => {
         </div>
 
         {/* Sticky Booking Bar (Mobile) */}
-        <div className='fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-sm p-4 border-t border-white/20 lg:hidden'>
-          <div className='flex items-center justify-between'>
-            <div>
-              <p className='text-orange-500 font-semibold text-lg font-mondwest'>
-                {formatPrice(artist?.basePrice)}
-              </p>
-              <p className='text-white/60 text-sm'>Booking price</p>
+        {!isOwnProfile && (
+          <div className='fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-sm p-4 border-t border-white/20 lg:hidden'>
+            <div className='flex items-center justify-between'>
+              <div>
+                <p className='text-orange-500 font-semibold text-lg font-mondwest'>
+                  {formatPrice(artist?.basePrice)}
+                </p>
+                <p className='text-white/60 text-sm'>Booking price</p>
+              </div>
+              <button className='bg-orange-500 text-black px-6 py-3 font-semibold'>
+                BOOK NOW
+              </button>
             </div>
-            <button className='bg-orange-500 text-black px-6 py-3 font-semibold'>
-              BOOK NOW
-            </button>
           </div>
-        </div>
+        )}
 
         {/* Complete Profile Tag - Fixed Bottom Right */}
         {isOwnProfile && isProfileIncomplete && (

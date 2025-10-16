@@ -39,12 +39,12 @@ const GalleryTab = ({ artist }: GalleryTabProps) => {
                   </div>
                 </div>
               </DialogTrigger>
-              <DialogContent className='max-w-4xl max-h-[90vh] p-0 bg-transparent border-none shadow-none'>
+              <DialogContent className='max-w-3xl max-h-[80vh] p-0 bg-transparent border-none shadow-none'>
                 <div className='relative w-full h-full'>
                   <img
                     src={image}
                     alt={`Gallery ${index + 1}`}
-                    className='w-full h-full object-contain rounded-lg'
+                    className='w-full h-full object-contain rounded-lg max-w-2xl max-h-[70vh] mx-auto'
                     draggable={false}
                     onError={e => {
                       e.currentTarget.src = '/images/artistNotFound.jpeg';

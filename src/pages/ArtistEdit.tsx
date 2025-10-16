@@ -8,6 +8,8 @@ import Navbar from '@/components/landing/Navbar';
 import ProfileTab from '@/components/artistEdit/ProfileTab';
 import MusicTab from '@/components/artistEdit/MusicTab';
 import GalleryTab from '@/components/artistEdit/GalleryTab';
+import RiderTab from '@/components/artistEdit/RiderTab';
+import PlaylistTab from '@/components/artistEdit/PlaylistTab';
 import SettingsTab from '@/components/artistEdit/SettingsTab';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
@@ -15,6 +17,8 @@ enum ArtistEditTab {
   PROFILE = 'profile',
   MUSIC = 'music',
   GALLERY = 'gallery',
+  RIDER = 'rider',
+  PLAYLIST = 'playlist',
   SETTINGS = 'settings',
 }
 
@@ -65,6 +69,8 @@ const ArtistEdit = () => {
       spotify: [] as string[],
     },
     photos: [] as string[],
+    rider: [] as any[],
+    playlists: [] as any[],
   });
 
   // Original data to track changes
@@ -90,6 +96,8 @@ const ArtistEdit = () => {
       spotify: [] as string[],
     },
     photos: [] as string[],
+    rider: [] as any[],
+    playlists: [] as any[],
   });
 
   // Update profile mutation
@@ -127,6 +135,8 @@ const ArtistEdit = () => {
           spotify: (artist as any).embeds?.spotify || [],
         },
         photos: (artist as any).photos || [],
+        rider: (artist as any).rider || [],
+        playlists: (artist as any).playlists || [],
       };
 
       setFormData(initialData);
@@ -411,6 +421,8 @@ const ArtistEdit = () => {
             ArtistEditTab.PROFILE,
             ArtistEditTab.MUSIC,
             ArtistEditTab.GALLERY,
+            ArtistEditTab.RIDER,
+            ArtistEditTab.PLAYLIST,
             ArtistEditTab.SETTINGS,
           ].map(tab => (
             <button
@@ -455,6 +467,22 @@ const ArtistEdit = () => {
               formData={formData}
               handleInputChange={handleInputChange}
               onGalleryChange={handleGalleryChange}
+            />
+          )}
+
+          {/* Rider Tab */}
+          {activeTab === ArtistEditTab.RIDER && (
+            <RiderTab
+              formData={formData}
+              handleInputChange={handleInputChange}
+            />
+          )}
+
+          {/* Playlist Tab */}
+          {activeTab === ArtistEditTab.PLAYLIST && (
+            <PlaylistTab
+              formData={formData}
+              handleInputChange={handleInputChange}
             />
           )}
 
