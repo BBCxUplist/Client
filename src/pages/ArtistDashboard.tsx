@@ -4,6 +4,11 @@ import { Link } from 'react-router-dom';
 import { useStore } from '@/stores/store';
 import { useGetArtistProfile } from '@/hooks/artist/useGetArtistProfile';
 import { useGetBookings } from '@/hooks/booking/useGetBookings';
+import {
+  useGetApprovalStatus,
+  AppealStatus,
+} from '@/hooks/artist/useGetApprovalStatus';
+import { useApplyApproval } from '@/hooks/artist/useApplyApproval';
 import { formatPrice } from '@/helper';
 import { dummyDashboardData } from '@/constants/dashboardData';
 import BookingModal from '@/components/ui/BookingModal';
@@ -28,6 +33,13 @@ const ArtistDashboard = () => {
   // Fetch bookings data
   const { data: bookingsResponse } = useGetBookings();
 
+  // Fetch approval status
+  const { data: approvalStatusResponse, isLoading: isApprovalLoading } =
+    useGetApprovalStatus();
+
+  // Apply for approval mutation
+  const applyApprovalMutation = useApplyApproval();
+
   // Settings states
   const [profileVisibility, setProfileVisibility] = useState(true);
   const [acceptBookings, setAcceptBookings] = useState(true);
@@ -38,6 +50,9 @@ const ArtistDashboard = () => {
 
   // Get artist data from API response
   const artist = artistResponse?.data;
+
+  // Get approval status data
+  const approvalStatus = approvalStatusResponse?.data;
 
   const handleLogout = async () => {
     try {
@@ -93,6 +108,18 @@ const ArtistDashboard = () => {
 
   const missingFields = getMissingFields();
   const isProfileIncomplete = missingFields.length > 0;
+
+  // Handle approval request
+  const handleRequestApproval = () => {
+    applyApprovalMutation.mutate(undefined, {
+      onSuccess: data => {
+        console.log('Approval request submitted:', data);
+      },
+      onError: error => {
+        console.error('Failed to submit approval request:', error);
+      },
+    });
+  };
 
   // Loading state
   if (isLoading) {
@@ -204,40 +231,117 @@ const ArtistDashboard = () => {
       )}
 
       {/* Approval Status Warning */}
-      {!artist?.isApproved && (
-        <div className='bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-6'>
+      {!isApprovalLoading && approvalStatus && !approvalStatus.isApproved && (
+        <div
+          className={`border rounded-lg p-4 mb-6 ${
+            approvalStatus.appealStatus === AppealStatus.REJECTED
+              ? 'bg-red-500/10 border-red-500/30'
+              : approvalStatus.appealStatus === AppealStatus.REQUESTED
+                ? 'bg-yellow-500/10 border-yellow-500/30'
+                : 'bg-blue-500/10 border-blue-500/30'
+          }`}
+        >
           <div className='flex items-start gap-3'>
-            <div className='text-blue-400 text-xl'>
-              {' '}
+            <div
+              className={`text-xl ${
+                approvalStatus.appealStatus === AppealStatus.REJECTED
+                  ? 'text-red-400'
+                  : approvalStatus.appealStatus === AppealStatus.REQUESTED
+                    ? 'text-yellow-400'
+                    : 'text-blue-400'
+              }`}
+            >
               <Info className='w-8 h-8' />
             </div>
             <div className='flex-1'>
-              <h3 className='text-blue-400 font-semibold mb-1'>
-                Get Approved to Receive Bookings
-              </h3>
-              <p className='text-white/70 text-sm mb-2'>
-                Complete your profile and get approved to start receiving
-                booking requests from clients.
-              </p>
-              <div className='flex gap-3'>
-                {isProfileIncomplete && (
-                  <Link to='/dashboard/edit'>
-                    <button className='bg-blue-500 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-600 transition-colors'>
-                      Complete Profile First
+              {approvalStatus.appealStatus === AppealStatus.PENDING && (
+                <>
+                  <h3 className='text-blue-400 font-semibold mb-1'>
+                    Get Approved to Receive Bookings
+                  </h3>
+                  <p className='text-white/70 text-sm mb-2'>
+                    Complete your profile and get approved to start receiving
+                    booking requests from clients.
+                  </p>
+                  <div className='flex gap-3'>
+                    {isProfileIncomplete && (
+                      <Link to='/dashboard/edit'>
+                        <button className='bg-blue-500 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-600 transition-colors'>
+                          Complete Profile First
+                        </button>
+                      </Link>
+                    )}
+                    {!isProfileIncomplete && (
+                      <button
+                        onClick={handleRequestApproval}
+                        disabled={applyApprovalMutation.isPending}
+                        className='bg-blue-500 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-600 transition-colors disabled:opacity-50'
+                      >
+                        {applyApprovalMutation.isPending
+                          ? 'Submitting...'
+                          : 'Request Approval'}
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {approvalStatus.appealStatus === AppealStatus.REQUESTED && (
+                <>
+                  <h3 className='text-yellow-400 font-semibold mb-1'>
+                    Application Under Review
+                  </h3>
+                  <p className='text-white/70 text-sm mb-2'>
+                    We are currently reviewing your application. You will be
+                    notified once the review is complete.
+                  </p>
+                  <p className='text-white/60 text-xs'>
+                    Submitted on:{' '}
+                    {new Date(approvalStatus.updatedAt).toLocaleDateString()}
+                  </p>
+                </>
+              )}
+
+              {approvalStatus.appealStatus === AppealStatus.REJECTED && (
+                <>
+                  <h3 className='text-red-400 font-semibold mb-1'>
+                    Application Not Approved
+                  </h3>
+                  <p className='text-white/70 text-sm mb-2'>
+                    We didn't find your details sufficient for approval. You can
+                    reach out to our Instagram account{' '}
+                    <a
+                      href='https://www.instagram.com/upl1st/'
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='text-orange-400 underline hover:text-orange-300'
+                    >
+                      @upl1st
+                    </a>{' '}
+                    for more information.
+                  </p>
+                  <p className='text-white/60 text-xs mb-3'>
+                    Rejected on:{' '}
+                    {new Date(approvalStatus.updatedAt).toLocaleDateString()}
+                  </p>
+                  <div className='flex gap-3'>
+                    <Link to='/dashboard/edit'>
+                      <button className='bg-red-500 text-white px-4 py-2 text-sm font-semibold hover:bg-red-600 transition-colors'>
+                        Update Profile
+                      </button>
+                    </Link>
+                    <button
+                      onClick={handleRequestApproval}
+                      disabled={applyApprovalMutation.isPending}
+                      className='bg-orange-500 text-white px-4 py-2 text-sm font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50'
+                    >
+                      {applyApprovalMutation.isPending
+                        ? 'Submitting...'
+                        : 'Reapply'}
                     </button>
-                  </Link>
-                )}
-                {!isProfileIncomplete && (
-                  <button
-                    onClick={() =>
-                      console.log('Request approval for artist:', artist?.id)
-                    }
-                    className='bg-blue-500 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-600 transition-colors'
-                  >
-                    Request Approval
-                  </button>
-                )}
-              </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
