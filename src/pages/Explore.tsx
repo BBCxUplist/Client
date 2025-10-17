@@ -3,7 +3,7 @@ import Sidebar from '@/components/explore/Sidebar';
 import { useOptimizedArtists } from '@/hooks/generic/useOptimizedArtists';
 import { useDebounce } from '@/hooks/useDebounce';
 import { motion } from 'framer-motion';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import type { Artist } from '@/types/api';
 
@@ -15,6 +15,7 @@ enum ActivityTab {
 interface FilterState {
   activeTab: ActivityTab;
   genres: string[];
+  locationSearch: string;
 }
 
 const Explore = () => {
@@ -26,6 +27,7 @@ const Explore = () => {
   const [filters, setFilters] = useState<FilterState>({
     activeTab: ActivityTab.ALL,
     genres: [],
+    locationSearch: '',
   });
 
   // Debounce search term to avoid too many API calls
@@ -43,6 +45,7 @@ const Explore = () => {
     currentPage,
     limit: 12,
     selectedGenres: filters.genres,
+    locationSearch: filters.locationSearch,
   });
 
   // Initialize search term from URL params
@@ -50,15 +53,6 @@ const Explore = () => {
     const urlSearchTerm = searchParams.get('search') || '';
     setSearchTerm(urlSearchTerm);
   }, [searchParams]);
-
-  // Get all unique genres from current artists for dynamic genre list
-  const availableGenres = useMemo(() => {
-    const genreSet = new Set<string>();
-    artists.forEach((artist: Artist) => {
-      artist.genres.forEach((genre: string) => genreSet.add(genre));
-    });
-    return Array.from(genreSet).sort();
-  }, [artists]);
 
   const handleFilterChange = (newFilters: FilterState) => {
     setFilters(newFilters);
@@ -119,7 +113,6 @@ const Explore = () => {
             onFilterChange={handleFilterChange}
             isMobile={true}
             currentFilters={filters}
-            availableGenres={availableGenres}
           />
         </div>
 
@@ -130,7 +123,6 @@ const Explore = () => {
               onFilterChange={handleFilterChange}
               isMobile={false}
               currentFilters={filters}
-              availableGenres={availableGenres}
             />
           </div>
 

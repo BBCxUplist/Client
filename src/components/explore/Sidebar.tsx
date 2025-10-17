@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 interface FilterProps {
@@ -11,6 +11,7 @@ interface FilterProps {
 interface FilterState {
   activeTab: ActivityTab;
   genres: string[];
+  locationSearch: string;
 }
 
 enum ActivityTab {
@@ -22,7 +23,7 @@ const Sidebar = ({
   onFilterChange,
   isMobile,
   currentFilters,
-  availableGenres,
+  availableGenres = [],
 }: FilterProps) => {
   const [activeTab, setActiveTab] = useState<ActivityTab>(
     currentFilters?.activeTab || ActivityTab.ALL
@@ -30,33 +31,39 @@ const Sidebar = ({
   const [selectedGenres, setSelectedGenres] = useState<string[]>(
     currentFilters?.genres || []
   );
+  const [locationSearch, setLocationSearch] = useState<string>(
+    currentFilters?.locationSearch || ''
+  );
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
-  // Use available genres from props, fallback to default list
-  const genres = (
-    availableGenres && availableGenres.length > 0
-      ? availableGenres
-      : [
-          'Afrobeats',
-          'Afrotech',
-          'Drill',
-          'DnB',
-          'Garage',
-          'Grime',
-          'Hip Hop',
-          'House',
-          'Producer',
-          'Rap',
-          'Traditional',
-          'UKG',
-          'Jungle',
-          'MC',
-        ]
-  ).sort((a, b) => a.localeCompare(b));
+  // Use availableGenres if provided, otherwise fallback to hardcoded genres
+  const genres = useMemo(() => {
+    if (availableGenres.length > 0) {
+      return availableGenres.sort((a, b) => a.localeCompare(b));
+    }
+
+    // Fallback to hardcoded genres
+    return [
+      'Afrobeats',
+      'Afrotech',
+      'Drill',
+      'DnB',
+      'Garage',
+      'Grime',
+      'Hip Hop',
+      'House',
+      'Producer',
+      'Rap',
+      'Traditional',
+      'UKG',
+      'Jungle',
+      'MC',
+    ].sort((a, b) => a.localeCompare(b));
+  }, [availableGenres]);
 
   const handleTabChange = (tab: ActivityTab) => {
     setActiveTab(tab);
-    updateFilters(tab, selectedGenres);
+    updateFilters(tab, selectedGenres, locationSearch);
   };
 
   const handleGenreChange = (genre: string) => {
@@ -64,29 +71,41 @@ const Sidebar = ({
       ? selectedGenres.filter(g => g !== genre)
       : [...selectedGenres, genre];
     setSelectedGenres(newGenres);
-    updateFilters(activeTab, newGenres);
+    updateFilters(activeTab, newGenres, locationSearch);
   };
 
-  const updateFilters = (tab: ActivityTab, genres: string[]) => {
+  const handleLocationSearch = (search: string) => {
+    setLocationSearch(search);
+    updateFilters(activeTab, selectedGenres, search);
+  };
+
+  const updateFilters = (
+    tab: ActivityTab,
+    genres: string[],
+    location: string
+  ) => {
     onFilterChange({
       activeTab: tab,
       genres,
+      locationSearch: location,
     });
   };
 
   const clearFilters = () => {
     setSelectedGenres([]);
+    setLocationSearch('');
     setActiveTab(ActivityTab.ALL);
-    updateFilters(ActivityTab.ALL, []);
+    updateFilters(ActivityTab.ALL, [], '');
   };
 
-  const activeFiltersCount = selectedGenres.length;
+  const activeFiltersCount = selectedGenres.length + (locationSearch ? 1 : 0);
 
   // Sync state when currentFilters prop changes
   useEffect(() => {
     if (currentFilters) {
       setActiveTab(currentFilters.activeTab);
       setSelectedGenres(currentFilters.genres);
+      setLocationSearch(currentFilters.locationSearch || '');
     }
   }, [currentFilters]);
 
@@ -171,13 +190,27 @@ const Sidebar = ({
                   </button>
                 </div>
 
+                {/* Location Search */}
+                <div>
+                  <h4 className='text-white text-xs font-medium mb-2'>
+                    LOCATION
+                  </h4>
+                  <input
+                    type='text'
+                    value={locationSearch}
+                    onChange={e => handleLocationSearch(e.target.value)}
+                    placeholder='Search by location...'
+                    className='w-full px-3 py-2 text-xs bg-black/20 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:border-orange-500'
+                  />
+                </div>
+
                 {/* Genres */}
                 <div>
                   <h4 className='text-white text-xs font-medium mb-2'>
-                    CATEGORIES
+                    GENRES
                   </h4>
                   <div className='grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-32 overflow-y-auto'>
-                    {genres.slice(0, 9).map(genre => (
+                    {genres.map(genre => (
                       <label
                         key={genre}
                         className='flex items-center space-x-1 cursor-pointer text-xs'
@@ -201,7 +234,7 @@ const Sidebar = ({
     );
   }
 
-  // Desktop version (unchanged from original)
+  // Desktop version
   return (
     <div className='w-[280px] h-fit sticky top-[100px] space-y-6'>
       {/* Tab Buttons */}
@@ -240,7 +273,19 @@ const Sidebar = ({
           </button>
         </div>
 
-        {/* genres Filter */}
+        {/* Location Search */}
+        <div className='mb-6'>
+          <h3 className='text-white text-xs font-medium mb-3'>LOCATION</h3>
+          <input
+            type='text'
+            value={locationSearch}
+            onChange={e => handleLocationSearch(e.target.value)}
+            placeholder='Search by location...'
+            className='w-full px-3 py-2 text-xs bg-black/20 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:border-orange-500'
+          />
+        </div>
+
+        {/* Genres Filter */}
         <div className='mb-6'>
           <h3 className='text-white text-xs font-medium mb-3'>GENRES</h3>
           <div className='space-y-2 max-h-48 overflow-y-auto'>

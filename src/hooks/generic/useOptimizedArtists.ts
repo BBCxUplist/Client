@@ -1,8 +1,9 @@
-import { useEffect, useCallback, useMemo } from 'react';
+import { useEffect, useCallback, useMemo, useState, useRef } from 'react';
 import { useStore } from '@/stores/store';
 import { useGetAllArtists } from './useGetAllArtists';
 import { useGetBookableArtists } from './useGetBookableArtists';
 import { useSearchArtists } from './useSearchArtists';
+import type { Artist } from '@/types/api';
 
 interface UseOptimizedArtistsParams {
   isSearching: boolean;
@@ -11,6 +12,7 @@ interface UseOptimizedArtistsParams {
   currentPage: number;
   limit: number;
   selectedGenres: string[];
+  locationSearch?: string;
 }
 
 export const useOptimizedArtists = ({
@@ -20,8 +22,17 @@ export const useOptimizedArtists = ({
   currentPage,
   limit,
   selectedGenres,
+  locationSearch = '',
 }: UseOptimizedArtistsParams) => {
   const { setArtistCache, getArtistCache } = useStore();
+
+  // State for managing recursive fetching when filtering by genres
+  const [, setAccumulatedPages] = useState<Map<number, Artist[]>>(new Map());
+  const [currentFetchPage, setCurrentFetchPage] = useState(1);
+  const [allFetchedArtists, setAllFetchedArtists] = useState<Artist[]>([]);
+  const [shouldFetchMore, setShouldFetchMore] = useState(false);
+  const [globalHasMore, setGlobalHasMore] = useState(true);
+  const isFetchingRef = useRef(false);
 
   // Create cache key based on current filters
   const createCacheKey = useCallback(
@@ -38,24 +49,48 @@ export const useOptimizedArtists = ({
     [isSearching, searchQuery, isBookableFilter, selectedGenres]
   );
 
-  // API hooks for current page
+  // Determine which page to fetch
+  const pageToFetch =
+    selectedGenres.length > 0 ? currentFetchPage : currentPage;
+
+  // API hooks for fetching artists
   const allArtistsQuery = useGetAllArtists({
-    page: currentPage,
+    page: pageToFetch,
     limit,
     enabled: !isSearching && !isBookableFilter,
   });
 
   const bookableArtistsQuery = useGetBookableArtists({
-    page: currentPage,
+    page: pageToFetch,
     limit,
     enabled: !isSearching && isBookableFilter,
   });
 
   const searchArtistsQuery = useSearchArtists({
     query: searchQuery,
-    page: currentPage,
+    page: pageToFetch,
     limit,
     enabled: isSearching,
+  });
+
+  // Prefetch next page for normal pagination (no genre filter)
+  const allArtistsNextQuery = useGetAllArtists({
+    page: currentPage + 1,
+    limit,
+    enabled: !isSearching && !isBookableFilter && selectedGenres.length === 0,
+  });
+
+  const bookableArtistsNextQuery = useGetBookableArtists({
+    page: currentPage + 1,
+    limit,
+    enabled: !isSearching && isBookableFilter && selectedGenres.length === 0,
+  });
+
+  const searchArtistsNextQuery = useSearchArtists({
+    query: searchQuery,
+    page: currentPage + 1,
+    limit,
+    enabled: isSearching && selectedGenres.length === 0,
   });
 
   // Get the active query result
@@ -67,80 +102,7 @@ export const useOptimizedArtists = ({
 
   const { data: artistsResponse, isLoading, error } = activeQuery;
 
-  // Check for cached data first
-  const cachedData = getArtistCache(createCacheKey(currentPage));
-
-  // Use cached hasMore if available, otherwise use API response
-  const hasMore =
-    cachedData?.hasMore ?? artistsResponse?.data?.hasMore ?? false;
-
-  // API hooks for page 2 (prefetch when on page 1 and hasMore is true)
-  const allArtistsPage2Query = useGetAllArtists({
-    page: 2,
-    limit,
-    enabled: !isSearching && !isBookableFilter && currentPage === 1 && hasMore,
-  });
-
-  const bookableArtistsPage2Query = useGetBookableArtists({
-    page: 2,
-    limit,
-    enabled: !isSearching && isBookableFilter && currentPage === 1 && hasMore,
-  });
-
-  const searchArtistsPage2Query = useSearchArtists({
-    query: searchQuery,
-    page: 2,
-    limit,
-    enabled: isSearching && currentPage === 1 && hasMore,
-  });
-
-  // API hooks for next page (prefetch when user navigates and hasMore is true)
-  const allArtistsNextQuery = useGetAllArtists({
-    page: currentPage + 1,
-    limit,
-    enabled: !isSearching && !isBookableFilter && currentPage > 1 && hasMore,
-  });
-
-  const bookableArtistsNextQuery = useGetBookableArtists({
-    page: currentPage + 1,
-    limit,
-    enabled: !isSearching && isBookableFilter && currentPage > 1 && hasMore,
-  });
-
-  const searchArtistsNextQuery = useSearchArtists({
-    query: searchQuery,
-    page: currentPage + 1,
-    limit,
-    enabled: isSearching && currentPage > 1 && hasMore,
-  });
-
-  // Apply client-side genre filtering
-  const filteredArtists = useMemo(() => {
-    // Use cached data if available, otherwise use API response
-    const artists = cachedData?.artists || artistsResponse?.data?.artists || [];
-
-    if (selectedGenres.length > 0) {
-      return artists.filter(artist => {
-        const hasMatchingGenre = artist.genres.some(genre =>
-          selectedGenres.includes(genre)
-        );
-        return hasMatchingGenre;
-      });
-    }
-
-    return artists;
-  }, [cachedData?.artists, artistsResponse?.data?.artists, selectedGenres]);
-
-  // Get page 2 query result for prefetching (when on page 1)
-  const page2Query = isSearching
-    ? searchArtistsPage2Query
-    : isBookableFilter
-      ? bookableArtistsPage2Query
-      : allArtistsPage2Query;
-
-  const { data: page2Response } = page2Query;
-
-  // Get next page query result for prefetching
+  // Get next page data for prefetching
   const nextPageQuery = isSearching
     ? searchArtistsNextQuery
     : isBookableFilter
@@ -149,72 +111,201 @@ export const useOptimizedArtists = ({
 
   const { data: nextPageResponse } = nextPageQuery;
 
-  // Cache current page results when they change
+  // Check for cached data
+  const cachedData = getArtistCache(createCacheKey(currentPage));
+
+  // Reset everything when filters change or page changes (for non-filtering scenarios)
   useEffect(() => {
-    if (filteredArtists.length > 0) {
+    setAccumulatedPages(new Map());
+    setCurrentFetchPage(1);
+    setAllFetchedArtists([]);
+    setShouldFetchMore(false);
+    setGlobalHasMore(true);
+    isFetchingRef.current = false;
+  }, [
+    selectedGenres,
+    locationSearch,
+    isSearching,
+    isBookableFilter,
+    searchQuery,
+    currentPage,
+  ]);
+
+  // Handle accumulating artists and triggering recursive fetching
+  useEffect(() => {
+    if (
+      !artistsResponse?.data?.artists ||
+      (selectedGenres.length === 0 && !locationSearch)
+    ) {
+      return;
+    }
+
+    const newArtists = artistsResponse.data.artists;
+    const hasMore = artistsResponse.data.hasMore ?? false;
+
+    // Store this page's data
+    setAccumulatedPages(prev => {
+      const updated = new Map(prev);
+      updated.set(currentFetchPage, newArtists);
+      return updated;
+    });
+
+    // Combine all accumulated artists
+    setAllFetchedArtists(prev => {
+      const existingIds = new Set(prev.map(a => a.id));
+      const newUniqueArtists = newArtists.filter(a => !existingIds.has(a.id));
+      return [...prev, ...newUniqueArtists];
+    });
+
+    setGlobalHasMore(hasMore);
+    isFetchingRef.current = false;
+
+    // After receiving data, check if we need more
+    setShouldFetchMore(true);
+  }, [
+    artistsResponse,
+    currentFetchPage,
+    selectedGenres.length,
+    locationSearch,
+  ]);
+
+  // Apply genre and location filtering to all accumulated artists
+  const filteredArtists = useMemo(() => {
+    let artists = [];
+
+    if (selectedGenres.length === 0 && !locationSearch) {
+      // No filters, return regular paginated data
+      artists = cachedData?.artists || artistsResponse?.data?.artists || [];
+    } else {
+      // Use accumulated artists for filtering (if we have any), otherwise use current page data
+      artists =
+        allFetchedArtists.length > 0
+          ? allFetchedArtists
+          : artistsResponse?.data?.artists || [];
+    }
+
+    // Apply genre filter
+    if (selectedGenres.length > 0) {
+      artists = artists.filter((artist: Artist) =>
+        artist.genres.some(genre => selectedGenres.includes(genre))
+      );
+    }
+
+    // Apply location filter (case-insensitive)
+    if (locationSearch) {
+      artists = artists.filter((artist: Artist) =>
+        artist.location?.toLowerCase().includes(locationSearch.toLowerCase())
+      );
+    }
+
+    return artists;
+  }, [
+    allFetchedArtists,
+    selectedGenres,
+    locationSearch,
+    cachedData?.artists,
+    artistsResponse?.data?.artists,
+  ]);
+
+  // Recursive fetching logic: fetch more pages until we have enough filtered results
+  useEffect(() => {
+    if (
+      (selectedGenres.length === 0 && !locationSearch) ||
+      !shouldFetchMore ||
+      isFetchingRef.current ||
+      isLoading
+    ) {
+      return;
+    }
+
+    const currentFilteredCount = filteredArtists.length;
+
+    // Check if we need to fetch more pages
+    if (currentFilteredCount < limit && globalHasMore) {
+      isFetchingRef.current = true;
+      setShouldFetchMore(false);
+      setCurrentFetchPage(prev => prev + 1);
+    } else {
+      setShouldFetchMore(false);
+    }
+  }, [
+    selectedGenres.length,
+    locationSearch,
+    shouldFetchMore,
+    filteredArtists,
+    limit,
+    globalHasMore,
+    isLoading,
+  ]);
+
+  // Determine final artists to display
+  const displayArtists = useMemo(() => {
+    if (selectedGenres.length === 0 && !locationSearch) {
+      return cachedData?.artists || artistsResponse?.data?.artists || [];
+    }
+    // Return only up to the limit
+    return filteredArtists.slice(0, limit);
+  }, [
+    selectedGenres.length,
+    locationSearch,
+    filteredArtists,
+    limit,
+    cachedData?.artists,
+    artistsResponse?.data?.artists,
+  ]);
+
+  // Determine hasMore for pagination
+  const hasMore = useMemo(() => {
+    if (selectedGenres.length === 0 && !locationSearch) {
+      return cachedData?.hasMore ?? artistsResponse?.data?.hasMore ?? false;
+    }
+    // For filtering, hasMore is true if we have more filtered results or can fetch more pages
+    return filteredArtists.length > limit || globalHasMore;
+  }, [
+    selectedGenres.length,
+    locationSearch,
+    filteredArtists.length,
+    limit,
+    globalHasMore,
+    cachedData?.hasMore,
+    artistsResponse?.data?.hasMore,
+  ]);
+
+  // Cache current page results (only for non-genre filtered queries)
+  useEffect(() => {
+    if (selectedGenres.length > 0) return;
+
+    const rawArtists = artistsResponse?.data?.artists || [];
+    if (rawArtists.length > 0 && !cachedData) {
       const currentPageKey = createCacheKey(currentPage);
       setArtistCache(
         currentPageKey,
-        filteredArtists,
+        rawArtists,
         artistsResponse?.data?.hasMore || false
       );
     }
   }, [
-    filteredArtists,
+    artistsResponse?.data?.artists,
     artistsResponse?.data?.hasMore,
     createCacheKey,
     currentPage,
     setArtistCache,
+    cachedData,
+    selectedGenres.length,
   ]);
 
-  // Cache page 2 results when they load (for prefetching)
+  // Cache next page results for prefetching (only for non-genre filtered queries)
   useEffect(() => {
-    if (page2Response?.data?.artists && page2Response.data.artists.length > 0) {
-      const page2Key = createCacheKey(2);
+    if (selectedGenres.length > 0) return;
 
-      // Apply same genre filtering to page 2
-      let filteredPage2Artists = page2Response.data.artists;
-      if (selectedGenres.length > 0) {
-        filteredPage2Artists = page2Response.data.artists.filter(artist => {
-          const hasMatchingGenre = artist.genres.some(genre =>
-            selectedGenres.includes(genre)
-          );
-          return hasMatchingGenre;
-        });
-      }
-
-      setArtistCache(
-        page2Key,
-        filteredPage2Artists,
-        page2Response.data.hasMore || false
-      );
-    }
-  }, [page2Response, createCacheKey, selectedGenres, setArtistCache]);
-
-  // Cache next page results when they load
-  useEffect(() => {
     if (
       nextPageResponse?.data?.artists &&
       nextPageResponse.data.artists.length > 0
     ) {
       const nextPageKey = createCacheKey(currentPage + 1);
-
-      // Apply same genre filtering to next page
-      let filteredNextPageArtists = nextPageResponse.data.artists;
-      if (selectedGenres.length > 0) {
-        filteredNextPageArtists = nextPageResponse.data.artists.filter(
-          artist => {
-            const hasMatchingGenre = artist.genres.some(genre =>
-              selectedGenres.includes(genre)
-            );
-            return hasMatchingGenre;
-          }
-        );
-      }
-
       setArtistCache(
         nextPageKey,
-        filteredNextPageArtists,
+        nextPageResponse.data.artists,
         nextPageResponse.data.hasMore || false
       );
     }
@@ -222,13 +313,13 @@ export const useOptimizedArtists = ({
     nextPageResponse,
     createCacheKey,
     currentPage,
-    selectedGenres,
     setArtistCache,
+    selectedGenres.length,
   ]);
 
   return {
-    artists: filteredArtists,
-    isLoading: cachedData ? false : isLoading, // Don't show loading if we have cached data
+    artists: displayArtists,
+    isLoading: cachedData && selectedGenres.length === 0 ? false : isLoading,
     error,
     hasMore,
   };

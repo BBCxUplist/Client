@@ -326,13 +326,20 @@ const ProfileTab = ({
             </div>
             <div className='flex flex-wrap gap-2'>
               {[
-                'Pop',
-                'Rock',
+                'Afrobeats',
+                'Afrotech',
+                'Drill',
+                'DnB',
+                'Garage',
+                'Grime',
                 'Hip Hop',
-                'Jazz',
-                'Classical',
-                'Folk',
-                'Metal',
+                'House',
+                'Producer',
+                'Rap',
+                'Traditional',
+                'UKG',
+                'Jungle',
+                'MC',
               ].map(genre => (
                 <button
                   key={genre}
