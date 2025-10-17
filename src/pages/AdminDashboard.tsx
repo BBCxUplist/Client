@@ -3,9 +3,10 @@ import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import OverviewTab from '@/components/admin/OverviewTab';
 import ArtistsTab from '@/components/admin/ArtistsTab';
+import CreateArtistTab from '@/components/admin/CreateArtistTab';
+import ApprovedTab from '@/components/admin/ApprovedTab';
 import UsersTab from '@/components/admin/UsersTab';
 import ReportsTab from '@/components/admin/ReportsTab';
-import RecentActivityTab from '@/components/admin/RecentActivityTab';
 import SettingsTab from '@/components/admin/SettingsTab';
 import { artists } from '@/constants/artists';
 import { formatPrice } from '@/helper';
@@ -84,14 +85,15 @@ interface Report {
 enum AdminTab {
   OVERVIEW = 'overview',
   ARTISTS = 'artists',
+  CREATE_ARTIST = 'create-artist',
+  APPROVED = 'approved',
   USERS = 'users',
   REPORTS = 'reports',
-  RECENT_ACTIVITY = 'recent-activity',
   SETTINGS = 'settings',
 }
 
 // Transform artists data to match admin interface
-const adminArtists: Artist[] = artists.map(artist => ({
+const initialArtists: Artist[] = artists.map(artist => ({
   id: artist.id,
   name: artist.name,
   email: `${artist.slug}@example.com`, // Generate email from slug
@@ -176,6 +178,7 @@ const AdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [adminArtists, setAdminArtists] = useState<Artist[]>(initialArtists);
 
   // Calculate dashboard statistics from real artist data
   const dashboardStats = useMemo(() => {
@@ -196,7 +199,7 @@ const AdminDashboard = () => {
       totalRevenue,
       featuredArtists,
     };
-  }, []);
+  }, [adminArtists]);
 
   // Filtering logic
   const filteredArtists = useMemo(() => {
@@ -208,7 +211,7 @@ const AdminDashboard = () => {
         filterStatus === 'all' || artist.status === filterStatus;
       return matchesSearch && matchesStatus;
     });
-  }, [searchTerm, filterStatus]);
+  }, [searchTerm, filterStatus, adminArtists]);
 
   const filteredUsers = useMemo(() => {
     return dummyUsers.filter(user => {
@@ -228,6 +231,43 @@ const AdminDashboard = () => {
   ) => {
     console.log(`Changing ${type} ${id} status to ${newStatus}`);
     // Implement status change logic here
+  };
+
+  const handleCreateArtist = async (artistData: any) => {
+    try {
+      // TODO: Implement API call to create artist
+      console.log('Creating artist:', artistData);
+
+      // For now, add to local state
+      const newArtist: Artist = {
+        id: Date.now().toString(),
+        name: artistData.displayName,
+        email: artistData.email,
+        status: ArtistStatus.APPEAL, // New artists start with appeal status
+        joinDate: new Date().toISOString(),
+        bookings: 0,
+        revenue: 0,
+        slug: artistData.username,
+        avatar: artistData.avatar,
+        bio: artistData.bio,
+        price: artistData.price,
+        genres: artistData.genres,
+        isBookable: artistData.isBookable,
+        appealStatus: 'pending',
+        featured: false,
+        createdAt: new Date().toISOString(),
+      };
+
+      setAdminArtists(prev => [newArtist, ...prev]);
+
+      // TODO: Send email to artist with login credentials
+      alert(
+        `Artist account created! Login credentials sent to ${artistData.email}`
+      );
+    } catch (error) {
+      console.error('Error creating artist:', error);
+      alert('Failed to create artist account');
+    }
   };
 
   const handleLogout = () => {
@@ -305,6 +345,8 @@ const AdminDashboard = () => {
                   [
                     { id: 'overview', label: 'Overview' },
                     { id: 'artists', label: 'Artists' },
+                    { id: 'create-artist', label: 'Create Artist' },
+                    { id: 'approved', label: 'Approved' },
                     { id: 'users', label: 'Users' },
                     { id: 'bookings', label: 'Bookings' },
                     { id: 'reports', label: 'Reports' },
@@ -335,13 +377,14 @@ const AdminDashboard = () => {
                 icon: '/icons/overview.png',
               },
               { id: 'artists', label: 'Artists', icon: '/icons/artist.png' },
+              {
+                id: 'create-artist',
+                label: 'Create Artist',
+                icon: '/icons/artist.png',
+              },
+              { id: 'approved', label: 'Approved', icon: '/icons/check.png' },
               { id: 'users', label: 'Users', icon: '/icons/users.png' },
               { id: 'reports', label: 'Reports', icon: '/icons/report.png' },
-              {
-                id: 'recent-activity',
-                label: 'Recent Activity',
-                icon: '/icons/overview.png',
-              },
               {
                 id: 'settings',
                 label: 'Settings',
@@ -381,13 +424,14 @@ const AdminDashboard = () => {
                 icon: '/icons/overview.png',
               },
               { id: 'artists', label: 'Artists', icon: '/icons/artist.png' },
+              {
+                id: 'create-artist',
+                label: 'Create Artist',
+                icon: '/icons/artist.png',
+              },
+              { id: 'approved', label: 'Approved', icon: '/icons/check.png' },
               { id: 'users', label: 'Users', icon: '/icons/users.png' },
               { id: 'reports', label: 'Reports', icon: '/icons/report.png' },
-              {
-                id: 'recent-activity',
-                label: 'Recent Activity',
-                icon: '/icons/overview.png',
-              },
               {
                 id: 'settings',
                 label: 'Settings',
@@ -433,6 +477,20 @@ const AdminDashboard = () => {
             />
           )}
 
+          {/* Create Artist Tab */}
+          {activeTab === AdminTab.CREATE_ARTIST && (
+            <CreateArtistTab onCreateArtist={handleCreateArtist} />
+          )}
+
+          {/* Approved Tab */}
+          {activeTab === AdminTab.APPROVED && (
+            <ApprovedTab
+              onStatusChange={(id, status) =>
+                console.log(`Artist ${id} ${status}`)
+              }
+            />
+          )}
+
           {/* Users Tab */}
           {activeTab === AdminTab.USERS && (
             <UsersTab
@@ -442,9 +500,6 @@ const AdminDashboard = () => {
               onStatusChange={handleStatusChange}
             />
           )}
-
-          {/* Recent Activity Tab */}
-          {activeTab === AdminTab.RECENT_ACTIVITY && <RecentActivityTab />}
 
           {/* Reports Tab */}
           {activeTab === AdminTab.REPORTS && (
