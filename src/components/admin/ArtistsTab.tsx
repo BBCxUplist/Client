@@ -1,4 +1,12 @@
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+import {
+  useApproveUser,
+  useBanUser,
+  useRejectUser,
+  useDeleteUser,
+  useDemoteUser,
+} from '@/hooks/admin';
 
 interface Artist {
   id: string;
@@ -17,6 +25,7 @@ interface Artist {
   appealStatus: string;
   featured: boolean;
   createdAt: string;
+  isApproved: boolean;
 }
 
 interface ArtistsTabProps {
@@ -25,7 +34,7 @@ interface ArtistsTabProps {
   filteredArtists: Artist[];
   onSearchChange: (value: string) => void;
   onFilterChange: (value: string) => void;
-  onStatusChange: (
+  onStatusChange?: (
     id: string,
     newStatus: string,
     type: 'artist' | 'user'
@@ -38,8 +47,18 @@ const ArtistsTab = ({
   filteredArtists,
   onSearchChange,
   onFilterChange,
-  onStatusChange,
 }: ArtistsTabProps) => {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
+    null
+  );
+
+  // Admin action hooks
+  const approveUser = useApproveUser();
+  const banUser = useBanUser();
+  const rejectUser = useRejectUser();
+  const deleteUser = useDeleteUser();
+  const demoteUser = useDemoteUser();
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'verified':
@@ -53,6 +72,33 @@ const ArtistsTab = ({
       default:
         return 'text-white/60 bg-white/10';
     }
+  };
+
+  const handleApprove = (artistId: string) => {
+    approveUser.mutate(artistId);
+  };
+
+  const handleReject = (artistId: string) => {
+    rejectUser.mutate(artistId);
+  };
+
+  const handleBan = (artistId: string) => {
+    banUser.mutate(artistId);
+  };
+
+  const handleDelete = (artistId: string) => {
+    if (showDeleteConfirm === artistId) {
+      deleteUser.mutate(artistId);
+      setShowDeleteConfirm(null);
+    } else {
+      setShowDeleteConfirm(artistId);
+      // Auto-hide confirmation after 5 seconds
+      setTimeout(() => setShowDeleteConfirm(null), 5000);
+    }
+  };
+
+  const handleDemote = (artistId: string) => {
+    demoteUser.mutate(artistId);
   };
 
   // const getStatusIcon = (status: string) => {
@@ -260,47 +306,80 @@ const ArtistsTab = ({
                   View Documents
                 </button>
               </div>
-              <div className='flex gap-2'>
-                {artist.status === 'appeal' && (
+              <div className='flex flex-wrap gap-2'>
+                {/* Approval actions for pending/appeal artists */}
+                {(artist.status === 'appeal' || !artist.isApproved) && (
                   <>
                     <button
-                      onClick={() =>
-                        onStatusChange(artist.id, 'verified', 'artist')
-                      }
-                      className='bg-green-500/20 border border-green-500/40 text-green-400 px-3 py-1 rounded hover:bg-green-500/30 transition-colors text-sm'
+                      onClick={() => handleApprove(artist.id)}
+                      disabled={approveUser.isPending}
+                      className='bg-green-500/20 border border-green-500/40 text-green-400 px-3 py-1 rounded hover:bg-green-500/30 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed'
                     >
-                      Approve
+                      {approveUser.isPending ? 'Approving...' : 'Approve'}
                     </button>
                     <button
-                      onClick={() =>
-                        onStatusChange(artist.id, 'rejected', 'artist')
-                      }
-                      className='bg-red-500/20 border border-red-500/40 text-red-400 px-3 py-1 rounded hover:bg-red-500/30 transition-colors text-sm'
+                      onClick={() => handleReject(artist.id)}
+                      disabled={rejectUser.isPending}
+                      className='bg-red-500/20 border border-red-500/40 text-red-400 px-3 py-1 rounded hover:bg-red-500/30 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed'
                     >
-                      Reject
+                      {rejectUser.isPending ? 'Rejecting...' : 'Reject'}
                     </button>
                   </>
                 )}
+
+                {/* Ban action for verified artists */}
                 {artist.status === 'verified' && (
                   <button
-                    onClick={() =>
-                      onStatusChange(artist.id, 'suspended', 'artist')
-                    }
-                    className='bg-yellow-500/20 border border-yellow-500/40 text-yellow-400 px-3 py-1 rounded hover:bg-yellow-500/30 transition-colors text-sm'
+                    onClick={() => handleBan(artist.id)}
+                    disabled={banUser.isPending}
+                    className='bg-yellow-500/20 border border-yellow-500/40 text-yellow-400 px-3 py-1 rounded hover:bg-yellow-500/30 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed'
                   >
-                    Suspend
+                    {banUser.isPending ? 'Banning...' : 'Ban Artist'}
                   </button>
                 )}
+
+                {/* Reactivate action for banned/suspended artists */}
                 {artist.status === 'suspended' && (
                   <button
-                    onClick={() =>
-                      onStatusChange(artist.id, 'verified', 'artist')
-                    }
-                    className='bg-green-500/20 border border-green-500/40 text-green-400 px-3 py-1 rounded hover:bg-green-500/30 transition-colors text-sm'
+                    onClick={() => handleApprove(artist.id)}
+                    disabled={approveUser.isPending}
+                    className='bg-green-500/20 border border-green-500/40 text-green-400 px-3 py-1 rounded hover:bg-green-500/30 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed'
                   >
-                    Reactivate
+                    {approveUser.isPending ? 'Reactivating...' : 'Reactivate'}
                   </button>
                 )}
+
+                {/* Demote action - convert artist to regular user */}
+                <button
+                  onClick={() => handleDemote(artist.id)}
+                  disabled={demoteUser.isPending}
+                  className='bg-purple-500/20 border border-purple-500/40 text-purple-400 px-3 py-1 rounded hover:bg-purple-500/30 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed'
+                  title='Demote to regular user'
+                >
+                  {demoteUser.isPending ? 'Demoting...' : 'Demote'}
+                </button>
+
+                {/* Delete action with confirmation */}
+                <button
+                  onClick={() => handleDelete(artist.id)}
+                  disabled={deleteUser.isPending}
+                  className={`border px-3 py-1 rounded transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
+                    showDeleteConfirm === artist.id
+                      ? 'bg-red-500/40 border-red-500/60 text-white'
+                      : 'bg-red-500/20 border-red-500/40 text-red-400 hover:bg-red-500/30'
+                  }`}
+                  title={
+                    showDeleteConfirm === artist.id
+                      ? 'Click again to confirm deletion'
+                      : 'Delete artist account'
+                  }
+                >
+                  {deleteUser.isPending
+                    ? 'Deleting...'
+                    : showDeleteConfirm === artist.id
+                      ? 'Confirm Delete?'
+                      : 'Delete'}
+                </button>
               </div>
             </div>
           </motion.div>

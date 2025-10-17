@@ -3,8 +3,9 @@ import { format } from 'date-fns';
 import { ArrowLeft, Phone, MoreVertical, Loader2 } from 'lucide-react';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
+import QuoteMessageModal from './QuoteMessageModal';
 import { useMessageHistory } from '@/hooks/useChat';
-import type { Conversation, Message } from '@/types/chat';
+import type { Conversation, Message, QuoteData } from '@/types/chat';
 
 interface ChatWindowProps {
   conversationId: string;
@@ -13,8 +14,10 @@ interface ChatWindowProps {
     id: string;
     name: string;
     avatar?: string;
+    role?: string;
   };
   onSendMessage: (content: string) => void;
+  onSendQuote?: (quoteData: QuoteData, text?: string) => void;
   onTyping: (isTyping: boolean) => void;
   onBack: () => void;
   showBackButton: boolean;
@@ -26,6 +29,7 @@ const ChatWindow = ({
   conversation,
   currentUser,
   onSendMessage,
+  onSendQuote,
   onTyping,
   onBack,
   showBackButton,
@@ -36,6 +40,9 @@ const ChatWindow = ({
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
+  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+
+  const isArtist = currentUser.role === 'artist';
 
   // Fetch message history
   const { data: historyData, isLoading } = useMessageHistory(conversationId);
@@ -61,6 +68,13 @@ const ChatWindow = ({
         onTyping(false);
       }, 3000);
       setTypingTimeout(timeout);
+    }
+  };
+
+  const handleSendQuote = (quoteData: QuoteData, text?: string) => {
+    if (onSendQuote) {
+      onSendQuote(quoteData, text);
+      setIsQuoteModalOpen(false);
     }
   };
 
@@ -256,6 +270,15 @@ const ChatWindow = ({
       <MessageInput
         onSendMessage={onSendMessage}
         onTypingChange={handleTypingChange}
+        onOpenQuoteModal={() => setIsQuoteModalOpen(true)}
+        isArtist={isArtist}
+      />
+
+      {/* Quote Modal */}
+      <QuoteMessageModal
+        isOpen={isQuoteModalOpen}
+        onClose={() => setIsQuoteModalOpen(false)}
+        onSendQuote={handleSendQuote}
       />
     </div>
   );

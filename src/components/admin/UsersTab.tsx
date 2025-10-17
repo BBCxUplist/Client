@@ -1,4 +1,6 @@
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { useBanUser, useDeleteUser, usePromoteUser } from '@/hooks/admin';
 
 interface User {
   id: string;
@@ -14,7 +16,7 @@ interface UsersTabProps {
   searchTerm: string;
   filteredUsers: User[];
   onSearchChange: (value: string) => void;
-  onStatusChange: (
+  onStatusChange?: (
     id: string,
     newStatus: string,
     type: 'artist' | 'user'
@@ -25,8 +27,58 @@ const UsersTab = ({
   searchTerm,
   filteredUsers,
   onSearchChange,
-  onStatusChange,
 }: UsersTabProps) => {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
+    null
+  );
+  const [showPromoteModal, setShowPromoteModal] = useState<string | null>(null);
+
+  // Admin action hooks
+  const banUser = useBanUser();
+  const deleteUser = useDeleteUser();
+  const promoteUser = usePromoteUser();
+
+  const handleBan = (userId: string) => {
+    banUser.mutate(userId);
+  };
+
+  const handleUnban = (userId: string) => {
+    // Approving will remove the ban flag
+    banUser.mutate(userId);
+  };
+
+  const handleDelete = (userId: string) => {
+    if (showDeleteConfirm === userId) {
+      deleteUser.mutate(userId);
+      setShowDeleteConfirm(null);
+    } else {
+      setShowDeleteConfirm(userId);
+      // Auto-hide confirmation after 5 seconds
+      setTimeout(() => setShowDeleteConfirm(null), 5000);
+    }
+  };
+
+  const handlePromoteToArtist = (userId: string) => {
+    promoteUser.mutate({
+      userId,
+      data: {
+        role: 'artist',
+        artistType: 'none', // Default, can be changed later
+      },
+    });
+    setShowPromoteModal(null);
+  };
+
+  const handlePromoteToAdmin = (userId: string) => {
+    promoteUser.mutate({
+      userId,
+      data: {
+        role: 'admin',
+      },
+    });
+    setShowPromoteModal(null);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
@@ -198,41 +250,81 @@ const UsersTab = ({
                   View History
                 </button>
               </div>
-              <div className='flex gap-2'>
-                {user.status === 'suspended' && (
+              <div className='flex flex-wrap gap-2'>
+                {/* Ban/Unban actions */}
+                {user.status === 'banned' ? (
                   <button
-                    onClick={() => onStatusChange(user.id, 'active', 'user')}
-                    className='bg-green-500/20 border border-green-500/40 text-green-400 px-3 py-1 rounded hover:bg-green-500/30 transition-colors text-sm'
+                    onClick={() => handleUnban(user.id)}
+                    disabled={banUser.isPending}
+                    className='bg-green-500/20 border border-green-500/40 text-green-400 px-3 py-1 rounded hover:bg-green-500/30 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed'
                   >
-                    Reactivate
+                    {banUser.isPending ? 'Unbanning...' : 'Unban'}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleBan(user.id)}
+                    disabled={banUser.isPending}
+                    className='bg-red-500/20 border border-red-500/40 text-red-400 px-3 py-1 rounded hover:bg-red-500/30 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed'
+                  >
+                    {banUser.isPending ? 'Banning...' : 'Ban'}
                   </button>
                 )}
-                {user.status === 'active' && (
-                  <>
+
+                {/* Promote actions */}
+                {showPromoteModal === user.id ? (
+                  <div className='flex gap-1'>
                     <button
-                      onClick={() =>
-                        onStatusChange(user.id, 'suspended', 'user')
-                      }
-                      className='bg-yellow-500/20 border border-yellow-500/40 text-yellow-400 px-3 py-1 rounded hover:bg-yellow-500/30 transition-colors text-sm'
+                      onClick={() => handlePromoteToArtist(user.id)}
+                      disabled={promoteUser.isPending}
+                      className='bg-blue-500/20 border border-blue-500/40 text-blue-400 px-2 py-1 rounded hover:bg-blue-500/30 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed'
                     >
-                      Suspend
+                      To Artist
                     </button>
                     <button
-                      onClick={() => onStatusChange(user.id, 'banned', 'user')}
-                      className='bg-red-500/20 border border-red-500/40 text-red-400 px-3 py-1 rounded hover:bg-red-500/30 transition-colors text-sm'
+                      onClick={() => handlePromoteToAdmin(user.id)}
+                      disabled={promoteUser.isPending}
+                      className='bg-purple-500/20 border border-purple-500/40 text-purple-400 px-2 py-1 rounded hover:bg-purple-500/30 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed'
                     >
-                      Ban
+                      To Admin
                     </button>
-                  </>
-                )}
-                {user.status === 'banned' && (
+                    <button
+                      onClick={() => setShowPromoteModal(null)}
+                      className='bg-white/10 border border-white/20 text-white px-2 py-1 rounded hover:bg-white/20 transition-colors text-xs'
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
                   <button
-                    onClick={() => onStatusChange(user.id, 'active', 'user')}
-                    className='bg-green-500/20 border border-green-500/40 text-green-400 px-3 py-1 rounded hover:bg-green-500/30 transition-colors text-sm'
+                    onClick={() => setShowPromoteModal(user.id)}
+                    className='bg-blue-500/20 border border-blue-500/40 text-blue-400 px-3 py-1 rounded hover:bg-blue-500/30 transition-colors text-sm'
+                    title='Promote user'
                   >
-                    Unban
+                    Promote
                   </button>
                 )}
+
+                {/* Delete action with confirmation */}
+                <button
+                  onClick={() => handleDelete(user.id)}
+                  disabled={deleteUser.isPending}
+                  className={`border px-3 py-1 rounded transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
+                    showDeleteConfirm === user.id
+                      ? 'bg-red-500/40 border-red-500/60 text-white'
+                      : 'bg-orange-500/20 border-orange-500/40 text-orange-400 hover:bg-orange-500/30'
+                  }`}
+                  title={
+                    showDeleteConfirm === user.id
+                      ? 'Click again to confirm deletion'
+                      : 'Delete user account'
+                  }
+                >
+                  {deleteUser.isPending
+                    ? 'Deleting...'
+                    : showDeleteConfirm === user.id
+                      ? 'Confirm Delete?'
+                      : 'Delete'}
+                </button>
               </div>
             </div>
           </motion.div>

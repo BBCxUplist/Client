@@ -8,7 +8,7 @@ import ChatWindow from '@/components/messages/ChatWindow';
 import { useStore } from '@/stores/store';
 import { useConversations, CHAT_QUERY_KEYS } from '@/hooks/useChat';
 import { useChatWebSocket } from '@/hooks/useChatWebSocket';
-import type { Message } from '@/types/chat';
+import type { Message, QuoteData } from '@/types/chat';
 
 const Messages = () => {
   const { user } = useStore();
@@ -30,6 +30,7 @@ const Messages = () => {
     leaveConversation,
     sendMessage,
     sendTypingIndicator,
+    sendQuote,
   } = useChatWebSocket({
     onMessage: (message: Message) => {
       // Update message history cache
@@ -109,6 +110,12 @@ const Messages = () => {
     sendMessage(selectedConversationId, content.trim());
   };
 
+  const handleSendQuote = (quoteData: QuoteData, text?: string) => {
+    if (!selectedConversationId) return;
+
+    sendQuote(selectedConversationId, quoteData, text);
+  };
+
   const handleTyping = (isTyping: boolean) => {
     if (!selectedConversationId) return;
     sendTypingIndicator(selectedConversationId, isTyping);
@@ -131,7 +138,7 @@ const Messages = () => {
   }
 
   return (
-    <div className='min-h-screen bg-neutral-950'>
+    <div className='min-h-screen bg-neutral-950 '>
       <Navbar />
 
       <div className='h-[calc(100vh-80px)] flex'>
@@ -157,9 +164,15 @@ const Messages = () => {
               conversationId={selectedConversation.id}
               conversation={selectedConversation}
               currentUser={
-                user as { id: string; name: string; avatar?: string }
+                user as {
+                  id: string;
+                  name: string;
+                  avatar?: string;
+                  role?: string;
+                }
               }
               onSendMessage={handleSendMessage}
+              onSendQuote={handleSendQuote}
               onTyping={handleTyping}
               onBack={handleBackToList}
               showBackButton={isMobileView}

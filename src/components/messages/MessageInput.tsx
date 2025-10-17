@@ -1,12 +1,19 @@
 import { useState, useRef } from 'react';
-import { Send, Smile } from 'lucide-react';
+import { Send, Smile, DollarSign } from 'lucide-react';
 
 interface MessageInputProps {
   onSendMessage: (content: string) => void;
   onTypingChange?: (isTyping: boolean) => void;
+  onOpenQuoteModal?: () => void;
+  isArtist?: boolean;
 }
 
-const MessageInput = ({ onSendMessage, onTypingChange }: MessageInputProps) => {
+const MessageInput = ({
+  onSendMessage,
+  onTypingChange,
+  onOpenQuoteModal,
+  isArtist = false,
+}: MessageInputProps) => {
   const [message, setMessage] = useState('');
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isTypingRef = useRef(false);
@@ -72,26 +79,38 @@ const MessageInput = ({ onSendMessage, onTypingChange }: MessageInputProps) => {
   };
 
   return (
-    <div className='p-4 border-t border-white/10 bg-neutral-900'>
+    <div className='flex items-end justify-between p-4 border-t border-white/10 bg-neutral-900'>
       {/* Message input */}
-      <form onSubmit={handleSubmit} className='flex items-end gap-3'>
+      <form onSubmit={handleSubmit} className='w-full flex gap-3 items-end'>
+        {/* Quote button (for artists only) */}
+        {isArtist && onOpenQuoteModal && (
+          <button
+            type='button'
+            onClick={onOpenQuoteModal}
+            className='flex-shrink-0 w-12 h-12 flex items-center justify-center bg-white/5 text-orange-500 border border-white/20 hover:bg-orange-500/10 hover:border-orange-500/50 transition-all'
+            title='Send Quote'
+          >
+            <DollarSign className='w-5 h-5' />
+          </button>
+        )}
+
         {/* Text input */}
-        <div className='flex-1 relative'>
+        <div className='w-full relative flex'>
           <textarea
             value={message}
             onChange={handleChange}
             onKeyPress={handleKeyPress}
             placeholder='Type a message...'
             rows={1}
-            className='w-full bg-white/5 border border-white/20 text-white placeholder:text-white/50 p-3 pr-12 resize-none focus:border-orange-500 focus:outline-none transition-colors min-h-[48px] max-h-32'
+            className='w-full bg-white/5 border border-white/20 text-white placeholder:text-white/50 p-3 pr-12 resize-none focus:border-orange-500 focus:outline-none transition-colors '
             style={{
-              height: 'auto',
+              height: '48px',
               minHeight: '48px',
               maxHeight: '128px',
             }}
             onInput={e => {
               const target = e.target as HTMLTextAreaElement;
-              target.style.height = 'auto';
+              target.style.height = '48px';
               target.style.height = `${Math.min(target.scrollHeight, 128)}px`;
             }}
           />
@@ -109,7 +128,7 @@ const MessageInput = ({ onSendMessage, onTypingChange }: MessageInputProps) => {
         <button
           type='submit'
           disabled={!message.trim()}
-          className={`flex-shrink-0 p-3 transition-all duration-300 ${
+          className={`flex-shrink-0 w-12 h-12 flex items-center justify-center transition-all duration-300 ${
             message.trim()
               ? 'bg-orange-500 text-black hover:bg-orange-600'
               : 'bg-white/5 text-white/30 cursor-not-allowed'

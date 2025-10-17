@@ -5,6 +5,7 @@ import type {
   WebSocketMessage,
   SendMessagePayload,
   Message,
+  QuoteData,
 } from '@/types/chat';
 
 const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:3000/ws';
@@ -154,6 +155,26 @@ export const useChatWebSocket = ({
     [readyState, sendJsonMessage]
   );
 
+  // Send a quote message
+  const sendQuote = useCallback(
+    (conversationId: string, quoteData: QuoteData, text?: string) => {
+      if (readyState === ReadyState.OPEN) {
+        const payload: SendMessagePayload = {
+          type: 'quote',
+          conversationId,
+          quoteData,
+        };
+
+        if (text) {
+          payload.text = text;
+        }
+
+        sendJsonMessage(payload);
+      }
+    },
+    [readyState, sendJsonMessage]
+  );
+
   const connectionStatus = {
     [ReadyState.CONNECTING]: 'Connecting',
     [ReadyState.OPEN]: 'Connected',
@@ -170,5 +191,6 @@ export const useChatWebSocket = ({
     leaveConversation,
     sendMessage,
     sendTypingIndicator,
+    sendQuote,
   };
 };

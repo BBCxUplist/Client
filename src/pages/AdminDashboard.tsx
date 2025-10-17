@@ -1,5 +1,5 @@
 // pages/AdminDashboard.tsx
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import OverviewTab from '@/components/admin/OverviewTab';
 import ArtistsTab from '@/components/admin/ArtistsTab';
@@ -9,79 +9,10 @@ import UsersTab from '@/components/admin/UsersTab';
 import ReportsTab from '@/components/admin/ReportsTab';
 import RecentActivityTab from '@/components/admin/RecentActivityTab';
 import SettingsTab from '@/components/admin/SettingsTab';
-import { artists } from '@/constants/artists';
 import { formatPrice } from '@/helper';
-
-enum ArtistStatus {
-  VERIFIED = 'verified',
-  APPEAL = 'appeal',
-  REJECTED = 'rejected',
-  SUSPENDED = 'suspended',
-}
-
-interface Artist {
-  id: string;
-  name: string;
-  email: string;
-  status: ArtistStatus;
-  joinDate: string;
-  bookings: number;
-  revenue: number;
-  slug: string;
-  avatar: string | undefined;
-  bio: string | undefined;
-  price: number;
-  genres: string[];
-  isBookable: boolean;
-  appealStatus: string;
-  featured: boolean;
-  createdAt: string;
-}
-
-enum UserStatus {
-  ACTIVE = 'active',
-  SUSPENDED = 'suspended',
-  BANNED = 'banned',
-}
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  status: UserStatus;
-  joinDate: string;
-  bookings: number;
-  totalSpent: number;
-}
-
-enum ReportType {
-  CONTENT = 'content',
-  USER = 'user',
-  ARTIST = 'artist',
-}
-
-enum ReportStatus {
-  PENDING = 'pending',
-  RESOLVED = 'resolved',
-  DISMISSED = 'dismissed',
-}
-
-enum ReportPriority {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-}
-
-interface Report {
-  id: string;
-  type: ReportType;
-  reportedBy: string;
-  reportedItem: string;
-  reason: string;
-  status: ReportStatus;
-  priority: ReportPriority;
-  createdAt: string;
-}
+import { useGetAllUsers, useHealthCheck } from '@/hooks/admin';
+import { useStore } from '@/stores/store';
+import toast from 'react-hot-toast';
 
 enum AdminTab {
   OVERVIEW = 'overview',
@@ -94,105 +25,48 @@ enum AdminTab {
   SETTINGS = 'settings',
 }
 
-// Transform artists data to match admin interface
-const initialArtists: Artist[] = artists.map(artist => ({
-  id: artist.id,
-  name: artist.name,
-  email: `${artist.slug}@example.com`, // Generate email from slug
-  status:
-    artist.appealStatus === 'approved'
-      ? ArtistStatus.VERIFIED
-      : artist.appealStatus === 'pending'
-        ? ArtistStatus.APPEAL
-        : artist.appealStatus === 'rejected'
-          ? ArtistStatus.REJECTED
-          : ArtistStatus.SUSPENDED,
-  joinDate: artist.createdAt.split('T')[0], // Extract date from ISO string
-  bookings: Math.floor(Math.random() * 50) + 10, // Random bookings for demo
-  revenue: artist.basePrice * (Math.floor(Math.random() * 20) + 5), // Random revenue based on price
-  slug: artist.slug,
-  avatar: artist.avatar,
-  bio: artist.bio,
-  price: artist.basePrice,
-  genres: artist.genres,
-  isBookable: artist.isBookable,
-  appealStatus: artist.appealStatus,
-  featured: artist.featured || false,
-  createdAt: artist.createdAt,
-}));
-
-const dummyUsers: User[] = [
-  {
-    id: '1',
-    name: 'Vikash Gupta',
-    email: 'vikash@example.com',
-    status: UserStatus.ACTIVE,
-    joinDate: '2024-01-20',
-    bookings: 8,
-    totalSpent: 240000,
-  },
-  {
-    id: '2',
-    name: 'Sunita Rao',
-    email: 'sunita@example.com',
-    status: UserStatus.ACTIVE,
-    joinDate: '2024-02-15',
-    bookings: 5,
-    totalSpent: 150000,
-  },
-  {
-    id: '3',
-    name: 'Rahul Verma',
-    email: 'rahul@example.com',
-    status: UserStatus.SUSPENDED,
-    joinDate: '2024-03-01',
-    bookings: 2,
-    totalSpent: 60000,
-  },
-];
-
-const dummyReports: Report[] = [
-  {
-    id: '1',
-    type: ReportType.USER,
-    reportedBy: 'Rajesh Kumar',
-    reportedItem: 'Rahul Verma',
-    reason: 'Inappropriate behavior during event',
-    status: ReportStatus.PENDING,
-    priority: ReportPriority.HIGH,
-    createdAt: '2024-12-20',
-  },
-  {
-    id: '2',
-    type: ReportType.CONTENT,
-    reportedBy: 'User123',
-    reportedItem: 'Artist Profile Content',
-    reason: 'Misleading information',
-    status: ReportStatus.RESOLVED,
-    priority: ReportPriority.MEDIUM,
-    createdAt: '2024-12-18',
-  },
-];
-
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { user, logout } = useStore();
   const [activeTab, setActiveTab] = useState<AdminTab>(AdminTab.OVERVIEW);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [adminArtists, setAdminArtists] = useState<Artist[]>(initialArtists);
 
-  // Calculate dashboard statistics from real artist data
+  // Fetch real data from APIs
+  const { data: usersData, isLoading: usersLoading } = useGetAllUsers();
+  const { data: healthData } = useHealthCheck();
+
+  // Check if user is admin
+  useEffect(() => {
+    if (user && user.role !== 'admin') {
+      toast.error('Unauthorized access. Admin only.');
+      navigate('/');
+    }
+  }, [user, navigate]);
+
+  // Calculate dashboard statistics from users data (includes artists)
   const dashboardStats = useMemo(() => {
-    const totalArtists = adminArtists.length;
-    const verifiedArtists = adminArtists.filter(
-      a => a.status === ArtistStatus.VERIFIED
+    const allUsers = usersData?.data?.users || [];
+
+    // Filter only artists from users
+    const artists = allUsers.filter((u: any) => u.isArtist === true);
+
+    const totalArtists = artists.length;
+    // Verified artists are those with isApproved === true
+    const verifiedArtists = artists.filter(
+      (a: any) => a.isApproved === true
     ).length;
-    const pendingArtists = adminArtists.filter(
-      a => a.status === ArtistStatus.APPEAL
-    ).length;
-    const totalRevenue = adminArtists.reduce((sum, a) => sum + a.revenue, 0);
-    const featuredArtists = adminArtists.filter(a => a.featured).length;
+    // Pending artists are those with isApproved === false or not approved
+    const pendingArtists = artists.filter((a: any) => !a.isApproved).length;
+
+    // Calculate revenue based on base prices (simplified calculation)
+    const totalRevenue = artists.reduce(
+      (sum: number, a: any) => sum + (a.basePrice || 0) * 10,
+      0
+    );
+
+    const featuredArtists = artists.filter((a: any) => a.featured).length;
 
     return {
       totalArtists,
@@ -201,22 +75,84 @@ const AdminDashboard = () => {
       totalRevenue,
       featuredArtists,
     };
-  }, [adminArtists]);
+  }, [usersData]);
 
-  // Filtering logic
+  // Get real artists data for filtering
+  const adminArtists = useMemo(() => {
+    const allUsers = usersData?.data?.users || [];
+
+    // Filter only artists from users
+    const artists = allUsers.filter((u: any) => u.isArtist === true);
+
+    return artists.map((artist: any) => {
+      // Determine status based on isApproved and banned flags
+      let status: 'verified' | 'appeal' | 'rejected' | 'suspended' = 'appeal';
+      if (artist.banned) {
+        status = 'suspended';
+      } else if (artist.isApproved) {
+        status = 'verified';
+      } else if (artist.appealStatus === 'rejected') {
+        status = 'rejected';
+      }
+
+      return {
+        id: artist.id,
+        name: artist.displayName || artist.username,
+        email: artist.useremail,
+        status,
+        joinDate: new Date(artist.createdAt).toISOString().split('T')[0],
+        bookings: 0, // TODO: Add bookings count from API
+        revenue: (artist.basePrice || 0) * 10, // Simplified calculation
+        slug: artist.username,
+        avatar: artist.avatar,
+        bio: artist.bio,
+        price: artist.basePrice,
+        genres: artist.genres || [],
+        isBookable: artist.isBookable,
+        appealStatus: artist.appealStatus,
+        isApproved: artist.isApproved,
+        featured: artist.featured || false,
+        createdAt: artist.createdAt,
+      };
+    });
+  }, [usersData]);
+
+  // Get real users data for filtering
+  const allUsers = useMemo(() => {
+    const apiUsers = usersData?.data?.users || [];
+    return apiUsers.map((user: any) => ({
+      id: user.id,
+      name: user.displayName || user.username,
+      email: user.useremail,
+      status: (user.banned
+        ? 'banned'
+        : user.isActive
+          ? 'active'
+          : 'suspended') as 'active' | 'suspended' | 'banned',
+      joinDate: new Date(user.createdAt).toISOString().split('T')[0],
+      bookings: 0, // TODO: Add bookings count from API
+      totalSpent: 0, // TODO: Add total spent from API
+    }));
+  }, [usersData]);
+
+  // Filtering logic for artists
   const filteredArtists = useMemo(() => {
-    return adminArtists.filter(artist => {
+    return adminArtists.filter((artist: any) => {
       const matchesSearch =
         artist.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         artist.email.toLowerCase().includes(searchTerm.toLowerCase());
+
+      // Filter by status
       const matchesStatus =
         filterStatus === 'all' || artist.status === filterStatus;
+
       return matchesSearch && matchesStatus;
     });
   }, [searchTerm, filterStatus, adminArtists]);
 
+  // Filtering logic for users
   const filteredUsers = useMemo(() => {
-    return dummyUsers.filter(user => {
+    return allUsers.filter((user: any) => {
       const matchesSearch =
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -224,58 +160,47 @@ const AdminDashboard = () => {
         filterStatus === 'all' || user.status === filterStatus;
       return matchesSearch && matchesStatus;
     });
-  }, [searchTerm, filterStatus]);
+  }, [searchTerm, filterStatus, allUsers]);
 
-  const handleStatusChange = (
-    id: string,
-    newStatus: string,
-    type: 'artist' | 'user'
-  ) => {
-    console.log(`Changing ${type} ${id} status to ${newStatus}`);
-    // Implement status change logic here
-  };
+  // No longer needed - actions are handled directly in ArtistsTab
+  // const handleStatusChange = (
+  //   id: string,
+  //   newStatus: string,
+  //   type: 'artist' | 'user'
+  // ) => {
+  //   console.log(`Changing ${type} ${id} status to ${newStatus}`);
+  // };
 
   const handleCreateArtist = async (artistData: any) => {
+    console.log('Creating artist:', artistData);
+    // TODO: Use useCreateArtist hook from admin hooks
+    toast('Artist creation feature coming soon', {
+      icon: 'ℹ️',
+    });
+  };
+
+  const handleLogout = async () => {
     try {
-      // TODO: Implement API call to create artist
-      console.log('Creating artist:', artistData);
-
-      // For now, add to local state
-      const newArtist: Artist = {
-        id: Date.now().toString(),
-        name: artistData.displayName,
-        email: artistData.email,
-        status: ArtistStatus.APPEAL, // New artists start with appeal status
-        joinDate: new Date().toISOString(),
-        bookings: 0,
-        revenue: 0,
-        slug: artistData.username,
-        avatar: artistData.avatar,
-        bio: artistData.bio,
-        price: artistData.price,
-        genres: artistData.genres,
-        isBookable: artistData.isBookable,
-        appealStatus: 'pending',
-        featured: false,
-        createdAt: new Date().toISOString(),
-      };
-
-      setAdminArtists(prev => [newArtist, ...prev]);
-
-      // TODO: Send email to artist with login credentials
-      alert(
-        `Artist account created! Login credentials sent to ${artistData.email}`
-      );
+      await logout();
+      toast.success('Logged out successfully');
+      navigate('/auth');
     } catch (error) {
-      console.error('Error creating artist:', error);
-      alert('Failed to create artist account');
+      console.error('Logout error:', error);
+      toast.error('Failed to logout');
     }
   };
 
-  const handleLogout = () => {
-    // Implement logout logic
-    navigate('/admin');
-  };
+  // Show loading state
+  if (usersLoading) {
+    return (
+      <div className='min-h-screen bg-neutral-950 flex items-center justify-center'>
+        <div className='text-center'>
+          <div className='animate-spin w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full mx-auto mb-4'></div>
+          <p className='text-white text-lg'>Loading admin dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='min-h-screen flex flex-col'>
@@ -308,6 +233,24 @@ const AdminDashboard = () => {
                 <span className='text-orange-400'>
                   Total Revenue: {formatPrice(dashboardStats.totalRevenue)}
                 </span>
+                {healthData && (
+                  <span
+                    className={`flex items-center gap-1 ${
+                      healthData.status === 'OK'
+                        ? 'text-green-400'
+                        : 'text-red-400'
+                    }`}
+                  >
+                    <span
+                      className={`w-2 h-2 rounded-full ${
+                        healthData.status === 'OK'
+                          ? 'bg-green-400'
+                          : 'bg-red-400'
+                      }`}
+                    ></span>
+                    System: {healthData.status}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -486,7 +429,6 @@ const AdminDashboard = () => {
               filteredArtists={filteredArtists}
               onSearchChange={setSearchTerm}
               onFilterChange={setFilterStatus}
-              onStatusChange={handleStatusChange}
             />
           )}
 
@@ -510,14 +452,11 @@ const AdminDashboard = () => {
               searchTerm={searchTerm}
               filteredUsers={filteredUsers}
               onSearchChange={setSearchTerm}
-              onStatusChange={handleStatusChange}
             />
           )}
 
           {/* Reports Tab */}
-          {activeTab === AdminTab.REPORTS && (
-            <ReportsTab dummyReports={dummyReports} />
-          )}
+          {activeTab === AdminTab.REPORTS && <ReportsTab dummyReports={[]} />}
 
           {/* Recent Activity Tab */}
           {activeTab === AdminTab.RECENT_ACTIVITY && <RecentActivityTab />}

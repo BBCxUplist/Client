@@ -1,5 +1,10 @@
 import { motion } from 'framer-motion';
 import { formatPrice } from '@/helper';
+import {
+  useGetActivityStats,
+  useGetAllReports,
+  useHealthCheck,
+} from '@/hooks/admin';
 
 interface OverviewTabProps {
   dashboardStats: {
@@ -12,6 +17,25 @@ interface OverviewTabProps {
 }
 
 const OverviewTab = ({ dashboardStats }: OverviewTabProps) => {
+  // Fetch real-time data
+  const { data: activityStats } = useGetActivityStats({ days: 30 });
+  const { data: reportsData } = useGetAllReports({
+    status: 'pending',
+    limit: 10,
+  });
+  const { data: healthData } = useHealthCheck();
+
+  // Calculate totals from activity stats
+  const totalRegistrations =
+    activityStats?.data?.stats?.find(s => s.action === 'user_registered')
+      ?.count || 0;
+
+  const totalBookings =
+    activityStats?.data?.stats?.find(s => s.action === 'booking_created')
+      ?.count || 0;
+
+  const pendingReportsCount = reportsData?.data?.total || 0;
+
   // Use real data from dashboard
   const stats = [
     {
@@ -89,7 +113,7 @@ const OverviewTab = ({ dashboardStats }: OverviewTabProps) => {
         ))}
       </div>
 
-      {/* Top Artists by Revenue */}
+      {/* Recent Activity Stats */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -97,58 +121,89 @@ const OverviewTab = ({ dashboardStats }: OverviewTabProps) => {
         className='bg-white/5 border border-white/10 p-6'
       >
         <h3 className='text-white font-semibold text-lg mb-4'>
-          Top Artists by Revenue
+          Activity Overview (Last 30 Days)
         </h3>
         <div className='space-y-3'>
           <div className='flex items-center justify-between p-3 bg-white/5 border border-white/10'>
             <div className='flex items-center gap-3'>
-              <div className='w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-black text-sm font-bold'>
-                D
+              <div className='w-8 h-8 bg-green-500/20 border border-green-500/30 flex items-center justify-center'>
+                <svg
+                  className='w-4 h-4 text-green-400'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
+                  />
+                </svg>
               </div>
               <div>
-                <p className='text-white font-semibold'>Divine</p>
-                <p className='text-white/60 text-xs'>Hip-Hop, Rap</p>
+                <p className='text-white font-semibold'>New Registrations</p>
+                <p className='text-white/60 text-xs'>Users joined</p>
               </div>
             </div>
             <div className='text-right'>
-              <p className='text-orange-400 font-bold'>
-                {formatPrice(2500000)}
+              <p className='text-green-400 font-bold text-xl'>
+                {totalRegistrations}
               </p>
-              <p className='text-white/60 text-xs'>₹25L</p>
             </div>
           </div>
           <div className='flex items-center justify-between p-3 bg-white/5 border border-white/10'>
             <div className='flex items-center gap-3'>
-              <div className='w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-black text-sm font-bold'>
-                R
+              <div className='w-8 h-8 bg-blue-500/20 border border-blue-500/30 flex items-center justify-center'>
+                <svg
+                  className='w-4 h-4 text-blue-400'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
+                  />
+                </svg>
               </div>
               <div>
-                <p className='text-white font-semibold'>Raftaar</p>
-                <p className='text-white/60 text-xs'>Hip-Hop, Producer</p>
+                <p className='text-white font-semibold'>Total Bookings</p>
+                <p className='text-white/60 text-xs'>Created this month</p>
               </div>
             </div>
             <div className='text-right'>
-              <p className='text-orange-400 font-bold'>
-                {formatPrice(3000000)}
-              </p>
-              <p className='text-white/60 text-xs'>₹30L</p>
+              <p className='text-blue-400 font-bold text-xl'>{totalBookings}</p>
             </div>
           </div>
           <div className='flex items-center justify-between p-3 bg-white/5 border border-white/10'>
             <div className='flex items-center gap-3'>
-              <div className='w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-black text-sm font-bold'>
-                E
+              <div className='w-8 h-8 bg-red-500/20 border border-red-500/30 flex items-center justify-center'>
+                <svg
+                  className='w-4 h-4 text-red-400'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'
+                  />
+                </svg>
               </div>
               <div>
-                <p className='text-white font-semibold'>Emiway</p>
-                <p className='text-white/60 text-xs'>Hip-Hop, Independent</p>
+                <p className='text-white font-semibold'>Pending Reports</p>
+                <p className='text-white/60 text-xs'>Require attention</p>
               </div>
             </div>
             <div className='text-right'>
-              <p className='text-orange-400 font-bold'>
-                {formatPrice(2000000)}
+              <p className='text-red-400 font-bold text-xl'>
+                {pendingReportsCount}
               </p>
-              <p className='text-white/60 text-xs'>₹20L</p>
             </div>
           </div>
         </div>
@@ -234,26 +289,99 @@ const OverviewTab = ({ dashboardStats }: OverviewTabProps) => {
             System Status
           </h3>
           <div className='space-y-3'>
-            <div className='flex items-center gap-3'>
-              <div className='w-3 h-3 bg-green-500 rounded-full'></div>
-              <span className='text-white/80 text-sm'>Database: Online</span>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-3'>
+                <div
+                  className={`w-3 h-3 rounded-full ${
+                    healthData?.services?.api?.status === 'OK'
+                      ? 'bg-green-500'
+                      : 'bg-red-500'
+                  }`}
+                ></div>
+                <span className='text-white/80 text-sm'>API</span>
+              </div>
+              <span className='text-white/60 text-xs'>
+                {healthData?.services?.api?.responseTime
+                  ? `${healthData.services.api.responseTime}ms`
+                  : 'N/A'}
+              </span>
             </div>
-            <div className='flex items-center gap-3'>
-              <div className='w-3 h-3 bg-green-500 rounded-full'></div>
-              <span className='text-white/80 text-sm'>API: Operational</span>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-3'>
+                <div
+                  className={`w-3 h-3 rounded-full ${
+                    healthData?.services?.database?.status === 'OK'
+                      ? 'bg-green-500'
+                      : 'bg-red-500'
+                  }`}
+                ></div>
+                <span className='text-white/80 text-sm'>Database</span>
+              </div>
+              <span className='text-white/60 text-xs'>
+                {healthData?.services?.database?.responseTime
+                  ? `${healthData.services.database.responseTime}ms`
+                  : 'N/A'}
+              </span>
             </div>
-            <div className='flex items-center gap-3'>
-              <div className='w-3 h-3 bg-green-500 rounded-full'></div>
-              <span className='text-white/80 text-sm'>Payments: Active</span>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-3'>
+                <div
+                  className={`w-3 h-3 rounded-full ${
+                    healthData?.status === 'OK'
+                      ? 'bg-green-500'
+                      : healthData?.status === 'DEGRADED'
+                        ? 'bg-orange-500'
+                        : 'bg-red-500'
+                  }`}
+                ></div>
+                <span className='text-white/80 text-sm'>Overall Status</span>
+              </div>
+              <span
+                className={`text-xs font-semibold ${
+                  healthData?.status === 'OK'
+                    ? 'text-green-400'
+                    : healthData?.status === 'DEGRADED'
+                      ? 'text-orange-400'
+                      : 'text-red-400'
+                }`}
+              >
+                {healthData?.status || 'UNKNOWN'}
+              </span>
             </div>
-            <div className='flex items-center gap-3'>
-              <div className='w-3 h-3 bg-green-500 rounded-full'></div>
-              <span className='text-white/80 text-sm'>Commission: Active</span>
-            </div>
+            {healthData?.services?.database?.error && (
+              <div className='pt-2 border-t border-white/10'>
+                <span className='text-red-400 text-xs'>
+                  DB Error: {healthData.services.database.error}
+                </span>
+              </div>
+            )}
+            {healthData && (
+              <div className='pt-2 border-t border-white/10 space-y-1'>
+                <div className='flex justify-between text-xs'>
+                  <span className='text-white/60'>Environment:</span>
+                  <span className='text-white/80'>
+                    {healthData.environment}
+                  </span>
+                </div>
+                <div className='flex justify-between text-xs'>
+                  <span className='text-white/60'>Uptime:</span>
+                  <span className='text-white/80'>
+                    {Math.floor(healthData.uptime / 3600)}h{' '}
+                    {Math.floor((healthData.uptime % 3600) / 60)}m
+                  </span>
+                </div>
+                <div className='flex justify-between text-xs'>
+                  <span className='text-white/60'>Last checked:</span>
+                  <span className='text-white/80'>
+                    {new Date(healthData.timestamp).toLocaleTimeString()}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </motion.div>
 
-        {/* Commission Overview */}
+        {/* Platform Stats */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -261,25 +389,61 @@ const OverviewTab = ({ dashboardStats }: OverviewTabProps) => {
           className='bg-white/5 border border-white/10 p-6'
         >
           <h3 className='text-white font-semibold text-lg mb-4'>
-            Commission Overview
+            Platform Statistics
           </h3>
           <div className='space-y-3'>
             <div className='flex justify-between items-center'>
-              <span className='text-white/70 text-sm'>This Month</span>
-              <span className='text-white font-semibold'>$1,234</span>
+              <span className='text-white/70 text-sm'>Total Users</span>
+              <span className='text-white font-semibold'>
+                {healthData?.services?.database?.statistics?.totalUsers || 0}
+              </span>
             </div>
             <div className='flex justify-between items-center'>
-              <span className='text-white/70 text-sm'>Last Month</span>
-              <span className='text-white font-semibold'>$987</span>
+              <span className='text-white/70 text-sm'>Total Artists</span>
+              <span className='text-white font-semibold'>
+                {healthData?.services?.database?.statistics?.totalArtists || 0}
+              </span>
             </div>
             <div className='flex justify-between items-center'>
-              <span className='text-white/70 text-sm'>Total YTD</span>
-              <span className='text-white font-semibold'>$4,567</span>
+              <span className='text-white/70 text-sm'>Verified Artists</span>
+              <span className='text-white font-semibold'>
+                {dashboardStats.verifiedArtists}
+              </span>
+            </div>
+            <div className='flex justify-between items-center'>
+              <span className='text-white/70 text-sm'>Pending Artists</span>
+              <span className='text-orange-400 font-semibold'>
+                {dashboardStats.pendingArtists}
+              </span>
+            </div>
+            <div className='flex justify-between items-center'>
+              <span className='text-white/70 text-sm'>Total Bookings</span>
+              <span className='text-white font-semibold'>
+                {healthData?.services?.database?.statistics?.totalBookings || 0}
+              </span>
+            </div>
+            <div className='flex justify-between items-center'>
+              <span className='text-white/70 text-sm'>Total Messages</span>
+              <span className='text-white font-semibold'>
+                {healthData?.services?.database?.statistics?.totalMessages || 0}
+              </span>
+            </div>
+            <div className='flex justify-between items-center'>
+              <span className='text-white/70 text-sm'>Active Reports</span>
+              <span
+                className={`font-semibold ${
+                  pendingReportsCount > 0 ? 'text-red-400' : 'text-white'
+                }`}
+              >
+                {pendingReportsCount}
+              </span>
             </div>
             <div className='pt-2 border-t border-white/10'>
               <div className='flex justify-between items-center'>
-                <span className='text-white/70 text-sm'>Commission Rate</span>
-                <span className='text-orange-400 font-semibold'>10%</span>
+                <span className='text-white/70 text-sm'>New Users (30d)</span>
+                <span className='text-green-400 font-semibold'>
+                  {totalRegistrations}
+                </span>
               </div>
             </div>
           </div>
