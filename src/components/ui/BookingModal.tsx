@@ -1,5 +1,9 @@
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { formatPrice } from '@/helper';
+import { useStartConversation } from '@/hooks/useChat';
+import { useStore } from '@/stores/store';
+import toast from 'react-hot-toast';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -9,6 +13,7 @@ interface BookingModalProps {
     eventType: string;
     clientName: string;
     clientEmail: string;
+    clientId?: string; // User ID of the client
     date: string;
     location: string;
     amount: number;
@@ -21,6 +26,46 @@ interface BookingModalProps {
 }
 
 const BookingModal = ({ isOpen, onClose, booking }: BookingModalProps) => {
+  const navigate = useNavigate();
+  const { user } = useStore();
+  const startConversationMutation = useStartConversation();
+
+  const handleChatWithClient = async () => {
+    if (!booking.clientId) {
+      toast.error('Client information not available');
+      return;
+    }
+
+    if (!user) {
+      toast.error('Please log in to chat');
+      navigate('/auth');
+      return;
+    }
+
+    try {
+      // Start or find existing conversation with the client
+      const response = await startConversationMutation.mutateAsync(
+        booking.clientId
+      );
+
+      // Navigate to messages page with the conversation ID
+      navigate('/messages', {
+        state: {
+          conversationId: response.conversation.id,
+          openChat: true,
+        },
+      });
+
+      // Close the modal
+      onClose();
+    } catch (error: any) {
+      console.error('Error starting conversation:', error);
+      toast.error(
+        error.response?.data?.message || 'Failed to start conversation'
+      );
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -159,8 +204,14 @@ const BookingModal = ({ isOpen, onClose, booking }: BookingModalProps) => {
           >
             Dismiss
           </button>
-          <button className='flex-1 bg-orange-500 text-black px-6 py-3 font-semibold hover:bg-orange-600 transition-colors'>
-            Chat with Client
+          <button
+            onClick={handleChatWithClient}
+            disabled={startConversationMutation.isPending || !booking.clientId}
+            className='flex-1 bg-orange-500 text-black px-6 py-3 font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+          >
+            {startConversationMutation.isPending
+              ? 'Opening Chat...'
+              : 'Chat with Client'}
           </button>
         </div>
       </motion.div>

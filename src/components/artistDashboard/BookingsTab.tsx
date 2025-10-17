@@ -5,9 +5,16 @@ import { format } from 'date-fns';
 interface BookingsTabProps {
   dashboardData: any;
   getStatusColor: (status: string) => string;
+  setSelectedBooking?: (booking: any) => void;
+  setIsModalOpen?: (open: boolean) => void;
 }
 
-const BookingsTab = ({ dashboardData, getStatusColor }: BookingsTabProps) => {
+const BookingsTab = ({
+  dashboardData,
+  getStatusColor,
+  setSelectedBooking,
+  setIsModalOpen,
+}: BookingsTabProps) => {
   // Fetch bookings from API
   const { data: bookingsResponse, isLoading, error } = useGetBookings();
 
@@ -126,7 +133,32 @@ const BookingsTab = ({ dashboardData, getStatusColor }: BookingsTabProps) => {
                     </span>
                   </td>
                   <td className='p-4'>
-                    <button className='text-orange-500 hover:text-orange-400 text-sm'>
+                    <button
+                      onClick={() => {
+                        if (setSelectedBooking && setIsModalOpen) {
+                          setSelectedBooking({
+                            ...booking,
+                            clientId: booking.userId, // Add client user ID for chat functionality
+                            clientEmail: booking.contactEmail,
+                            clientName: booking.contactName,
+                            date: booking.eventDate
+                              ? format(
+                                  new Date(booking.eventDate),
+                                  'MMM dd, yyyy'
+                                )
+                              : 'N/A',
+                            location: booking.eventLocation,
+                            amount: booking.budgetRange || 0,
+                            duration: `${booking.duration || 3} hours`,
+                            guests: booking.expectedGuests || 0,
+                            message: booking.specialRequirements,
+                            contactPhone: booking.contactPhone,
+                          });
+                          setIsModalOpen(true);
+                        }
+                      }}
+                      className='text-orange-500 hover:text-orange-400 text-sm'
+                    >
                       View Details
                     </button>
                   </td>

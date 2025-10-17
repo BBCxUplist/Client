@@ -2,9 +2,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 
-interface CreateArtistData {
+export interface CreateArtistData {
   email: string;
   username: string;
+  password?: string; // Temporary password for the artist account
   displayName?: string;
   bio?: string;
   phone?: string;

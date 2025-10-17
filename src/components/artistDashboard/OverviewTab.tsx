@@ -55,6 +55,7 @@ const OverviewTab = ({
                     onClick={() => {
                       setSelectedBooking({
                         ...booking,
+                        clientId: booking.userId, // Add client user ID for chat functionality
                         clientEmail:
                           booking.contactEmail ||
                           `${(booking.contactName || booking.clientName || '').toLowerCase().replace(' ', '.')}@example.com`,

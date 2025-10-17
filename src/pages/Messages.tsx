@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MessageCircle } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '@/components/landing/Navbar';
 import ChatList from '@/components/messages/ChatList';
 import ChatWindow from '@/components/messages/ChatWindow';
@@ -13,6 +13,7 @@ import type { Message, QuoteData } from '@/types/chat';
 const Messages = () => {
   const { user } = useStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const [selectedConversationId, setSelectedConversationId] = useState<
     string | null
@@ -125,6 +126,23 @@ const Messages = () => {
     setIsMobileView(false);
     setSelectedConversationId(null);
   };
+
+  // Handle navigation from booking modal or other sources
+  useEffect(() => {
+    const state = location.state as {
+      conversationId?: string;
+      openChat?: boolean;
+    } | null;
+
+    if (state?.conversationId && state?.openChat) {
+      // Set the conversation ID to open
+      setSelectedConversationId(state.conversationId);
+      setIsMobileView(true);
+
+      // Clear the state to prevent reopening on refresh
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, location.pathname, navigate]);
 
   // Redirect to auth if not logged in
   useEffect(() => {

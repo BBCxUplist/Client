@@ -4,13 +4,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import OverviewTab from '@/components/admin/OverviewTab';
 import ArtistsTab from '@/components/admin/ArtistsTab';
 import CreateArtistTab from '@/components/admin/CreateArtistTab';
-import ApprovedTab from '@/components/admin/ApprovedTab';
+// import ApprovedTab from '@/components/admin/ApprovedTab';
 import UsersTab from '@/components/admin/UsersTab';
 import ReportsTab from '@/components/admin/ReportsTab';
 import RecentActivityTab from '@/components/admin/RecentActivityTab';
 import SettingsTab from '@/components/admin/SettingsTab';
 import { formatPrice } from '@/helper';
 import { useGetAllUsers, useHealthCheck } from '@/hooks/admin';
+import { useCreateArtist } from '@/hooks/admin/useCreateArtist';
 import { useStore } from '@/stores/store';
 import toast from 'react-hot-toast';
 
@@ -18,7 +19,7 @@ enum AdminTab {
   OVERVIEW = 'overview',
   ARTISTS = 'artists',
   CREATE_ARTIST = 'create-artist',
-  APPROVED = 'approved',
+  // APPROVED = 'approved',
   USERS = 'users',
   REPORTS = 'reports',
   RECENT_ACTIVITY = 'recent-activity',
@@ -36,6 +37,7 @@ const AdminDashboard = () => {
   // Fetch real data from APIs
   const { data: usersData, isLoading: usersLoading } = useGetAllUsers();
   const { data: healthData } = useHealthCheck();
+  const createArtistMutation = useCreateArtist();
 
   // Check if user is admin
   useEffect(() => {
@@ -172,11 +174,30 @@ const AdminDashboard = () => {
   // };
 
   const handleCreateArtist = async (artistData: any) => {
-    console.log('Creating artist:', artistData);
-    // TODO: Use useCreateArtist hook from admin hooks
-    toast('Artist creation feature coming soon', {
-      icon: 'ℹ️',
-    });
+    try {
+      // Map the form data to match the API expected format
+      const apiData = {
+        email: artistData.email,
+        username: artistData.username,
+        displayName: artistData.displayName,
+        bio: artistData.bio,
+        phone: artistData.phone,
+        location: artistData.location,
+        socials: artistData.socials,
+        genres: artistData.genres,
+        basePrice: artistData.price,
+        isBookable: artistData.isBookable,
+        isAvailable: artistData.isAvailable,
+      };
+
+      await createArtistMutation.mutateAsync(apiData);
+
+      // Switch back to artists tab to see the new artist
+      setActiveTab(AdminTab.ARTISTS);
+    } catch (error) {
+      console.error('Error creating artist:', error);
+      // Error handling is done by the hook
+    }
   };
 
   const handleLogout = async () => {
@@ -291,7 +312,7 @@ const AdminDashboard = () => {
                     { id: 'overview', label: 'Overview' },
                     { id: 'artists', label: 'Artists' },
                     { id: 'create-artist', label: 'Create Artist' },
-                    { id: 'approved', label: 'Approved' },
+                    // { id: 'approved', label: 'Approved' },
                     { id: 'users', label: 'Users' },
                     { id: 'bookings', label: 'Bookings' },
                     { id: 'reports', label: 'Reports' },
@@ -380,7 +401,7 @@ const AdminDashboard = () => {
                 label: 'Create Artist',
                 icon: '/icons/frame.svg',
               },
-              { id: 'approved', label: 'Approved', icon: '/icons/tick.svg' },
+              // { id: 'approved', label: 'Approved', icon: '/icons/tick.svg' },
               { id: 'users', label: 'Users', icon: '/icons/users.png' },
               { id: 'reports', label: 'Reports', icon: '/icons/report.png' },
               {
@@ -438,13 +459,13 @@ const AdminDashboard = () => {
           )}
 
           {/* Approved Tab */}
-          {activeTab === AdminTab.APPROVED && (
+          {/* {activeTab === AdminTab.APPROVED && (
             <ApprovedTab
               onStatusChange={(id, status) =>
                 console.log(`Artist ${id} ${status}`)
               }
             />
-          )}
+          )} */}
 
           {/* Users Tab */}
           {activeTab === AdminTab.USERS && (

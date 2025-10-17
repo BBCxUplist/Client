@@ -448,6 +448,8 @@ const ArtistDashboard = () => {
           <BookingsTab
             dashboardData={dashboardData}
             getStatusColor={getStatusColor}
+            setSelectedBooking={setSelectedBooking}
+            setIsModalOpen={setIsModalOpen}
           />
         )}
 

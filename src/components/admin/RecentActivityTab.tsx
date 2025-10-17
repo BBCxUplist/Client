@@ -1,56 +1,71 @@
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { useGetActivityLogs, useGetActivityStats } from '@/hooks/admin';
+import { formatDistanceToNow } from 'date-fns';
 
 const RecentActivityTab = () => {
-  const recentActivities = [
-    {
-      type: 'user',
-      action: 'New user registered',
-      time: '2 minutes ago',
-      user: 'john.doe@email.com',
-    },
-    {
-      type: 'artist',
-      action: 'Artist profile verified',
-      time: '15 minutes ago',
-      user: 'Sarah Johnson',
-    },
-    {
-      type: 'booking',
-      action: 'New booking created',
-      time: '1 hour ago',
-      user: 'Corporate Event Co.',
-    },
-    {
-      type: 'payment',
-      action: 'Payment processed',
-      time: '2 hours ago',
-      user: 'Wedding Planner Inc.',
-    },
-    {
-      type: 'report',
-      action: 'Report submitted',
-      time: '3 hours ago',
-      user: 'User123',
-    },
-    {
-      type: 'commission',
-      action: 'Commission earned',
-      time: '4 hours ago',
-      user: 'Artist Booking',
-    },
-    {
-      type: 'verification',
-      action: 'Artist appeal reviewed',
-      time: '5 hours ago',
-      user: 'Mike Chen',
-    },
-    {
-      type: 'suspension',
-      action: 'User account suspended',
-      time: '6 hours ago',
-      user: 'ProblemUser',
-    },
-  ];
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filterAction, setFilterAction] = useState<string>('');
+  const [filterTargetType, setFilterTargetType] = useState<string>('');
+  const pageLimit = 20;
+
+  // Fetch activity logs and stats
+  const {
+    data: activityData,
+    isLoading,
+    error,
+  } = useGetActivityLogs({
+    limit: pageLimit,
+    page: currentPage,
+    ...(filterAction && { action: filterAction }),
+    ...(filterTargetType && { targetType: filterTargetType }),
+  });
+  const { data: statsData } = useGetActivityStats({ days: 7 });
+
+  const activities = activityData?.data?.activities || [];
+  const pagination = activityData?.data?.pagination;
+
+  // Map API action to display type for icon/color
+  const getActivityType = (action: string, targetType: string): string => {
+    if (action.includes('create') && targetType === 'user') return 'user';
+    if (action.includes('artist') || targetType === 'artist') return 'artist';
+    if (action.includes('booking') || targetType === 'booking')
+      return 'booking';
+    if (action.includes('payment') || targetType === 'payment')
+      return 'payment';
+    if (action.includes('report') || targetType === 'report') return 'report';
+    if (action.includes('commission')) return 'commission';
+    if (action.includes('verify') || action.includes('approve'))
+      return 'verification';
+    if (action.includes('suspend') || action.includes('ban'))
+      return 'suspension';
+    return 'user';
+  };
+
+  // Format action for display
+  const formatAction = (action: string, targetType: string): string => {
+    const actionMap: Record<string, string> = {
+      create_artist: 'Created new artist',
+      update_artist: 'Updated artist profile',
+      delete_artist: 'Deleted artist',
+      approve_artist: 'Approved artist',
+      reject_artist: 'Rejected artist',
+      ban_artist: 'Banned artist',
+      unban_artist: 'Unbanned artist',
+      create_user: 'New user registered',
+      update_user: 'Updated user profile',
+      delete_user: 'Deleted user',
+      ban_user: 'Banned user',
+      unban_user: 'Unbanned user',
+      create_booking: 'Created booking',
+      update_booking: 'Updated booking',
+      cancel_booking: 'Cancelled booking',
+      create_report: 'Submitted report',
+      resolve_report: 'Resolved report',
+    };
+
+    return actionMap[action] || `${action.replace(/_/g, ' ')} ${targetType}`;
+  };
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -210,6 +225,29 @@ const RecentActivityTab = () => {
     }
   };
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className='flex items-center justify-center py-12'>
+        <div className='text-center'>
+          <div className='animate-spin w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full mx-auto mb-4'></div>
+          <p className='text-white/70'>Loading activity logs...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className='bg-red-500/10 border border-red-500/20 p-6 rounded-lg'>
+        <p className='text-red-400 text-center'>
+          Failed to load activity logs. Please try again.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -218,42 +256,177 @@ const RecentActivityTab = () => {
       className='space-y-6'
     >
       <div>
-        <h2 className='text-2xl font-bold text-white mb-4'>Recent Activity</h2>
-        <p className='text-white/70'>Latest platform activities and events</p>
+        <div className='flex items-center justify-between mb-4'>
+          <div>
+            <h2 className='text-2xl font-bold text-white font-mondwest'>
+              Recent Activity
+            </h2>
+            <p className='text-white/70'>
+              Latest platform activities and events
+            </p>
+          </div>
+          {pagination && (
+            <div className='text-white/60 text-sm'>
+              Showing {activities.length} of {pagination.total} activities
+            </div>
+          )}
+        </div>
+
+        {/* Filters */}
+        <div className='flex flex-wrap gap-3'>
+          <select
+            value={filterTargetType}
+            onChange={e => {
+              setFilterTargetType(e.target.value);
+              setCurrentPage(1);
+            }}
+            className='bg-white/5 border border-white/20 text-white px-4 py-2 rounded focus:border-orange-500 focus:outline-none'
+          >
+            <option value=''>All Types</option>
+            <option value='user'>Users</option>
+            <option value='artist'>Artists</option>
+            <option value='booking'>Bookings</option>
+            <option value='report'>Reports</option>
+            <option value='payment'>Payments</option>
+          </select>
+
+          <select
+            value={filterAction}
+            onChange={e => {
+              setFilterAction(e.target.value);
+              setCurrentPage(1);
+            }}
+            className='bg-white/5 border border-white/20 text-white px-4 py-2 rounded focus:border-orange-500 focus:outline-none'
+          >
+            <option value=''>All Actions</option>
+            <option value='create_artist'>Create Artist</option>
+            <option value='update_artist'>Update Artist</option>
+            <option value='approve_artist'>Approve Artist</option>
+            <option value='reject_artist'>Reject Artist</option>
+            <option value='ban_artist'>Ban Artist</option>
+            <option value='create_user'>Create User</option>
+            <option value='ban_user'>Ban User</option>
+            <option value='create_booking'>Create Booking</option>
+            <option value='create_report'>Create Report</option>
+            <option value='resolve_report'>Resolve Report</option>
+          </select>
+
+          {(filterAction || filterTargetType) && (
+            <button
+              onClick={() => {
+                setFilterAction('');
+                setFilterTargetType('');
+                setCurrentPage(1);
+              }}
+              className='bg-red-500/20 border border-red-500/40 text-red-400 px-4 py-2 rounded hover:bg-red-500/30 transition-colors'
+            >
+              Clear Filters
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Activity Stats */}
+      {statsData?.data?.stats && (
+        <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+          {statsData.data.stats.slice(0, 4).map((stat, index) => (
+            <div
+              key={index}
+              className='bg-white/5 border border-white/10 p-4 rounded-lg'
+            >
+              <p className='text-white/60 text-xs mb-1'>
+                {stat.action.replace(/_/g, ' ').toUpperCase()}
+              </p>
+              <p className='text-white text-2xl font-bold'>{stat.count}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Activity List */}
       <div className='space-y-4'>
-        {recentActivities.map((activity, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-            className={`flex items-start gap-4 p-4 border rounded-lg ${getActivityColor(activity.type)}`}
-          >
-            <div className='flex-shrink-0 mt-1'>
-              {getActivityIcon(activity.type)}
-            </div>
-            <div className='flex-1 min-w-0'>
-              <p className='text-white text-sm font-medium'>
-                {activity.action}
-              </p>
-              <p className='text-white/60 text-xs'>{activity.user}</p>
-            </div>
-            <span className='text-white/40 text-xs flex-shrink-0'>
-              {activity.time}
-            </span>
-          </motion.div>
-        ))}
+        {activities.length === 0 ? (
+          <div className='bg-white/5 border border-white/10 p-12 rounded-lg text-center'>
+            <p className='text-white/60'>No recent activity to display</p>
+          </div>
+        ) : (
+          activities.map((item, index) => {
+            const activityType = getActivityType(
+              item.activity.action,
+              item.activity.targetType
+            );
+            const displayAction = formatAction(
+              item.activity.action,
+              item.activity.targetType
+            );
+            const timeAgo = formatDistanceToNow(
+              new Date(item.activity.createdAt),
+              { addSuffix: true }
+            );
+
+            return (
+              <motion.div
+                key={item.activity.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{
+                  duration: 0.3,
+                  delay: Math.min(index * 0.05, 0.5),
+                }}
+                className={`flex items-start gap-4 p-4 border rounded-lg ${getActivityColor(activityType)}`}
+              >
+                <div className='flex-shrink-0 mt-1'>
+                  {getActivityIcon(activityType)}
+                </div>
+                <div className='flex-1 min-w-0'>
+                  <p className='text-white text-sm font-medium'>
+                    {displayAction}
+                  </p>
+                  <p className='text-white/60 text-xs'>
+                    {item.actor?.displayName ||
+                      item.actor?.username ||
+                      'Unknown user'}
+                    {item.activity.metadata?.targetName && (
+                      <span className='text-white/40'>
+                        {' → '}
+                        {item.activity.metadata.targetName}
+                      </span>
+                    )}
+                  </p>
+                </div>
+                <span className='text-white/40 text-xs flex-shrink-0'>
+                  {timeAgo}
+                </span>
+              </motion.div>
+            );
+          })
+        )}
       </div>
 
-      {/* Load More Button */}
-      <div className='text-center pt-4'>
-        <button className='bg-white/5 border border-white/10 text-white/70 px-6 py-3 hover:bg-white/10 transition-colors rounded'>
-          Load More Activities
-        </button>
-      </div>
+      {/* Pagination */}
+      {pagination && pagination.totalPages > 1 && (
+        <div className='flex items-center justify-center gap-4 pt-4'>
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+            className='bg-white/5 border border-white/10 text-white/70 px-6 py-3 hover:bg-white/10 transition-colors rounded disabled:opacity-50 disabled:cursor-not-allowed'
+          >
+            Previous
+          </button>
+          <span className='text-white/70 text-sm'>
+            Page {currentPage} of {pagination.totalPages}
+          </span>
+          <button
+            onClick={() =>
+              setCurrentPage(prev => Math.min(pagination.totalPages, prev + 1))
+            }
+            disabled={currentPage === pagination.totalPages}
+            className='bg-white/5 border border-white/10 text-white/70 px-6 py-3 hover:bg-white/10 transition-colors rounded disabled:opacity-50 disabled:cursor-not-allowed'
+          >
+            Next
+          </button>
+        </div>
+      )}
     </motion.div>
   );
 };
