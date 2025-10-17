@@ -9,6 +9,11 @@ import {
   useUpdatePlaylist,
   useDeletePlaylist,
 } from '@/hooks/artist/usePlaylist';
+import {
+  useCreateRider,
+  useUpdateRider,
+  useDeleteRider,
+} from '@/hooks/artist/useRider';
 import Navbar from '@/components/landing/Navbar';
 import ProfileTab from '@/components/artistEdit/ProfileTab';
 import MusicTab from '@/components/artistEdit/MusicTab';
@@ -166,6 +171,27 @@ const ArtistEdit = () => {
     },
   });
 
+  // Create rider mutation
+  const createRiderMutation = useCreateRider({
+    onSuccess: () => {
+      // Refresh artist profile data after creating rider item
+    },
+  });
+
+  // Update rider mutation
+  const updateRiderMutation = useUpdateRider({
+    onSuccess: () => {
+      // Refresh artist profile data after updating rider item
+    },
+  });
+
+  // Delete rider mutation
+  const deleteRiderMutation = useDeleteRider({
+    onSuccess: () => {
+      // Refresh artist profile data after deleting rider item
+    },
+  });
+
   // Message states
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -302,6 +328,48 @@ const ArtistEdit = () => {
     } catch (error) {
       console.error('Error deleting playlist:', error);
       setErrorMessage('Failed to delete playlist. Please try again.');
+    }
+  };
+
+  const handleCreateRider = async (riderData: {
+    name: string;
+    status: 'included' | 'to_be_provided';
+  }) => {
+    try {
+      await createRiderMutation.mutateAsync(riderData);
+      // Profile data will be refreshed automatically via query invalidation
+    } catch (error) {
+      console.error('Error creating rider item:', error);
+      setErrorMessage('Failed to create rider item. Please try again.');
+    }
+  };
+
+  const handleUpdateRider = async (
+    riderId: string,
+    riderData: {
+      name?: string;
+      status?: 'included' | 'to_be_provided';
+    }
+  ) => {
+    try {
+      await updateRiderMutation.mutateAsync({
+        riderId,
+        data: riderData,
+      });
+      // Profile data will be refreshed automatically via query invalidation
+    } catch (error) {
+      console.error('Error updating rider item:', error);
+      setErrorMessage('Failed to update rider item. Please try again.');
+    }
+  };
+
+  const handleDeleteRider = async (riderId: string) => {
+    try {
+      await deleteRiderMutation.mutateAsync(riderId);
+      // Profile data will be refreshed automatically via query invalidation
+    } catch (error) {
+      console.error('Error deleting rider item:', error);
+      setErrorMessage('Failed to delete rider item. Please try again.');
     }
   };
 
@@ -594,7 +662,13 @@ const ArtistEdit = () => {
           {activeTab === ArtistEditTab.RIDER && (
             <RiderTab
               formData={formData}
-              handleInputChange={handleInputChange}
+              riders={(artist as any)?.riders || []}
+              onCreateRider={handleCreateRider}
+              onUpdateRider={handleUpdateRider}
+              onDeleteRider={handleDeleteRider}
+              isCreating={createRiderMutation.isPending}
+              isUpdating={updateRiderMutation.isPending}
+              isDeleting={deleteRiderMutation.isPending}
             />
           )}
 

@@ -1,36 +1,24 @@
 import { motion } from 'framer-motion';
-
-interface RiderItem {
-  id: string;
-  title: string;
-  isProvided: boolean;
-}
+import type { RiderItem } from '@/types/api';
 
 interface RiderTabProps {
   artist: {
-    rider?: RiderItem[];
+    riders?: RiderItem[];
   };
 }
 
 const RiderTab = ({ artist }: RiderTabProps) => {
-  // Dummy rider data
-  const dummyRiderData: RiderItem[] = [
-    { id: '1', title: 'Guitar', isProvided: true },
-    { id: '2', title: 'Drum Kit', isProvided: false },
-    { id: '3', title: 'Bass Guitar', isProvided: true },
-    { id: '4', title: 'Microphone', isProvided: false },
-    { id: '5', title: 'Amplifier', isProvided: true },
-    { id: '6', title: 'Keyboard', isProvided: false },
-    { id: '7', title: 'Cables', isProvided: true },
-    { id: '8', title: 'Monitor Speakers', isProvided: false },
-    { id: '9', title: 'Mixer', isProvided: true },
-    { id: '10', title: 'Lighting', isProvided: false },
-  ];
+  // Use real API data from artist profile
+  const riderItems = artist?.riders || [];
 
-  const riderItems = artist?.rider || dummyRiderData;
+  // Debug: Log the rider data to see what we're getting
+  console.log('RiderTab - artist data:', artist);
+  console.log('RiderTab - rider items:', riderItems);
 
-  const getProvidedItems = () => riderItems.filter(item => item.isProvided);
-  const getVenueItems = () => riderItems.filter(item => !item.isProvided);
+  const getProvidedItems = () =>
+    riderItems.filter(item => item.status === 'included');
+  const getVenueItems = () =>
+    riderItems.filter(item => item.status === 'to_be_provided');
 
   return (
     <motion.div
@@ -75,7 +63,7 @@ const RiderTab = ({ artist }: RiderTabProps) => {
                   className='flex items-center gap-2 text-green-400'
                 >
                   <div className='w-2 h-2 bg-green-400 rounded-full'></div>
-                  <span className='text-sm'>{item.title}</span>
+                  <span className='text-sm'>{item.name}</span>
                 </div>
               ))
             ) : (
@@ -120,7 +108,7 @@ const RiderTab = ({ artist }: RiderTabProps) => {
                   className='flex items-center gap-2 text-orange-400'
                 >
                   <div className='w-2 h-2 bg-orange-400 rounded-full'></div>
-                  <span className='text-sm'>{item.title}</span>
+                  <span className='text-sm'>{item.name}</span>
                 </div>
               ))
             ) : (

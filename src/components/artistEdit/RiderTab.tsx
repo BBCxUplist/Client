@@ -2,74 +2,99 @@ import { useState } from 'react';
 
 interface RiderItem {
   id: string;
-  title: string;
-  isProvided: boolean;
+  artistId: string;
+  name: string;
+  status: 'included' | 'to_be_provided';
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface RiderTabProps {
   formData?: {
     rider?: RiderItem[];
   };
-  handleInputChange?: (field: string, value: any) => void;
+  riders?: RiderItem[];
+  onCreateRider?: (riderData: {
+    name: string;
+    status: 'included' | 'to_be_provided';
+  }) => Promise<void>;
+  onUpdateRider?: (
+    riderId: string,
+    riderData: {
+      name?: string;
+      status?: 'included' | 'to_be_provided';
+    }
+  ) => Promise<void>;
+  onDeleteRider?: (riderId: string) => Promise<void>;
+  isCreating?: boolean;
+  isUpdating?: boolean;
+  isDeleting?: boolean;
 }
 
-const RiderTab = ({ formData, handleInputChange }: RiderTabProps) => {
-  const [newItemTitle, setNewItemTitle] = useState('');
-  const [newItemProvided, setNewItemProvided] = useState(false);
+const RiderTab = ({
+  riders = [],
+  onCreateRider,
+  onUpdateRider,
+  onDeleteRider,
+  isCreating,
+  isDeleting,
+}: RiderTabProps) => {
+  const [newItemName, setNewItemName] = useState('');
+  const [newItemStatus, setNewItemStatus] = useState<
+    'included' | 'to_be_provided'
+  >('included');
 
-  // Default rider items with constant data
-  const defaultRiderItems: RiderItem[] = [
-    { id: '1', title: 'Guitar', isProvided: true },
-    { id: '2', title: 'Drum Kit', isProvided: false },
-    { id: '3', title: 'Bass Guitar', isProvided: true },
-    { id: '4', title: 'Microphone', isProvided: false },
-    { id: '5', title: 'Amplifier', isProvided: true },
-    { id: '6', title: 'Keyboard', isProvided: false },
-    { id: '7', title: 'Cables', isProvided: true },
-    { id: '8', title: 'Monitor Speakers', isProvided: false },
-  ];
+  // Use riders from profile API
 
-  const riderItems = formData?.rider || defaultRiderItems;
+  const handleAddItem = async () => {
+    if (!newItemName.trim() || !onCreateRider) return;
 
-  const handleAddItem = () => {
-    if (!newItemTitle.trim() || !handleInputChange) return;
+    try {
+      await onCreateRider({
+        name: newItemName.trim(),
+        status: newItemStatus,
+      });
 
-    const newItem: RiderItem = {
-      id: Date.now().toString(),
-      title: newItemTitle.trim(),
-      isProvided: newItemProvided,
-    };
-
-    const updatedRider = [...riderItems, newItem];
-    handleInputChange('rider', updatedRider);
-
-    setNewItemTitle('');
-    setNewItemProvided(false);
+      setNewItemName('');
+      setNewItemStatus('included');
+    } catch (error) {
+      console.error('Error creating rider item:', error);
+    }
   };
 
-  const handleToggleProvided = (itemId: string) => {
-    if (!handleInputChange) return;
+  const handleToggleStatus = async (
+    itemId: string,
+    currentStatus: 'included' | 'to_be_provided'
+  ) => {
+    if (!onUpdateRider) return;
 
-    const updatedRider = riderItems.map(item =>
-      item.id === itemId ? { ...item, isProvided: !item.isProvided } : item
-    );
-    handleInputChange('rider', updatedRider);
+    try {
+      const newStatus =
+        currentStatus === 'included' ? 'to_be_provided' : 'included';
+      await onUpdateRider(itemId, { status: newStatus });
+    } catch (error) {
+      console.error('Error updating rider item:', error);
+    }
   };
 
-  const handleRemoveItem = (itemId: string) => {
-    if (!handleInputChange) return;
+  const handleRemoveItem = async (itemId: string) => {
+    if (!onDeleteRider) return;
 
-    const updatedRider = riderItems.filter(item => item.id !== itemId);
-    handleInputChange('rider', updatedRider);
+    try {
+      await onDeleteRider(itemId);
+    } catch (error) {
+      console.error('Error deleting rider item:', error);
+    }
   };
 
-  const handleEditTitle = (itemId: string, newTitle: string) => {
-    if (!handleInputChange) return;
+  const handleEditName = async (itemId: string, newName: string) => {
+    if (!onUpdateRider) return;
 
-    const updatedRider = riderItems.map(item =>
-      item.id === itemId ? { ...item, title: newTitle } : item
-    );
-    handleInputChange('rider', updatedRider);
+    try {
+      await onUpdateRider(itemId, { name: newName });
+    } catch (error) {
+      console.error('Error updating rider item:', error);
+    }
   };
 
   return (
@@ -87,8 +112,8 @@ const RiderTab = ({ formData, handleInputChange }: RiderTabProps) => {
             </label>
             <input
               type='text'
-              value={newItemTitle}
-              onChange={e => setNewItemTitle(e.target.value)}
+              value={newItemName}
+              onChange={e => setNewItemName(e.target.value)}
               className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
               placeholder='e.g., Guitar, Drum Kit, Microphone...'
             />
@@ -97,22 +122,43 @@ const RiderTab = ({ formData, handleInputChange }: RiderTabProps) => {
           <div className='flex items-center gap-4'>
             <label className='flex items-center gap-2 text-white/70 text-sm'>
               <input
-                type='checkbox'
-                checked={newItemProvided}
-                onChange={e => setNewItemProvided(e.target.checked)}
+                type='radio'
+                name='status'
+                value='included'
+                checked={newItemStatus === 'included'}
+                onChange={e =>
+                  setNewItemStatus(
+                    e.target.value as 'included' | 'to_be_provided'
+                  )
+                }
                 className='w-4 h-4 text-orange-500 bg-white/10 border-white/20 rounded focus:ring-orange-500 focus:ring-2'
               />
-              I will provide this equipment
+              Included
+            </label>
+            <label className='flex items-center gap-2 text-white/70 text-sm'>
+              <input
+                type='radio'
+                name='status'
+                value='to_be_provided'
+                checked={newItemStatus === 'to_be_provided'}
+                onChange={e =>
+                  setNewItemStatus(
+                    e.target.value as 'included' | 'to_be_provided'
+                  )
+                }
+                className='w-4 h-4 text-orange-500 bg-white/10 border-white/20 rounded focus:ring-orange-500 focus:ring-2'
+              />
+              To be provided
             </label>
           </div>
 
           <div className='flex justify-end'>
             <button
               onClick={handleAddItem}
-              disabled={!newItemTitle.trim()}
+              disabled={!newItemName.trim() || isCreating}
               className='bg-orange-500 text-black px-6 py-3 font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
             >
-              Add Equipment
+              {isCreating ? 'Adding...' : 'Add Equipment'}
             </button>
           </div>
         </div>
@@ -125,12 +171,12 @@ const RiderTab = ({ formData, handleInputChange }: RiderTabProps) => {
             Equipment Rider
           </h3>
           <span className='text-white/60 text-sm'>
-            {riderItems.length} {riderItems.length === 1 ? 'item' : 'items'}
+            {riders.length} {riders.length === 1 ? 'item' : 'items'}
           </span>
         </div>
 
         <div className='space-y-3'>
-          {riderItems.length === 0 ? (
+          {riders.length === 0 ? (
             <div className='text-center py-12'>
               <div className='w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4'>
                 <svg
@@ -155,7 +201,7 @@ const RiderTab = ({ formData, handleInputChange }: RiderTabProps) => {
               </p>
             </div>
           ) : (
-            riderItems.map(item => (
+            riders.map(item => (
               <div
                 key={item.id}
                 className='group relative flex items-center gap-4 p-4 bg-white/5 border border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all rounded'
@@ -181,8 +227,8 @@ const RiderTab = ({ formData, handleInputChange }: RiderTabProps) => {
                 <div className='flex-1 min-w-0'>
                   <input
                     type='text'
-                    value={item.title}
-                    onChange={e => handleEditTitle(item.id, e.target.value)}
+                    value={item.name}
+                    onChange={e => handleEditName(item.id, e.target.value)}
                     className='w-full bg-transparent text-white text-sm font-medium focus:outline-none focus:bg-white/10 px-2 py-1 rounded'
                   />
                 </div>
@@ -192,12 +238,14 @@ const RiderTab = ({ formData, handleInputChange }: RiderTabProps) => {
                   <label className='flex items-center gap-2 text-white/70 text-sm cursor-pointer'>
                     <input
                       type='checkbox'
-                      checked={item.isProvided}
-                      onChange={() => handleToggleProvided(item.id)}
+                      checked={item.status === 'included'}
+                      onChange={() => handleToggleStatus(item.id, item.status)}
                       className='w-4 h-4 text-orange-500 bg-white/10 border-white/20 rounded focus:ring-orange-500 focus:ring-2'
                     />
                     <span className='text-xs'>
-                      {item.isProvided ? 'I provide' : 'You provide'}
+                      {item.status === 'included'
+                        ? 'Included'
+                        : 'To be provided'}
                     </span>
                   </label>
                 </div>
@@ -205,7 +253,8 @@ const RiderTab = ({ formData, handleInputChange }: RiderTabProps) => {
                 {/* Remove Button */}
                 <button
                   onClick={() => handleRemoveItem(item.id)}
-                  className='text-white/40 hover:text-red-400 p-2 opacity-0 group-hover:opacity-100 transition-all'
+                  disabled={isDeleting}
+                  className='text-white/40 hover:text-red-400 p-2 opacity-0 group-hover:opacity-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed'
                   title='Remove equipment'
                 >
                   <svg
@@ -228,24 +277,25 @@ const RiderTab = ({ formData, handleInputChange }: RiderTabProps) => {
         </div>
 
         {/* Summary */}
-        {riderItems.length > 0 && (
+        {riders.length > 0 && (
           <div className='mt-6 p-4 bg-white/5 border border-white/10 rounded'>
             <h4 className='text-white font-medium mb-3'>Summary</h4>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4 text-sm'>
               <div>
                 <span className='text-white/60'>You will provide:</span>
                 <div className='mt-1'>
-                  {riderItems.filter(item => item.isProvided).length === 0 ? (
+                  {riders.filter(item => item.status === 'included').length ===
+                  0 ? (
                     <span className='text-white/40 italic'>None</span>
                   ) : (
-                    riderItems
-                      .filter(item => item.isProvided)
+                    riders
+                      .filter(item => item.status === 'included')
                       .map(item => (
                         <span
                           key={item.id}
                           className='inline-block bg-green-500/20 text-green-400 px-2 py-1 rounded text-xs mr-1 mb-1'
                         >
-                          {item.title}
+                          {item.name}
                         </span>
                       ))
                   )}
@@ -254,17 +304,18 @@ const RiderTab = ({ formData, handleInputChange }: RiderTabProps) => {
               <div>
                 <span className='text-white/60'>Venue needs to provide:</span>
                 <div className='mt-1'>
-                  {riderItems.filter(item => !item.isProvided).length === 0 ? (
+                  {riders.filter(item => item.status === 'to_be_provided')
+                    .length === 0 ? (
                     <span className='text-white/40 italic'>None</span>
                   ) : (
-                    riderItems
-                      .filter(item => !item.isProvided)
+                    riders
+                      .filter(item => item.status === 'to_be_provided')
                       .map(item => (
                         <span
                           key={item.id}
                           className='inline-block bg-orange-500/20 text-orange-400 px-2 py-1 rounded text-xs mr-1 mb-1'
                         >
-                          {item.title}
+                          {item.name}
                         </span>
                       ))
                   )}

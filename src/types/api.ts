@@ -9,6 +9,15 @@ export interface Embeds {
   soundcloud?: string[];
 }
 
+export interface RiderItem {
+  id: string;
+  artistId: string;
+  name: string;
+  status: 'included' | 'to_be_provided';
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Artist {
   id: string;
   role: string;
@@ -27,6 +36,7 @@ export interface Artist {
   genres: string[];
   photos: string[];
   embeds: Embeds;
+  riders?: RiderItem[];
   artistType: string;
   basePrice: number;
   featured: boolean;

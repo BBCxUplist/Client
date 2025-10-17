@@ -87,6 +87,10 @@ const ArtistProfile = () => {
     return missing;
   };
 
+  // Debug: Log artist data to see rider information
+  console.log('ArtistProfile - artist data:', artist);
+  console.log('ArtistProfile - riders data:', artist?.riders);
+
   const missingFields = getMissingFields();
   const isProfileIncomplete = missingFields.length > 0;
 
@@ -328,7 +332,7 @@ const ArtistProfile = () => {
                 <GalleryTab artist={{ photos: artist?.photos }} />
               )}
               {activeTab === ArtistTab.RIDER && (
-                <RiderTab artist={{ rider: (artist as any)?.rider }} />
+                <RiderTab artist={{ riders: artist?.riders }} />
               )}
               {activeTab === ArtistTab.BOOKING && !isOwnProfile && (
                 <BookingTab
