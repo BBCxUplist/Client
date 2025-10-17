@@ -226,7 +226,7 @@ const AdminDashboard = () => {
   return (
     <div className='min-h-screen flex flex-col'>
       {/* Header */}
-      <div className='bg-black/50 border-b border-dashed border-white/20 p-4 lg:p-6'>
+      <div className='bg-black border-b border-dashed border-white/20 p-4 lg:p-6 sticky top-0 z-10'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-4'>
             <Link to='/' className='relative'>
@@ -387,7 +387,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Desktop Sidebar */}
-        <div className='hidden lg:block lg:w-64 bg-neutral-900 border-r border-dashed border-white/20 p-4'>
+        <div className='hidden lg:block lg:w-64 bg-neutral-900 border-r border-dashed border-white/20 p-4 sticky top-[121px] h-[calc(100dvh-121px)]'>
           <nav className='space-y-2'>
             {[
               {

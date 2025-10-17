@@ -218,9 +218,12 @@ const ArtistsTab = ({
               <div className='flex items-center gap-3'>
                 {artist.avatar ? (
                   <img
-                    src={artist.avatar}
+                    src={artist.avatar || '/images/artistNotFound.jpeg'}
                     alt={artist.name}
                     className='w-12 h-12 object-cover border-2 border-white/20'
+                    onError={e => {
+                      e.currentTarget.src = '/images/artistNotFound.jpeg';
+                    }}
                   />
                 ) : (
                   <div className='w-12 h-12 bg-orange-500 flex items-center justify-center text-black font-bold text-lg'>
