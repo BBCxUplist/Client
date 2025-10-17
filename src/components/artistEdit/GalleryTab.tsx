@@ -40,7 +40,7 @@ const GalleryTab = ({
     setErrorMessage('');
 
     const uploadPromises = Array.from(files).map(async file => {
-      const result = await handleFileUpload(file, 'artist', 'gallery');
+      const result = await handleFileUpload(file, 'artist');
       return result.success ? result.url : null;
     });
 

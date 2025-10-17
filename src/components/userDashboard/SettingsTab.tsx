@@ -83,7 +83,7 @@ const SettingsTab = ({
                 type='text'
                 value={profileForm.displayName}
                 onChange={e =>
-                  setProfileForm(prev => ({
+                  setProfileForm((prev: any) => ({
                     ...prev,
                     displayName: e.target.value,
                   }))
@@ -105,7 +105,7 @@ const SettingsTab = ({
               <textarea
                 value={profileForm.bio}
                 onChange={e =>
-                  setProfileForm(prev => ({
+                  setProfileForm((prev: any) => ({
                     ...prev,
                     bio: e.target.value,
                   }))
@@ -141,7 +141,7 @@ const SettingsTab = ({
                 type='text'
                 value={profileForm.location}
                 onChange={e =>
-                  setProfileForm(prev => ({
+                  setProfileForm((prev: any) => ({
                     ...prev,
                     location: e.target.value,
                   }))
@@ -166,7 +166,7 @@ const SettingsTab = ({
                       type='button'
                       onClick={() => {
                         reset();
-                        setProfileForm(prev => ({
+                        setProfileForm((prev: any) => ({
                           ...prev,
                           avatar: '',
                         }));

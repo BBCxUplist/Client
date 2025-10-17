@@ -78,7 +78,7 @@ const UserDashboard = () => {
 
   const handleAvatarUpload = async (file: File) => {
     try {
-      const result = await handleFileUpload(file, 'artist', 'avatars');
+      const result = await handleFileUpload(file, 'artist');
       if (result.success && result.url) {
         setProfileForm(prev => ({ ...prev, avatar: result.url! }));
       }

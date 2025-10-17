@@ -1,5 +1,5 @@
 import { navItems, contactItems } from '@/constants/navItems';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useStore } from '@/stores/store';
@@ -13,6 +13,7 @@ interface NavItem {
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
   const { isAuthenticated, user, logout, setAuthMode } = useStore();
 
   const handleMouseEnter = () => {
@@ -27,20 +28,20 @@ const Navbar = () => {
     try {
       await logout();
       setIsMenuOpen(false);
-      // Redirect to home page
-      window.location.href = '/';
+      // Navigate to home page using React Router
+      navigate('/');
     } catch (error) {
       console.error('Logout error:', error);
       // Even if logout fails, clear local state and redirect
       setIsMenuOpen(false);
-      window.location.href = '/';
+      navigate('/');
     }
   };
 
   const handleAuthClick = (mode: 'signin' | 'register') => {
     setAuthMode(mode);
     setIsMenuOpen(false);
-    window.location.href = '/auth';
+    navigate('/auth');
   };
 
   const handleNavClick = (item: NavItem) => {
@@ -48,7 +49,7 @@ const Navbar = () => {
       setIsMenuOpen(false);
 
       if (window.location.pathname !== '/') {
-        window.location.href = '/';
+        navigate('/');
         if (item.id) {
           sessionStorage.setItem('scrollToSection', item.id);
         }
@@ -76,7 +77,7 @@ const Navbar = () => {
       }, 300);
     } else {
       // For non-scroll items, navigate normally
-      window.location.href = item.href;
+      navigate(item.href);
     }
   };
 

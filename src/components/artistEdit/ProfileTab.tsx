@@ -153,11 +153,7 @@ const ProfileTab = ({
                       const file = e.target.files?.[0];
                       if (!file) return;
 
-                      const result = await handleFileUpload(
-                        file,
-                        'artist',
-                        'images'
-                      );
+                      const result = await handleFileUpload(file, 'artist');
                       if (result.success && result.url) {
                         handleInputChange('avatar', result.url);
                       }
