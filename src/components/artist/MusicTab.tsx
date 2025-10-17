@@ -12,13 +12,21 @@ interface MusicTabProps {
     };
     playlists?: Array<{
       id: string;
+      artistId: string;
+      isActive: boolean;
+      thumbnailUrl?: string;
       title: string;
-      items: Array<{
-        id: string;
-        title: string;
-        platform: string;
-        url: string;
-      }>;
+      description?: string;
+      saves: number;
+      listens: number;
+      embeds: {
+        youtube?: string[];
+        spotify?: string[];
+        soundcloud?: string[];
+        custom?: { title: string; url: string }[];
+      };
+      createdAt: string;
+      updatedAt: string;
     }>;
   };
 }
@@ -251,60 +259,131 @@ const MusicTab = ({ artist }: MusicTabProps) => {
                 key={`playlist-${playlistIndex}`}
                 className='bg-white/5 p-4 border border-white/10'
               >
-                <div className='flex items-center gap-3 mb-4'>
-                  <div className='w-6 h-6 flex items-center justify-center'>
-                    {getPlatformIcon('playlist')}
+                <div className='flex items-start gap-4 mb-4'>
+                  {/* Playlist Thumbnail */}
+                  {playlist.thumbnailUrl && (
+                    <img
+                      src={playlist.thumbnailUrl}
+                      alt={playlist.title}
+                      className='w-16 h-16 object-cover rounded border border-white/20 flex-shrink-0'
+                      onError={e => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  )}
+
+                  <div className='flex-1'>
+                    <div className='flex items-center gap-3 mb-2'>
+                      <div className='w-6 h-6 flex items-center justify-center'>
+                        {getPlatformIcon('playlist')}
+                      </div>
+                      <h4 className='text-white font-semibold text-lg'>
+                        {playlist.title}
+                      </h4>
+                    </div>
+
+                    {playlist.description && (
+                      <p className='text-white/60 text-sm mb-2 line-clamp-2'>
+                        {playlist.description}
+                      </p>
+                    )}
+
+                    <div className='flex items-center gap-4 text-xs text-white/50'>
+                      <span>
+                        {(() => {
+                          const totalTracks =
+                            (playlist.embeds.youtube?.length || 0) +
+                            (playlist.embeds.soundcloud?.length || 0) +
+                            (playlist.embeds.spotify?.length || 0) +
+                            (playlist.embeds.custom?.length || 0);
+                          return `${totalTracks} ${totalTracks === 1 ? 'track' : 'tracks'}`;
+                        })()}
+                      </span>
+                      <span>{playlist.saves} saves</span>
+                      <span>{playlist.listens} listens</span>
+                    </div>
                   </div>
-                  <h4 className='text-white font-semibold text-lg'>
-                    {playlist.title}
-                  </h4>
-                  <span className='text-white/60 text-sm'>
-                    ({playlist.items.length} tracks)
-                  </span>
                 </div>
                 <div className='space-y-4'>
-                  {playlist.items.map((item, itemIndex) => (
-                    <div
-                      key={`${playlistIndex}-${itemIndex}`}
-                      className='bg-white/5 p-3 border border-white/10'
-                    >
-                      <div className='flex items-center gap-3 mb-2'>
-                        {item.platform === 'custom' ? (
-                          <div className='w-4 h-4 flex items-center justify-center'>
-                            {getPlatformIcon(item.platform)}
-                          </div>
-                        ) : (
-                          <img
-                            src={getPlatformIconSrc(item.platform) || ''}
-                            alt={item.platform}
-                            className='w-4 h-4'
-                          />
-                        )}
-                        <span className='text-white/80 text-sm font-medium'>
-                          Track {itemIndex + 1}
-                        </span>
-                      </div>
+                  {(() => {
+                    // Convert API playlist structure to display format
+                    const allTracks: {
+                      platform: string;
+                      title: string;
+                      url: string;
+                    }[] = [];
+
+                    // Add YouTube tracks
+                    playlist.embeds.youtube?.forEach(url => {
+                      allTracks.push({ platform: 'youtube', title: url, url });
+                    });
+
+                    // Add SoundCloud tracks
+                    playlist.embeds.soundcloud?.forEach(url => {
+                      allTracks.push({
+                        platform: 'soundcloud',
+                        title: url,
+                        url,
+                      });
+                    });
+
+                    // Add Spotify tracks
+                    playlist.embeds.spotify?.forEach(url => {
+                      allTracks.push({ platform: 'spotify', title: url, url });
+                    });
+
+                    // Add custom tracks
+                    playlist.embeds.custom?.forEach(track => {
+                      allTracks.push({
+                        platform: 'custom',
+                        title: track.title,
+                        url: track.url,
+                      });
+                    });
+
+                    return allTracks.map((track, itemIndex) => (
                       <div
-                        className={
-                          item.platform === 'youtube'
-                            ? 'max-w-2xl'
-                            : 'max-w-4xl'
-                        }
+                        key={`${playlistIndex}-${itemIndex}`}
+                        className='bg-white/5 p-3 border border-white/10'
                       >
-                        <EmbedPlayer
-                          url={item.url}
-                          platform={
-                            item.platform === 'custom'
-                              ? 'youtube'
-                              : (item.platform as
-                                  | 'spotify'
-                                  | 'soundcloud'
-                                  | 'youtube')
+                        <div className='flex items-center gap-3 mb-2'>
+                          {track.platform === 'custom' ? (
+                            <div className='w-4 h-4 flex items-center justify-center'>
+                              {getPlatformIcon(track.platform)}
+                            </div>
+                          ) : (
+                            <img
+                              src={getPlatformIconSrc(track.platform) || ''}
+                              alt={track.platform}
+                              className='w-4 h-4'
+                            />
+                          )}
+                          <span className='text-white/80 text-sm font-medium'>
+                            {track.title}
+                          </span>
+                        </div>
+                        <div
+                          className={
+                            track.platform === 'youtube'
+                              ? 'max-w-2xl'
+                              : 'max-w-4xl'
                           }
-                        />
+                        >
+                          <EmbedPlayer
+                            url={track.url}
+                            platform={
+                              track.platform === 'custom'
+                                ? 'youtube'
+                                : (track.platform as
+                                    | 'spotify'
+                                    | 'soundcloud'
+                                    | 'youtube')
+                            }
+                          />
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ));
+                  })()}
                 </div>
               </div>
             ))

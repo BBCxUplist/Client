@@ -106,7 +106,7 @@ const AddMusicSection = ({
       console.log('Uploading audio file:', audioFile);
 
       // Upload the audio file using the hook
-      const result = await handleFileUpload(audioFile, 'artist', 'audio');
+      const result = await handleFileUpload(audioFile, 'artist');
 
       if (result.success && result.url) {
         onAddCustomTrack(audioTitle.trim(), result.url);

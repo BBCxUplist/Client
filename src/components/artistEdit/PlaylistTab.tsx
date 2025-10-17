@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+// Playlist CRUD operations component
+
 interface PlaylistItem {
   id: string;
   title: string;
@@ -14,6 +16,7 @@ interface Playlist {
   createdAt: string;
 }
 
+// Updated interface for playlist CRUD operations
 interface PlaylistTabProps {
   formData?: {
     embeds?: {
@@ -22,14 +25,70 @@ interface PlaylistTabProps {
       spotify?: string[];
       custom?: { title: string; url: string }[];
     };
-    playlists?: Playlist[];
   };
-  handleInputChange?: (field: string, value: any) => void;
+  playlists?: {
+    id: string;
+    artistId: string;
+    isActive: boolean;
+    thumbnailUrl?: string;
+    title: string;
+    description?: string;
+    saves: number;
+    listens: number;
+    embeds: {
+      youtube?: string[];
+      spotify?: string[];
+      soundcloud?: string[];
+      custom?: { title: string; url: string }[];
+    };
+    createdAt: string;
+    updatedAt: string;
+  }[];
+  onCreatePlaylist?: (playlistData: {
+    title: string;
+    description?: string;
+    thumbnailUrl?: string;
+    embeds: {
+      youtube?: string[];
+      spotify?: string[];
+      soundcloud?: string[];
+      custom?: { title: string; url: string }[];
+    };
+  }) => Promise<void>;
+  onUpdatePlaylist?: (
+    playlistId: string,
+    playlistData: {
+      title?: string;
+      description?: string;
+      thumbnailUrl?: string;
+      embeds?: {
+        youtube?: string[];
+        spotify?: string[];
+        soundcloud?: string[];
+        custom?: { title: string; url: string }[];
+      };
+    }
+  ) => Promise<void>;
+  onDeletePlaylist?: (playlistId: string) => Promise<void>;
+  isCreating?: boolean;
+  isUpdating?: boolean;
+  isDeleting?: boolean;
 }
 
-const PlaylistTab = ({ formData, handleInputChange }: PlaylistTabProps) => {
+const PlaylistTab = ({
+  formData,
+  playlists = [],
+  onCreatePlaylist,
+  onUpdatePlaylist,
+  onDeletePlaylist,
+  isCreating,
+  isUpdating,
+  isDeleting,
+}: PlaylistTabProps) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newPlaylistTitle, setNewPlaylistTitle] = useState('');
+  const [newPlaylistDescription, setNewPlaylistDescription] = useState('');
+  const [newPlaylistThumbnail, setNewPlaylistThumbnail] = useState('');
   const [selectedSongs, setSelectedSongs] = useState<string[]>([]);
   const [editingPlaylist, setEditingPlaylist] = useState<Playlist | null>(null);
   const [activePlatformTab, setActivePlatformTab] = useState<
@@ -81,13 +140,13 @@ const PlaylistTab = ({ formData, handleInputChange }: PlaylistTabProps) => {
     });
   }
 
-  const playlists = formData?.playlists || [];
+  // playlists are now passed as a prop from the profile API
 
-  const handleCreatePlaylist = () => {
+  const handleCreatePlaylist = async () => {
     if (
       !newPlaylistTitle.trim() ||
       selectedSongs.length === 0 ||
-      !handleInputChange
+      !onCreatePlaylist
     )
       return;
 
@@ -95,46 +154,87 @@ const PlaylistTab = ({ formData, handleInputChange }: PlaylistTabProps) => {
       selectedSongs.includes(song.id)
     );
 
-    const newPlaylist: Playlist = {
-      id: Date.now().toString(),
-      title: newPlaylistTitle.trim(),
-      items: playlistItems,
-      createdAt: new Date().toISOString(),
+    // Group songs by platform for the API
+    const embeds = {
+      youtube: playlistItems
+        .filter(item => item.platform === 'youtube')
+        .map(item => item.url),
+      soundcloud: playlistItems
+        .filter(item => item.platform === 'soundcloud')
+        .map(item => item.url),
+      spotify: playlistItems
+        .filter(item => item.platform === 'spotify')
+        .map(item => item.url),
+      custom: playlistItems
+        .filter(item => item.platform === 'custom')
+        .map(item => ({
+          title: item.title,
+          url: item.url,
+        })),
     };
 
-    const updatedPlaylists = [...playlists, newPlaylist];
-    handleInputChange('playlists', updatedPlaylists);
+    const playlistData = {
+      title: newPlaylistTitle.trim(),
+      description: newPlaylistDescription.trim(),
+      thumbnailUrl: newPlaylistThumbnail.trim(),
+      embeds,
+    };
 
-    // Reset form
-    setNewPlaylistTitle('');
-    setSelectedSongs([]);
-    setShowCreateModal(false);
+    try {
+      await onCreatePlaylist(playlistData);
 
-    console.log('Created playlist:', newPlaylist);
+      // Reset form
+      setNewPlaylistTitle('');
+      setNewPlaylistDescription('');
+      setNewPlaylistThumbnail('');
+      setSelectedSongs([]);
+      setShowCreateModal(false);
+    } catch (error) {
+      console.error('Error creating playlist:', error);
+    }
   };
 
-  const handleDeletePlaylist = (playlistId: string) => {
-    if (!handleInputChange) return;
+  const handleDeletePlaylist = async (playlistId: string) => {
+    if (!onDeletePlaylist) return;
 
-    const updatedPlaylists = playlists.filter(
-      playlist => playlist.id !== playlistId
-    );
-    handleInputChange('playlists', updatedPlaylists);
+    try {
+      await onDeletePlaylist(playlistId);
+    } catch (error) {
+      console.error('Error deleting playlist:', error);
+    }
   };
 
-  const handleEditPlaylist = (playlist: Playlist) => {
+  const handleEditPlaylist = (playlist: any) => {
     setEditingPlaylist(playlist);
     setNewPlaylistTitle(playlist.title);
-    setSelectedSongs(playlist.items.map(item => item.id));
+    setNewPlaylistDescription(playlist.description || '');
+    setNewPlaylistThumbnail(playlist.thumbnailUrl || '');
+    // For editing, we need to reconstruct the selected songs from the embeds
+    const selectedSongs: string[] = [];
+    if (playlist.embeds) {
+      playlist.embeds.youtube?.forEach((_url: string, index: number) => {
+        selectedSongs.push(`youtube-${index}`);
+      });
+      playlist.embeds.soundcloud?.forEach((_url: string, index: number) => {
+        selectedSongs.push(`soundcloud-${index}`);
+      });
+      playlist.embeds.spotify?.forEach((_url: string, index: number) => {
+        selectedSongs.push(`spotify-${index}`);
+      });
+      playlist.embeds.custom?.forEach((_track: any, index: number) => {
+        selectedSongs.push(`custom-${index}`);
+      });
+    }
+    setSelectedSongs(selectedSongs);
     setShowCreateModal(true);
   };
 
-  const handleUpdatePlaylist = () => {
+  const handleUpdatePlaylist = async () => {
     if (
       !editingPlaylist ||
       !newPlaylistTitle.trim() ||
       selectedSongs.length === 0 ||
-      !handleInputChange
+      !onUpdatePlaylist
     )
       return;
 
@@ -142,25 +242,45 @@ const PlaylistTab = ({ formData, handleInputChange }: PlaylistTabProps) => {
       selectedSongs.includes(song.id)
     );
 
-    const updatedPlaylist: Playlist = {
-      ...editingPlaylist,
-      title: newPlaylistTitle.trim(),
-      items: playlistItems,
+    // Group songs by platform for the API
+    const embeds = {
+      youtube: playlistItems
+        .filter(item => item.platform === 'youtube')
+        .map(item => item.url),
+      soundcloud: playlistItems
+        .filter(item => item.platform === 'soundcloud')
+        .map(item => item.url),
+      spotify: playlistItems
+        .filter(item => item.platform === 'spotify')
+        .map(item => item.url),
+      custom: playlistItems
+        .filter(item => item.platform === 'custom')
+        .map(item => ({
+          title: item.title,
+          url: item.url,
+        })),
     };
 
-    const updatedPlaylists = playlists.map(playlist =>
-      playlist.id === editingPlaylist.id ? updatedPlaylist : playlist
-    );
+    const playlistData = {
+      title: newPlaylistTitle.trim(),
+      description: newPlaylistDescription.trim(),
+      thumbnailUrl: newPlaylistThumbnail.trim(),
+      embeds,
+    };
 
-    handleInputChange('playlists', updatedPlaylists);
+    try {
+      await onUpdatePlaylist(editingPlaylist.id, playlistData);
 
-    // Reset form
-    setNewPlaylistTitle('');
-    setSelectedSongs([]);
-    setEditingPlaylist(null);
-    setShowCreateModal(false);
-
-    console.log('Updated playlist:', updatedPlaylist);
+      // Reset form
+      setNewPlaylistTitle('');
+      setNewPlaylistDescription('');
+      setNewPlaylistThumbnail('');
+      setSelectedSongs([]);
+      setEditingPlaylist(null);
+      setShowCreateModal(false);
+    } catch (error) {
+      console.error('Error updating playlist:', error);
+    }
   };
 
   const handleSongToggle = (songId: string) => {
@@ -202,6 +322,8 @@ const PlaylistTab = ({ formData, handleInputChange }: PlaylistTabProps) => {
     setShowCreateModal(false);
     setEditingPlaylist(null);
     setNewPlaylistTitle('');
+    setNewPlaylistDescription('');
+    setNewPlaylistThumbnail('');
     setSelectedSongs([]);
     setActivePlatformTab('youtube');
   };
@@ -259,14 +381,46 @@ const PlaylistTab = ({ formData, handleInputChange }: PlaylistTabProps) => {
                 key={playlist.id}
                 className='group relative bg-white/5 border border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all rounded p-4'
               >
-                <div className='flex items-center justify-between mb-3'>
-                  <div>
-                    <h4 className='text-white font-medium'>{playlist.title}</h4>
-                    <p className='text-white/60 text-sm'>
-                      {playlist.items.length}{' '}
-                      {playlist.items.length === 1 ? 'track' : 'tracks'}
-                    </p>
+                <div className='flex items-start justify-between mb-3'>
+                  <div className='flex items-start gap-4 flex-1'>
+                    {/* Thumbnail */}
+                    {playlist.thumbnailUrl && (
+                      <img
+                        src={playlist.thumbnailUrl}
+                        alt={playlist.title}
+                        className='w-16 h-16 object-cover rounded border border-white/20 flex-shrink-0'
+                        onError={e => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    )}
+
+                    <div className='flex-1'>
+                      <h4 className='text-white font-medium'>
+                        {playlist.title}
+                      </h4>
+                      {playlist.description && (
+                        <p className='text-white/60 text-sm mt-1 line-clamp-2'>
+                          {playlist.description}
+                        </p>
+                      )}
+                      <div className='flex items-center gap-4 mt-2 text-xs text-white/50'>
+                        <span>
+                          {(() => {
+                            const totalTracks =
+                              (playlist.embeds.youtube?.length || 0) +
+                              (playlist.embeds.soundcloud?.length || 0) +
+                              (playlist.embeds.spotify?.length || 0) +
+                              (playlist.embeds.custom?.length || 0);
+                            return `${totalTracks} ${totalTracks === 1 ? 'track' : 'tracks'}`;
+                          })()}
+                        </span>
+                        <span>{playlist.saves} saves</span>
+                        <span>{playlist.listens} listens</span>
+                      </div>
+                    </div>
                   </div>
+
                   <div className='flex items-center gap-2'>
                     <button
                       onClick={() => handleEditPlaylist(playlist)}
@@ -289,7 +443,8 @@ const PlaylistTab = ({ formData, handleInputChange }: PlaylistTabProps) => {
                     </button>
                     <button
                       onClick={() => handleDeletePlaylist(playlist.id)}
-                      className='text-white/60 hover:text-red-400 p-2 transition-colors'
+                      disabled={isDeleting}
+                      className='text-white/60 hover:text-red-400 p-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
                       title='Delete playlist'
                     >
                       <svg
@@ -311,24 +466,61 @@ const PlaylistTab = ({ formData, handleInputChange }: PlaylistTabProps) => {
 
                 {/* Playlist Items */}
                 <div className='space-y-2'>
-                  {playlist.items.map((item, index) => (
-                    <div
-                      key={item.id}
-                      className='flex items-center gap-3 p-2 bg-white/5 rounded'
-                    >
-                      <div className='w-6 h-6 bg-orange-500/20 flex items-center justify-center rounded text-xs text-orange-400 font-medium'>
-                        {index + 1}
+                  {(() => {
+                    // Convert API playlist structure to display format
+                    const allTracks: {
+                      platform: string;
+                      title: string;
+                      url: string;
+                    }[] = [];
+
+                    // Add YouTube tracks
+                    playlist.embeds.youtube?.forEach(url => {
+                      allTracks.push({ platform: 'youtube', title: url, url });
+                    });
+
+                    // Add SoundCloud tracks
+                    playlist.embeds.soundcloud?.forEach(url => {
+                      allTracks.push({
+                        platform: 'soundcloud',
+                        title: url,
+                        url,
+                      });
+                    });
+
+                    // Add Spotify tracks
+                    playlist.embeds.spotify?.forEach(url => {
+                      allTracks.push({ platform: 'spotify', title: url, url });
+                    });
+
+                    // Add custom tracks
+                    playlist.embeds.custom?.forEach(track => {
+                      allTracks.push({
+                        platform: 'custom',
+                        title: track.title,
+                        url: track.url,
+                      });
+                    });
+
+                    return allTracks.map((track, index) => (
+                      <div
+                        key={`${track.platform}-${index}`}
+                        className='flex items-center gap-3 p-2 bg-white/5 rounded'
+                      >
+                        <div className='w-6 h-6 bg-orange-500/20 flex items-center justify-center rounded text-xs text-orange-400 font-medium'>
+                          {index + 1}
+                        </div>
+                        <div className='w-6 h-6 flex items-center justify-center'>
+                          {getPlatformIcon(track.platform)}
+                        </div>
+                        <div className='flex-1 min-w-0'>
+                          <p className='text-white text-sm truncate'>
+                            {track.title}
+                          </p>
+                        </div>
                       </div>
-                      <div className='w-6 h-6 flex items-center justify-center'>
-                        {getPlatformIcon(item.platform)}
-                      </div>
-                      <div className='flex-1 min-w-0'>
-                        <p className='text-white text-sm truncate'>
-                          {item.title}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    ));
+                  })()}
                 </div>
               </div>
             ))
@@ -368,7 +560,7 @@ const PlaylistTab = ({ formData, handleInputChange }: PlaylistTabProps) => {
               {/* Playlist Title */}
               <div>
                 <label className='block text-white/70 text-sm mb-2'>
-                  Playlist Title
+                  Playlist Title *
                 </label>
                 <input
                   type='text'
@@ -377,6 +569,46 @@ const PlaylistTab = ({ formData, handleInputChange }: PlaylistTabProps) => {
                   className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
                   placeholder='Enter playlist title...'
                 />
+              </div>
+
+              {/* Playlist Description */}
+              <div>
+                <label className='block text-white/70 text-sm mb-2'>
+                  Description
+                </label>
+                <textarea
+                  value={newPlaylistDescription}
+                  onChange={e => setNewPlaylistDescription(e.target.value)}
+                  className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12] resize-none'
+                  placeholder='Enter playlist description...'
+                  rows={3}
+                />
+              </div>
+
+              {/* Playlist Thumbnail */}
+              <div>
+                <label className='block text-white/70 text-sm mb-2'>
+                  Thumbnail URL
+                </label>
+                <input
+                  type='url'
+                  value={newPlaylistThumbnail}
+                  onChange={e => setNewPlaylistThumbnail(e.target.value)}
+                  className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
+                  placeholder='https://example.com/thumbnail.jpg'
+                />
+                {newPlaylistThumbnail && (
+                  <div className='mt-2'>
+                    <img
+                      src={newPlaylistThumbnail}
+                      alt='Thumbnail preview'
+                      className='w-20 h-20 object-cover rounded border border-white/20'
+                      onError={e => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Platform Tabs */}
@@ -516,11 +748,20 @@ const PlaylistTab = ({ formData, handleInputChange }: PlaylistTabProps) => {
                       : handleCreatePlaylist
                   }
                   disabled={
-                    !newPlaylistTitle.trim() || selectedSongs.length === 0
+                    !newPlaylistTitle.trim() ||
+                    selectedSongs.length === 0 ||
+                    isCreating ||
+                    isUpdating
                   }
                   className='bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
                 >
-                  {editingPlaylist ? 'Update Playlist' : 'Create Playlist'}
+                  {isCreating
+                    ? 'Creating...'
+                    : isUpdating
+                      ? 'Updating...'
+                      : editingPlaylist
+                        ? 'Update Playlist'
+                        : 'Create Playlist'}
                 </button>
               </div>
             </div>

@@ -4,6 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { useStore } from '@/stores/store';
 import { useUpdateArtistProfile } from '@/hooks/artist/useUpdateArtistProfile';
 import { useGetArtistProfile } from '@/hooks/artist/useGetArtistProfile';
+import {
+  useCreatePlaylist,
+  useUpdatePlaylist,
+  useDeletePlaylist,
+} from '@/hooks/artist/usePlaylist';
 import Navbar from '@/components/landing/Navbar';
 import ProfileTab from '@/components/artistEdit/ProfileTab';
 import MusicTab from '@/components/artistEdit/MusicTab';
@@ -71,7 +76,24 @@ const ArtistEdit = () => {
     },
     photos: [] as string[],
     rider: [] as any[],
-    playlists: [] as any[],
+    playlists: [] as {
+      id: string;
+      artistId: string;
+      isActive: boolean;
+      thumbnailUrl?: string;
+      title: string;
+      description?: string;
+      saves: number;
+      listens: number;
+      embeds: {
+        youtube?: string[];
+        spotify?: string[];
+        soundcloud?: string[];
+        custom?: { title: string; url: string }[];
+      };
+      createdAt: string;
+      updatedAt: string;
+    }[],
   });
 
   // Original data to track changes
@@ -99,11 +121,50 @@ const ArtistEdit = () => {
     },
     photos: [] as string[],
     rider: [] as any[],
-    playlists: [] as any[],
+    playlists: [] as {
+      id: string;
+      artistId: string;
+      isActive: boolean;
+      thumbnailUrl?: string;
+      title: string;
+      description?: string;
+      saves: number;
+      listens: number;
+      embeds: {
+        youtube?: string[];
+        spotify?: string[];
+        soundcloud?: string[];
+        custom?: { title: string; url: string }[];
+      };
+      createdAt: string;
+      updatedAt: string;
+    }[],
   });
 
   // Update profile mutation
   const updateProfileMutation = useUpdateArtistProfile();
+
+  // Create playlist mutation
+  const createPlaylistMutation = useCreatePlaylist({
+    onSuccess: () => {
+      // Refresh artist profile data after creating playlist
+      // The query invalidation in the hook will handle this
+    },
+  });
+
+  // Update playlist mutation
+  const updatePlaylistMutation = useUpdatePlaylist({
+    onSuccess: () => {
+      // Refresh artist profile data after updating playlist
+    },
+  });
+
+  // Delete playlist mutation
+  const deletePlaylistMutation = useDeletePlaylist({
+    onSuccess: () => {
+      // Refresh artist profile data after deleting playlist
+    },
+  });
 
   // Message states
   const [successMessage, setSuccessMessage] = useState('');
@@ -186,6 +247,62 @@ const ArtistEdit = () => {
       ...prev,
       photos,
     }));
+  };
+
+  const handleCreatePlaylist = async (playlistData: {
+    title: string;
+    description?: string;
+    thumbnailUrl?: string;
+    embeds: {
+      youtube?: string[];
+      spotify?: string[];
+      soundcloud?: string[];
+      custom?: { title: string; url: string }[];
+    };
+  }) => {
+    try {
+      await createPlaylistMutation.mutateAsync(playlistData);
+      // Profile data will be refreshed automatically via query invalidation
+    } catch (error) {
+      console.error('Error creating playlist:', error);
+      setErrorMessage('Failed to create playlist. Please try again.');
+    }
+  };
+
+  const handleUpdatePlaylist = async (
+    playlistId: string,
+    playlistData: {
+      title?: string;
+      description?: string;
+      thumbnailUrl?: string;
+      embeds?: {
+        youtube?: string[];
+        spotify?: string[];
+        soundcloud?: string[];
+        custom?: { title: string; url: string }[];
+      };
+    }
+  ) => {
+    try {
+      await updatePlaylistMutation.mutateAsync({
+        playlistId,
+        data: playlistData,
+      });
+      // Profile data will be refreshed automatically via query invalidation
+    } catch (error) {
+      console.error('Error updating playlist:', error);
+      setErrorMessage('Failed to update playlist. Please try again.');
+    }
+  };
+
+  const handleDeletePlaylist = async (playlistId: string) => {
+    try {
+      await deletePlaylistMutation.mutateAsync(playlistId);
+      // Profile data will be refreshed automatically via query invalidation
+    } catch (error) {
+      console.error('Error deleting playlist:', error);
+      setErrorMessage('Failed to delete playlist. Please try again.');
+    }
   };
 
   // Function to get only changed fields (excluding gallery photos)
@@ -485,7 +602,13 @@ const ArtistEdit = () => {
           {activeTab === ArtistEditTab.PLAYLIST && (
             <PlaylistTab
               formData={formData as any}
-              handleInputChange={handleInputChange}
+              playlists={(artist as any)?.playlists || []}
+              onCreatePlaylist={handleCreatePlaylist}
+              onUpdatePlaylist={handleUpdatePlaylist}
+              onDeletePlaylist={handleDeletePlaylist}
+              isCreating={createPlaylistMutation.isPending}
+              isUpdating={updatePlaylistMutation.isPending}
+              isDeleting={deletePlaylistMutation.isPending}
             />
           )}
 
