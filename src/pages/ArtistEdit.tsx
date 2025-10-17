@@ -67,6 +67,7 @@ const ArtistEdit = () => {
       youtube: [] as string[],
       soundcloud: [] as string[],
       spotify: [] as string[],
+      custom: [] as { title: string; url: string }[],
     },
     photos: [] as string[],
     rider: [] as any[],
@@ -94,6 +95,7 @@ const ArtistEdit = () => {
       youtube: [] as string[],
       soundcloud: [] as string[],
       spotify: [] as string[],
+      custom: [] as { title: string; url: string }[],
     },
     photos: [] as string[],
     rider: [] as any[],
@@ -133,6 +135,7 @@ const ArtistEdit = () => {
           youtube: (artist as any).embeds?.youtube || [],
           soundcloud: (artist as any).embeds?.soundcloud || [],
           spotify: (artist as any).embeds?.spotify || [],
+          custom: (artist as any).embeds?.custom || [],
         },
         photos: (artist as any).photos || [],
         rider: (artist as any).rider || [],
@@ -481,7 +484,7 @@ const ArtistEdit = () => {
           {/* Playlist Tab */}
           {activeTab === ArtistEditTab.PLAYLIST && (
             <PlaylistTab
-              formData={formData}
+              formData={formData as any}
               handleInputChange={handleInputChange}
             />
           )}

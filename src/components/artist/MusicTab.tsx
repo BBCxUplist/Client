@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import EmbedPlayer from './EmbedPlayer';
 
 interface MusicTabProps {
@@ -8,7 +8,7 @@ interface MusicTabProps {
       spotify?: string[];
       youtube?: string[];
       soundcloud?: string[];
-      custom?: string[];
+      custom?: { title: string; url: string }[];
     };
     playlists?: Array<{
       id: string;
@@ -27,6 +27,9 @@ const MusicTab = ({ artist }: MusicTabProps) => {
   const [selectedPlatform, setSelectedPlatform] = useState<
     'spotify' | 'soundcloud' | 'youtube' | 'custom' | 'playlist'
   >('spotify');
+  const [playingTrack, setPlayingTrack] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Use real artist data from API - always ensure arrays
   const musicData = useMemo(
@@ -58,7 +61,72 @@ const MusicTab = ({ artist }: MusicTabProps) => {
         </svg>
       );
     }
+    if (platform === 'custom') {
+      return (
+        <svg
+          className='w-4 h-4 text-white'
+          fill='none'
+          stroke='currentColor'
+          viewBox='0 0 24 24'
+        >
+          <path
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            strokeWidth={2}
+            d='M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3'
+          />
+        </svg>
+      );
+    }
     return `/icons/embeds/${platform}.png`;
+  };
+
+  const getPlatformIconSrc = (platform: string) => {
+    if (platform === 'playlist' || platform === 'custom') {
+      return null; // These use SVG elements, not images
+    }
+    return `/icons/embeds/${platform}.png`;
+  };
+
+  const handlePlayCustomTrack = (trackUrl: string, _trackTitle: string) => {
+    if (playingTrack === trackUrl && isPlaying) {
+      // Pause current track
+      if (audioRef.current) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+        setPlayingTrack(null);
+      }
+    } else {
+      // Play new track
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+
+      const audio = new Audio(trackUrl);
+      audioRef.current = audio;
+
+      audio.addEventListener('loadstart', () => {
+        setIsPlaying(true);
+        setPlayingTrack(trackUrl);
+      });
+
+      audio.addEventListener('ended', () => {
+        setIsPlaying(false);
+        setPlayingTrack(null);
+      });
+
+      audio.addEventListener('error', () => {
+        console.error('Error playing audio:', trackUrl);
+        setIsPlaying(false);
+        setPlayingTrack(null);
+      });
+
+      audio.play().catch(error => {
+        console.error('Error playing audio:', error);
+        setIsPlaying(false);
+        setPlayingTrack(null);
+      });
+    }
   };
 
   const getAvailablePlatforms = () => {
@@ -75,7 +143,10 @@ const MusicTab = ({ artist }: MusicTabProps) => {
 
   const availablePlatforms = getAvailablePlatforms();
   const currentPlatformTracks = useMemo(() => {
-    const tracks = musicData[selectedPlatform];
+    if (selectedPlatform === 'playlist') {
+      return musicData.playlists;
+    }
+    const tracks = musicData[selectedPlatform as keyof typeof musicData];
 
     // Force it to be an array
     if (!Array.isArray(tracks)) {
@@ -94,6 +165,16 @@ const MusicTab = ({ artist }: MusicTabProps) => {
       setSelectedPlatform(availablePlatforms[0]);
     }
   }, [currentPlatformTracks.length, availablePlatforms]);
+
+  // Cleanup audio when component unmounts
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
 
   // Error boundary for the component
   if (!artist || !artist.embeds) {
@@ -137,19 +218,19 @@ const MusicTab = ({ artist }: MusicTabProps) => {
             <button
               key={platform}
               onClick={() => setSelectedPlatform(platform)}
-              className={`px-4 py-2 text-sm font-semibold transition-all duration-300 border flex  ${
+              className={`px-4 py-2 text-sm font-semibold transition-all duration-300 border flex rounded ${
                 selectedPlatform === platform
                   ? 'bg-orange-500 text-black border-orange-500'
                   : 'text-white border-white/30 hover:border-white/60'
               }`}
             >
-              {platform === 'playlist' ? (
+              {platform === 'playlist' || platform === 'custom' ? (
                 <div className='w-4 h-4 mr-2 flex items-center justify-center'>
                   {getPlatformIcon(platform)}
                 </div>
               ) : (
                 <img
-                  src={getPlatformIcon(platform)}
+                  src={getPlatformIconSrc(platform) || ''}
                   alt={platform}
                   className='w-4 h-4 mr-2'
                 />
@@ -188,11 +269,17 @@ const MusicTab = ({ artist }: MusicTabProps) => {
                       className='bg-white/5 p-3 border border-white/10'
                     >
                       <div className='flex items-center gap-3 mb-2'>
-                        <img
-                          src={getPlatformIcon(item.platform)}
-                          alt={item.platform}
-                          className='w-4 h-4'
-                        />
+                        {item.platform === 'custom' ? (
+                          <div className='w-4 h-4 flex items-center justify-center'>
+                            {getPlatformIcon(item.platform)}
+                          </div>
+                        ) : (
+                          <img
+                            src={getPlatformIconSrc(item.platform) || ''}
+                            alt={item.platform}
+                            className='w-4 h-4'
+                          />
+                        )}
                         <span className='text-white/80 text-sm font-medium'>
                           Track {itemIndex + 1}
                         </span>
@@ -207,10 +294,12 @@ const MusicTab = ({ artist }: MusicTabProps) => {
                         <EmbedPlayer
                           url={item.url}
                           platform={
-                            item.platform as
-                              | 'spotify'
-                              | 'soundcloud'
-                              | 'youtube'
+                            item.platform === 'custom'
+                              ? 'youtube'
+                              : (item.platform as
+                                  | 'spotify'
+                                  | 'soundcloud'
+                                  | 'youtube')
                           }
                         />
                       </div>
@@ -231,30 +320,120 @@ const MusicTab = ({ artist }: MusicTabProps) => {
           )
         ) : Array.isArray(currentPlatformTracks) &&
           currentPlatformTracks.length > 0 ? (
-          currentPlatformTracks.map((embedUrl, index) => (
-            <div
-              key={`${selectedPlatform}-${index}`}
-              className='bg-white/5 p-4 border border-white/10'
-            >
-              <div className='flex items-center gap-3 mb-4'>
-                <img
-                  src={getPlatformIcon(selectedPlatform)}
-                  alt={selectedPlatform}
-                  className='w-6 h-6'
-                />
-                <h4 className='text-white font-semibold text-lg'>
-                  Track {index + 1}
-                </h4>
-              </div>
+          currentPlatformTracks.map((track, index) => {
+            // Handle both string and object formats for custom tracks
+            const isCustomTrack =
+              selectedPlatform === 'custom' && typeof track === 'object';
+            const trackUrl = isCustomTrack
+              ? (track as { title: string; url: string }).url
+              : (track as string);
+            const trackTitle = isCustomTrack
+              ? (track as { title: string; url: string }).title
+              : `Track ${index + 1}`;
+
+            return (
               <div
-                className={
-                  selectedPlatform === 'youtube' ? 'max-w-2xl' : 'max-w-4xl'
-                }
+                key={`${selectedPlatform}-${index}`}
+                className={`bg-white/5 border border-white/10 transition-all duration-300 hover:bg-white/[0.08] hover:border-white/20 ${
+                  isCustomTrack ? 'p-6 rounded-xl' : 'p-4'
+                }`}
               >
-                <EmbedPlayer url={embedUrl} platform={selectedPlatform} />
+                <div className='flex items-center gap-4 mb-4'>
+                  {selectedPlatform === 'custom' ? (
+                    <div className='w-10 h-10 bg-orange-500/20 rounded-full flex items-center justify-center'>
+                      {getPlatformIcon(selectedPlatform)}
+                    </div>
+                  ) : (
+                    <img
+                      src={getPlatformIconSrc(selectedPlatform) || ''}
+                      alt={selectedPlatform}
+                      className='w-6 h-6'
+                    />
+                  )}
+                  <div className='flex-1'>
+                    <h4 className='text-white font-semibold text-lg'>
+                      {trackTitle}
+                    </h4>
+                    {isCustomTrack && (
+                      <p className='text-white/60 text-sm mt-1'>
+                        Custom Upload
+                      </p>
+                    )}
+                  </div>
+                  {isCustomTrack && (
+                    <div className='flex items-center gap-2 text-orange-400 text-sm'>
+                      <svg
+                        className='w-4 h-4'
+                        fill='none'
+                        stroke='currentColor'
+                        viewBox='0 0 24 24'
+                      >
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth={2}
+                          d='M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3'
+                        />
+                      </svg>
+                      <span className='font-medium'>Audio Track</span>
+                    </div>
+                  )}
+                </div>
+                <div
+                  className={
+                    selectedPlatform === 'youtube' ? 'max-w-2xl' : 'max-w-4xl'
+                  }
+                >
+                  {isCustomTrack ? (
+                    <div className='flex items-center justify-center py-8'>
+                      <button
+                        onClick={() =>
+                          handlePlayCustomTrack(trackUrl, trackTitle)
+                        }
+                        className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg ${
+                          playingTrack === trackUrl && isPlaying
+                            ? 'bg-red-500 hover:bg-red-600'
+                            : 'bg-orange-500 hover:bg-orange-600'
+                        }`}
+                      >
+                        {playingTrack === trackUrl && isPlaying ? (
+                          // Pause icon
+                          <svg
+                            className='w-8 h-8 text-black'
+                            fill='currentColor'
+                            viewBox='0 0 24 24'
+                          >
+                            <path d='M6 4h4v16H6V4zm8 0h4v16h-4V4z' />
+                          </svg>
+                        ) : (
+                          // Play icon
+                          <svg
+                            className='w-8 h-8 text-black ml-1'
+                            fill='currentColor'
+                            viewBox='0 0 24 24'
+                          >
+                            <path d='M8 5v14l11-7z' />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  ) : (
+                    <EmbedPlayer
+                      url={trackUrl}
+                      platform={
+                        selectedPlatform === 'custom'
+                          ? 'youtube'
+                          : (selectedPlatform as
+                              | 'spotify'
+                              | 'soundcloud'
+                              | 'youtube')
+                      }
+                    />
+                  )}
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         ) : availablePlatforms.length > 0 ? (
           <div className='flex flex-col items-center justify-center py-12 text-center'>
             <img

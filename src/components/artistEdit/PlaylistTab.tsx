@@ -20,7 +20,7 @@ interface PlaylistTabProps {
       youtube?: string[];
       soundcloud?: string[];
       spotify?: string[];
-      custom?: string[];
+      custom?: { title: string; url: string }[];
     };
     playlists?: Playlist[];
   };
@@ -71,12 +71,12 @@ const PlaylistTab = ({ formData, handleInputChange }: PlaylistTabProps) => {
     });
 
     // Custom songs
-    formData.embeds.custom?.forEach((url, index) => {
+    formData.embeds.custom?.forEach((track, index) => {
       availableSongs.push({
         id: `custom-${index}`,
-        title: url,
+        title: typeof track === 'string' ? track : track.title,
         platform: 'custom',
-        url: url,
+        url: typeof track === 'string' ? track : track.url,
       });
     });
   }

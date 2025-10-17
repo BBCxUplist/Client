@@ -18,6 +18,12 @@ interface UpdateArtistProfileData {
   };
   genres?: string[];
   price?: number;
+  embeds?: {
+    youtube?: string[];
+    soundcloud?: string[];
+    spotify?: string[];
+    custom?: { title: string; url: string }[];
+  };
 }
 
 interface UpdateArtistProfileResponse {
@@ -60,6 +66,16 @@ export const useUpdateArtistProfile = () => {
           queryKey: ['artist', 'email', user.email],
         });
       }
+
+      // Invalidate user profile to refresh saved artists and other profile data
+      queryClient.invalidateQueries({
+        queryKey: ['user', 'profile'],
+      });
+
+      // Invalidate artist profile queries
+      queryClient.invalidateQueries({
+        queryKey: ['artist'],
+      });
     },
     onError: error => {
       console.error('Profile update failed:', error);

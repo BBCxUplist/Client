@@ -14,24 +14,32 @@ export const useImageUpload = () => {
 
   const handleFileUpload = async (
     file: File,
-    bucketName: string = 'artist',
-    _folder: string = 'images'
+    bucketName: string = 'artist'
   ): Promise<UploadResult> => {
     setUploading(true);
     setError(null);
 
     try {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        const errorMsg = 'Please select an image file';
+      // Validate file type (images or audio)
+      const isImage = file.type.startsWith('image/');
+      const isAudio =
+        file.type.startsWith('audio/') ||
+        ['.mp3', '.wav', '.ogg', '.m4a'].some(ext =>
+          file.name.toLowerCase().endsWith(ext)
+        );
+
+      if (!isImage && !isAudio) {
+        const errorMsg = 'Please select an image or audio file';
         setError(errorMsg);
         return { success: false, error: errorMsg };
       }
 
-      // Validate file size (max 5MB)
-      const maxSize = 5 * 1024 * 1024; // 5MB
+      // Validate file size (max 5MB for images, 50MB for audio)
+      const maxSize = isImage ? 5 * 1024 * 1024 : 50 * 1024 * 1024; // 5MB for images, 50MB for audio
       if (file.size > maxSize) {
-        const errorMsg = 'File size must be less than 5MB';
+        const errorMsg = isImage
+          ? 'Image file size must be less than 5MB'
+          : 'Audio file size must be less than 50MB';
         setError(errorMsg);
         return { success: false, error: errorMsg };
       }
@@ -47,8 +55,12 @@ export const useImageUpload = () => {
         return { success: false, error: errorMsg };
       }
 
-      // Generate file path with user ID
-      const filePath = `${user.id}/avatar-${Date.now()}.png`;
+      // Generate file path with user ID and appropriate extension
+      const fileExtension = isImage
+        ? 'png'
+        : file.name.split('.').pop() || 'mp3';
+      const fileType = isImage ? 'avatar' : 'audio';
+      const filePath = `${user.id}/${fileType}-${Date.now()}.${fileExtension}`;
 
       // Upload file to Supabase Storage
       const { error: uploadError } = await supabase.storage
