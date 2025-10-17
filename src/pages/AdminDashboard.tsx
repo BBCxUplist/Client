@@ -7,6 +7,7 @@ import CreateArtistTab from '@/components/admin/CreateArtistTab';
 import ApprovedTab from '@/components/admin/ApprovedTab';
 import UsersTab from '@/components/admin/UsersTab';
 import ReportsTab from '@/components/admin/ReportsTab';
+import RecentActivityTab from '@/components/admin/RecentActivityTab';
 import SettingsTab from '@/components/admin/SettingsTab';
 import { artists } from '@/constants/artists';
 import { formatPrice } from '@/helper';
@@ -89,6 +90,7 @@ enum AdminTab {
   APPROVED = 'approved',
   USERS = 'users',
   REPORTS = 'reports',
+  RECENT_ACTIVITY = 'recent-activity',
   SETTINGS = 'settings',
 }
 
@@ -350,6 +352,7 @@ const AdminDashboard = () => {
                     { id: 'users', label: 'Users' },
                     { id: 'bookings', label: 'Bookings' },
                     { id: 'reports', label: 'Reports' },
+                    { id: 'recent-activity', label: 'Recent Activity' },
                     { id: 'settings', label: 'Settings' },
                   ].find(tab => tab.id === activeTab)?.label
                 }
@@ -380,11 +383,16 @@ const AdminDashboard = () => {
               {
                 id: 'create-artist',
                 label: 'Create Artist',
-                icon: '/icons/artist.png',
+                icon: '/icons/frame.svg',
               },
               { id: 'approved', label: 'Approved', icon: '/icons/check.png' },
               { id: 'users', label: 'Users', icon: '/icons/users.png' },
-              { id: 'reports', label: 'Reports', icon: '/icons/report.png' },
+              { id: 'reports', label: 'Reports', icon: '/icons/tick.svg' },
+              {
+                id: 'recent-activity',
+                label: 'Recent Activity',
+                icon: '/icons/overview.png',
+              },
               {
                 id: 'settings',
                 label: 'Settings',
@@ -427,11 +435,16 @@ const AdminDashboard = () => {
               {
                 id: 'create-artist',
                 label: 'Create Artist',
-                icon: '/icons/artist.png',
+                icon: '/icons/frame.svg',
               },
-              { id: 'approved', label: 'Approved', icon: '/icons/check.png' },
+              { id: 'approved', label: 'Approved', icon: '/icons/tick.svg' },
               { id: 'users', label: 'Users', icon: '/icons/users.png' },
               { id: 'reports', label: 'Reports', icon: '/icons/report.png' },
+              {
+                id: 'recent-activity',
+                label: 'Recent Activity',
+                icon: '/icons/overview.png',
+              },
               {
                 id: 'settings',
                 label: 'Settings',
@@ -505,6 +518,9 @@ const AdminDashboard = () => {
           {activeTab === AdminTab.REPORTS && (
             <ReportsTab dummyReports={dummyReports} />
           )}
+
+          {/* Recent Activity Tab */}
+          {activeTab === AdminTab.RECENT_ACTIVITY && <RecentActivityTab />}
 
           {/* Settings Tab */}
           {activeTab === AdminTab.SETTINGS && <SettingsTab />}
