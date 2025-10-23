@@ -32,16 +32,17 @@ const ArtistProfile = () => {
   const { data, isLoading, error } = useGetArtist(username || '');
   const artist = data?.data;
 
-  // Fetch user profile to get saved artists (will be refreshed after API calls)
+  // Fetch user profile to get saved artists
   const { data: userProfileData } = useGetUserProfile();
 
-  // Save artist hook
+  // Save artist hook with optimistic updates
   const {
     saveArtist,
     unsaveArtist,
     isLoading: isSaving,
   } = useSaveArtist({
     artistId: artist?.id || '',
+    artistData: artist, // Pass artist data for optimistic update
     onSuccess: () => {
       // Optional: Add any additional success logic
     },
@@ -51,9 +52,9 @@ const ArtistProfile = () => {
   });
 
   // Check if artist is saved by current user
-  // Use userProfileData (refreshed after API calls) for accurate state
+  // Use userProfileData for accurate state (updated optimistically)
   const savedArtists =
-    userProfileData?.data?.savedArtists || user?.savedArtists;
+    userProfileData?.data?.savedArtists || user?.savedArtists || [];
   const isSaved = savedArtists?.some(
     (savedArtist: Artist) => savedArtist.id === artist?.id
   );
@@ -68,11 +69,9 @@ const ArtistProfile = () => {
   };
 
   // Check if current user is viewing their own profile
-  // Compare by username, email, and id for more accurate identification
-  const isOwnProfile =
-    user?.username === artist?.username ||
-    user?.email === artist?.email ||
-    user?.id === artist?.id;
+  const isOwnProfile = Boolean(
+    !isLoading && user?.id && artist?.id && user.id === artist.id
+  );
 
   // Check if profile is incomplete and get missing fields
   const getMissingFields = () => {
@@ -86,10 +85,6 @@ const ArtistProfile = () => {
     if (!artist.socials) missing.push('Social Media Links');
     return missing;
   };
-
-  // Debug: Log artist data to see rider information
-  console.log('ArtistProfile - artist data:', artist);
-  console.log('ArtistProfile - riders data:', artist?.riders);
 
   const missingFields = getMissingFields();
   const isProfileIncomplete = missingFields.length > 0;
@@ -169,7 +164,7 @@ const ArtistProfile = () => {
     <div className='min-h-screen '>
       <Navbar />
 
-      <div className='w-full p-4 md:p-6 lg:p-8 pb-24 md:pb-4'>
+      <div className='w-full p-4 md:p-6 lg:p-8 pb-12 md:pb-14'>
         <div className='flex flex-col lg:flex-row gap-6 lg:gap-8 relative'>
           {/* Left Side - Artist Info */}
           <div className='lg:max-w-[320px] w-full lg:flex-shrink-0 lg:sticky top-[100px] h-fit'>
@@ -257,7 +252,9 @@ const ArtistProfile = () => {
                 <div className='bg-white/5 p-4 border border-white/10 hidden lg:block'>
                   <Link to='/dashboard/edit'>
                     <button className='w-full bg-orange-500 text-black py-3 font-semibold hover:bg-orange-600 transition-colors duration-300 text-sm md:text-base'>
-                      EDIT PROFILE
+                      {isProfileIncomplete
+                        ? 'COMPLETE PROFILE'
+                        : 'EDIT PROFILE'}
                     </button>
                   </Link>
                 </div>
@@ -377,15 +374,6 @@ const ArtistProfile = () => {
               </button>
             </Link>
           </div>
-        )}
-
-        {/* Complete Profile Tag - Fixed Bottom Right */}
-        {isOwnProfile && isProfileIncomplete && (
-          <Link to='/dashboard/edit' className='fixed bottom-4 right-4 z-50'>
-            <span className='bg-orange-500 text-black px-3 py-2 text-sm font-semibold rounded-lg shadow-lg hover:bg-orange-600 transition-colors cursor-pointer'>
-              Complete Profile
-            </span>
-          </Link>
         )}
       </div>
     </div>

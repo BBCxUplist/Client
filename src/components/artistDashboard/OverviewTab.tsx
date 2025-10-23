@@ -1,11 +1,15 @@
 import { motion } from 'framer-motion';
 import { DashboardTab } from '@/types';
+import { AppealStatus } from '@/hooks/artist/useGetApprovalStatus';
 
 interface OverviewTabProps {
   dashboardData: any;
   setActiveTab: (tab: DashboardTab) => void;
   setSelectedBooking: (booking: any) => void;
   setIsModalOpen: (open: boolean) => void;
+  isProfileIncomplete: boolean;
+  approvalStatus: any;
+  isApprovalLoading: boolean;
 }
 
 const OverviewTab = ({
@@ -13,7 +17,79 @@ const OverviewTab = ({
   setActiveTab,
   setSelectedBooking,
   setIsModalOpen,
+  isProfileIncomplete,
+  approvalStatus,
+  isApprovalLoading,
 }: OverviewTabProps) => {
+  // Check if data exists and is not empty
+  const hasRecentBookings =
+    dashboardData?.recentBookings && dashboardData.recentBookings.length > 0;
+  const hasUpcomingBookings =
+    dashboardData?.upcomingBookings &&
+    dashboardData.upcomingBookings.length > 0;
+
+  // Determine the appropriate message and action based on account status
+  const getEmptyStateContent = () => {
+    if (isProfileIncomplete) {
+      return {
+        title: 'Complete Your Profile',
+        message:
+          'Complete your profile to start receiving booking requests from clients.',
+        buttonText: 'COMPLETE PROFILE',
+        buttonAction: () => (window.location.href = '/dashboard/edit'),
+      };
+    }
+
+    if (!isApprovalLoading && approvalStatus && !approvalStatus.isApproved) {
+      if (approvalStatus.appealStatus === AppealStatus.PENDING) {
+        return {
+          title: 'Get Approved',
+          message:
+            'Complete your profile and get approved to start receiving booking requests.',
+          buttonText: 'REQUEST APPROVAL',
+          buttonAction: () => setActiveTab(DashboardTab.SETTINGS),
+        };
+      } else if (approvalStatus.appealStatus === AppealStatus.REQUESTED) {
+        return {
+          title: 'Application Under Review',
+          message:
+            'Your application is being reviewed. You will be notified once approved.',
+          buttonText: 'VIEW STATUS',
+          buttonAction: () => setActiveTab(DashboardTab.SETTINGS),
+        };
+      } else if (approvalStatus.appealStatus === AppealStatus.REJECTED) {
+        return {
+          title: 'Update Your Profile',
+          message:
+            'Your application was not approved. Update your profile and reapply to get bookings.',
+          buttonText: 'UPDATE PROFILE',
+          buttonAction: () => (window.location.href = '/dashboard/edit'),
+        };
+      }
+    }
+
+    if (!isApprovalLoading && approvalStatus && approvalStatus.isApproved) {
+      return {
+        title: 'No Recent Requests',
+        message:
+          "You haven't received any booking requests yet. Keep your profile updated to attract more clients.",
+        buttonText: 'UPDATE PROFILE',
+        buttonAction: () => (window.location.href = '/dashboard/edit'),
+      };
+    }
+
+    // Default fallback
+    return {
+      title: 'Complete Your Profile',
+      message:
+        'Complete your profile to start receiving booking requests from clients.',
+      buttonText: 'COMPLETE PROFILE',
+      buttonAction: () => (window.location.href = '/dashboard/edit'),
+    };
+  };
+
+  const emptyStateContent = getEmptyStateContent();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -35,46 +111,78 @@ const OverviewTab = ({
               View All →
             </button>
           </div>
-          <div className='space-y-4'>
-            {dashboardData.recentBookings.slice(0, 3).map((booking: any) => (
-              <div
-                key={booking.id}
-                className='flex items-center justify-between p-4 bg-white/5 border border-white/10'
-              >
-                <div className='flex-1'>
-                  <p className='text-white font-semibold'>
-                    {booking.contactName || booking.clientName}
-                  </p>
-                  <p className='text-white/60 text-sm'>
-                    {booking.contactEmail ||
-                      `${(booking.contactName || booking.clientName || '').toLowerCase().replace(' ', '.')}@example.com`}
-                  </p>
+          {hasRecentBookings ? (
+            <div className='space-y-4'>
+              {dashboardData.recentBookings.slice(0, 3).map((booking: any) => (
+                <div
+                  key={booking.id}
+                  className='flex items-center justify-between p-4 bg-white/5 border border-white/10'
+                >
+                  <div className='flex-1'>
+                    <p className='text-white font-semibold'>
+                      {booking.contactName || booking.clientName}
+                    </p>
+                    <p className='text-white/60 text-sm'>
+                      {booking.contactEmail ||
+                        `${(booking.contactName || booking.clientName || '').toLowerCase().replace(' ', '.')}@example.com`}
+                    </p>
+                  </div>
+                  <div>
+                    <button
+                      onClick={() => {
+                        setSelectedBooking({
+                          ...booking,
+                          clientId: booking.userId, // Add client user ID for chat functionality
+                          clientEmail:
+                            booking.contactEmail ||
+                            `${(booking.contactName || booking.clientName || '').toLowerCase().replace(' ', '.')}@example.com`,
+                          duration: `${booking.duration || 3} hours`,
+                          guests: booking.expectedGuests || 150,
+                          message: booking.specialRequirements,
+                          contactPhone:
+                            booking.contactPhone || booking.clientPhone,
+                        });
+                        setIsModalOpen(true);
+                      }}
+                      className='text-orange-500 hover:text-orange-400 text-sm font-semibold'
+                    >
+                      View
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <button
-                    onClick={() => {
-                      setSelectedBooking({
-                        ...booking,
-                        clientId: booking.userId, // Add client user ID for chat functionality
-                        clientEmail:
-                          booking.contactEmail ||
-                          `${(booking.contactName || booking.clientName || '').toLowerCase().replace(' ', '.')}@example.com`,
-                        duration: `${booking.duration || 3} hours`,
-                        guests: booking.expectedGuests || 150,
-                        message: booking.specialRequirements,
-                        contactPhone:
-                          booking.contactPhone || booking.clientPhone,
-                      });
-                      setIsModalOpen(true);
-                    }}
-                    className='text-orange-500 hover:text-orange-400 text-sm font-semibold'
-                  >
-                    View
-                  </button>
-                </div>
+              ))}
+            </div>
+          ) : (
+            <div className='text-center py-8'>
+              <div className='w-16 h-16 mx-auto mb-4 bg-white/10 rounded-full flex items-center justify-center'>
+                <svg
+                  className='w-8 h-8 text-white/40'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'
+                  />
+                </svg>
               </div>
-            ))}
-          </div>
+              <h4 className='text-white font-semibold mb-2'>
+                {emptyStateContent.title}
+              </h4>
+              <p className='text-white/60 text-sm mb-4'>
+                {emptyStateContent.message}
+              </p>
+              <button
+                onClick={emptyStateContent.buttonAction}
+                className='bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 transition-colors'
+              >
+                {emptyStateContent.buttonText}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Upcoming Events */}
@@ -83,26 +191,50 @@ const OverviewTab = ({
             <h3 className='text-lg font-semibold text-white mb-4 font-mondwest'>
               Upcoming Events
             </h3>
-            <div className='space-y-3'>
-              {dashboardData.upcomingBookings
-                .slice(0, 3)
-                .map((booking: any, index: number) => (
-                  <div
-                    key={index}
-                    className='flex items-center gap-3 p-3 bg-white/5'
-                  >
-                    <div className='w-2 h-2 bg-orange-500 flex-shrink-0'></div>
-                    <div>
-                      <p className='text-white text-sm font-semibold'>
-                        {booking.event}
-                      </p>
-                      <p className='text-white/60 text-xs'>
-                        {booking.date} • {booking.location}
-                      </p>
+            {hasUpcomingBookings ? (
+              <div className='space-y-3'>
+                {dashboardData.upcomingBookings
+                  .slice(0, 3)
+                  .map((booking: any, index: number) => (
+                    <div
+                      key={index}
+                      className='flex items-center gap-3 p-3 bg-white/5'
+                    >
+                      <div className='w-2 h-2 bg-orange-500 flex-shrink-0'></div>
+                      <div>
+                        <p className='text-white text-sm font-semibold'>
+                          {booking.event}
+                        </p>
+                        <p className='text-white/60 text-xs'>
+                          {booking.date} • {booking.location}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
-            </div>
+                  ))}
+              </div>
+            ) : (
+              <div className='text-center py-6'>
+                <div className='w-12 h-12 mx-auto mb-3 bg-white/10 rounded-full flex items-center justify-center'>
+                  <svg
+                    className='w-6 h-6 text-white/40'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
+                    />
+                  </svg>
+                </div>
+                <h4 className='text-white font-semibold mb-1 text-sm'>
+                  No Upcoming Events
+                </h4>
+                <p className='text-white/60 text-xs'>No events scheduled yet</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -27,28 +27,28 @@ export const useGetArtist = (username: string) => {
   // Update store state when artist data is fetched
   useEffect(() => {
     if (query.data?.success && query.data.data && currentUser) {
-      // Only update if we don't already have the backend data to prevent infinite loops
-      if (!currentUser.username && !currentUser.slug) {
-        // Merge the fetched artist data with current user state
-        const updatedUser: ConsolidatedUser = {
-          ...currentUser,
-          ...query.data.data,
-          // Ensure we keep the original email and name from Supabase auth
-          email: currentUser.email,
-          name: currentUser.name,
-          // Cast role to the correct type
-          role: query.data.data.role as 'user' | 'artist' | 'admin',
-          // Cast appealStatus to the correct type
-          appealStatus: query.data.data.appealStatus as
-            | 'pending'
-            | 'approved'
-            | 'rejected',
-        };
-        setUser(updatedUser);
+      const apiData = query.data.data;
+
+      // Only update store if the fetched artist is the current logged-in user
+      if (currentUser.id === apiData.id) {
+        if (!currentUser.username && !currentUser.slug) {
+          const updatedUser: ConsolidatedUser = {
+            ...currentUser,
+            ...apiData,
+            email: currentUser.email,
+            name: currentUser.name,
+            role: apiData.role as 'user' | 'artist' | 'admin',
+            appealStatus: apiData.appealStatus as
+              | 'pending'
+              | 'approved'
+              | 'rejected',
+          };
+          setUser(updatedUser);
+        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query.data]); // Only depend on query.data to prevent infinite loops
+  }, [query.data]);
 
   return query;
 };

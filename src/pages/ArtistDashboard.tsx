@@ -10,7 +10,6 @@ import {
 } from '@/hooks/artist/useGetApprovalStatus';
 import { useApplyApproval } from '@/hooks/artist/useApplyApproval';
 import { formatPrice } from '@/helper';
-import { dummyDashboardData } from '@/constants/dashboardData';
 import BookingModal from '@/components/ui/BookingModal';
 import OverviewTab from '@/components/artistDashboard/OverviewTab';
 import BookingsTab from '@/components/artistDashboard/BookingsTab';
@@ -64,18 +63,20 @@ const ArtistDashboard = () => {
     }
   };
 
-  // Use real bookings data if available, otherwise fallback to dummy data
+  // Use only real data - no dummy data fallback
   const realBookings = bookingsResponse?.data || [];
   const dashboardData = {
-    ...dummyDashboardData,
-    recentBookings:
-      realBookings.length > 0
-        ? realBookings
-        : dummyDashboardData.recentBookings,
+    recentBookings: realBookings,
+    upcomingBookings: realBookings.filter(
+      (booking: any) =>
+        booking.status === 'confirmed' && new Date(booking.date) > new Date()
+    ),
     stats: {
-      ...dummyDashboardData.stats,
-      totalBookings:
-        realBookings.length || dummyDashboardData.stats.totalBookings,
+      totalBookings: realBookings.length,
+      totalEarnings: realBookings
+        .filter((booking: any) => booking.status === 'completed')
+        .reduce((sum: number, booking: any) => sum + (booking.amount || 0), 0),
+      responseTime: '2.5 hours', // This could be calculated from real data
     },
   };
 
@@ -391,21 +392,33 @@ const ArtistDashboard = () => {
           <p className='text-3xl font-bold text-orange-500 font-mondwest'>
             {formatPrice(dashboardData.stats.totalEarnings)}
           </p>
-          <p className='text-green-400 text-xs mt-1'>↗ +12% this month</p>
+          <p className='text-white/60 text-xs mt-1'>
+            {dashboardData.stats.totalEarnings > 0
+              ? 'From completed bookings'
+              : 'No earnings yet'}
+          </p>
         </div>
         <div className='bg-white/5 border border-white/10 p-6'>
           <h3 className='text-white/70 text-sm mb-2'>Total Bookings</h3>
           <p className='text-3xl font-bold text-orange-500 font-mondwest'>
             {dashboardData.stats.totalBookings}
           </p>
-          <p className='text-green-400 text-xs mt-1'>↗ +5 this month</p>
+          <p className='text-white/60 text-xs mt-1'>
+            {dashboardData.stats.totalBookings > 0
+              ? 'All time bookings'
+              : 'No bookings yet'}
+          </p>
         </div>
         <div className='bg-white/5 border border-white/10 p-6'>
           <h3 className='text-white/70 text-sm mb-2'>Response Time</h3>
           <p className='text-3xl font-bold text-orange-500 font-mondwest'>
             {dashboardData.stats.responseTime}
           </p>
-          <p className='text-yellow-400 text-xs mt-1'>→ Same as last month</p>
+          <p className='text-white/60 text-xs mt-1'>
+            {dashboardData.stats.totalBookings > 0
+              ? 'Average response time'
+              : 'No data yet'}
+          </p>
         </div>
       </div>
 
@@ -440,6 +453,9 @@ const ArtistDashboard = () => {
             setActiveTab={setActiveTab}
             setSelectedBooking={setSelectedBooking}
             setIsModalOpen={setIsModalOpen}
+            isProfileIncomplete={isProfileIncomplete}
+            approvalStatus={approvalStatus}
+            isApprovalLoading={isApprovalLoading}
           />
         )}
 

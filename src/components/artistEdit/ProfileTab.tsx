@@ -271,7 +271,7 @@ const ProfileTab = ({
 
           <div>
             <label className='block text-white/70 text-sm mb-2'>
-              Booking Price (₹)
+              Booking Price (£)
             </label>
             <input
               type='text'

@@ -1,4 +1,6 @@
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import Toggle from '@/components/ui/Toggle';
 
 interface SettingsTabProps {
@@ -30,6 +32,7 @@ const SettingsTab = ({
   pushNotifications,
   setPushNotifications,
 }: SettingsTabProps) => {
+  const [isHelpCenterOpen, setIsHelpCenterOpen] = useState(false);
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -119,15 +122,97 @@ const SettingsTab = ({
             Help & Support
           </h4>
           <div className='space-y-3'>
-            <button className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10'>
-              <span className='text-white text-sm'>📚 Help Center</span>
-            </button>
-            <button className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10'>
-              <span className='text-white text-sm'>💬 Contact Support</span>
-            </button>
-            <button className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10'>
-              <span className='text-white text-sm'>📋 Terms of Service</span>
-            </button>
+            <div>
+              <button
+                onClick={() => setIsHelpCenterOpen(!isHelpCenterOpen)}
+                className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10 flex items-center justify-between'
+              >
+                <span className='text-white text-sm'>📚 Help Center</span>
+                <motion.span
+                  animate={{ rotate: isHelpCenterOpen ? 45 : 0 }}
+                  transition={{ duration: 0.2, ease: 'easeInOut' }}
+                  className='text-white/60 text-sm'
+                >
+                  +
+                </motion.span>
+              </button>
+              <motion.div
+                initial={false}
+                animate={{
+                  height: isHelpCenterOpen ? 'auto' : 0,
+                  opacity: isHelpCenterOpen ? 1 : 0,
+                }}
+                transition={{
+                  duration: 0.3,
+                  ease: 'easeInOut',
+                }}
+                className='overflow-hidden'
+              >
+                <div className='mt-3 p-4 bg-white/5 border border-white/10'>
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{
+                      opacity: isHelpCenterOpen ? 1 : 0,
+                      y: isHelpCenterOpen ? 0 : -10,
+                    }}
+                    transition={{
+                      delay: isHelpCenterOpen ? 0.1 : 0,
+                      duration: 0.2,
+                    }}
+                    className='text-white/80 text-sm mb-2'
+                  >
+                    Need help? We're here to assist you with any questions or
+                    issues you might have.
+                  </motion.p>
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{
+                      opacity: isHelpCenterOpen ? 1 : 0,
+                      y: isHelpCenterOpen ? 0 : -10,
+                    }}
+                    transition={{
+                      delay: isHelpCenterOpen ? 0.15 : 0,
+                      duration: 0.2,
+                    }}
+                    className='text-white/80 text-sm mb-2'
+                  >
+                    For immediate support and updates, please message us on our
+                    Instagram.
+                  </motion.p>
+                  <motion.a
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{
+                      opacity: isHelpCenterOpen ? 1 : 0,
+                      y: isHelpCenterOpen ? 0 : -10,
+                    }}
+                    transition={{
+                      delay: isHelpCenterOpen ? 0.2 : 0,
+                      duration: 0.2,
+                    }}
+                    href='https://www.instagram.com/upl1st/'
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='text-orange-400 hover:text-orange-300 text-sm font-semibold'
+                  >
+                    @upl1st
+                  </motion.a>
+                </div>
+              </motion.div>
+            </div>
+
+            <Link to='/terms'>
+              <button className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10'>
+                <span className='text-white text-sm'>
+                  📋 Terms & Conditions
+                </span>
+              </button>
+            </Link>
+
+            <Link to='/privacy'>
+              <button className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10 mt-3'>
+                <span className='text-white text-sm'>🔒 Privacy Policy</span>
+              </button>
+            </Link>
           </div>
         </div>
       </div>

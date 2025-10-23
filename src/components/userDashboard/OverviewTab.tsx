@@ -28,6 +28,13 @@ const OverviewTab = ({
     }
   };
 
+  // Check if data exists and is not empty
+  const hasUpcomingEvents =
+    dashboardData?.upcomingEvents && dashboardData.upcomingEvents.length > 0;
+  const hasRecentBookings =
+    dashboardData?.recentBookings && dashboardData.recentBookings.length > 0;
+  const hasSavedArtists = savedArtists && savedArtists.length > 0;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -50,7 +57,7 @@ const OverviewTab = ({
                 View All →
               </button>
             </div>
-            {dashboardData.upcomingEvents.length > 0 ? (
+            {hasUpcomingEvents ? (
               <div className='space-y-4'>
                 {dashboardData.upcomingEvents.map((event: any) => (
                   <div
@@ -83,9 +90,29 @@ const OverviewTab = ({
               </div>
             ) : (
               <div className='text-center py-8'>
-                <p className='text-white/60 mb-4'>No upcoming events</p>
+                <div className='w-16 h-16 mx-auto mb-4 bg-white/10 rounded-full flex items-center justify-center'>
+                  <svg
+                    className='w-8 h-8 text-white/40'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
+                    />
+                  </svg>
+                </div>
+                <h4 className='text-white font-semibold mb-2'>
+                  No Upcoming Events
+                </h4>
+                <p className='text-white/60 text-sm mb-4'>
+                  You don't have any upcoming events scheduled yet.
+                </p>
                 <Link to='/explore'>
-                  <button className='bg-orange-500 text-black px-4 py-2 font-semibold'>
+                  <button className='bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 transition-colors'>
                     BOOK AN ARTIST
                   </button>
                 </Link>
@@ -98,45 +125,74 @@ const OverviewTab = ({
             <h3 className='text-xl font-semibold text-white mb-6 font-mondwest'>
               Recent Activity
             </h3>
-            <div className='space-y-4'>
-              {dashboardData.recentBookings.slice(0, 3).map((booking: any) => (
-                <div
-                  key={booking.id}
-                  className='flex items-center gap-4 p-4 bg-white/5 border border-white/10'
-                >
-                  <img
-                    src={booking.artistAvatar}
-                    alt={booking.artistName}
-                    className='w-12 h-12 object-cover'
-                    onError={e => {
-                      e.currentTarget.src = '/images/artistNotFound.jpeg';
-                    }}
-                  />
-                  <div className='flex-1'>
-                    <p className='text-white font-semibold'>
-                      {booking.eventType}
-                    </p>
-                    <p className='text-white/60 text-sm'>
-                      {booking.artistName} • {booking.date}
-                    </p>
-                  </div>
-                  <div className='text-right'>
-                    <span
-                      className={`px-2 py-1 text-xs font-semibold border ${getStatusColor(
-                        booking.status
-                      )}`}
+            {hasRecentBookings ? (
+              <div className='space-y-4'>
+                {dashboardData.recentBookings
+                  .slice(0, 3)
+                  .map((booking: any) => (
+                    <div
+                      key={booking.id}
+                      className='flex items-center gap-4 p-4 bg-white/5 border border-white/10'
                     >
-                      {booking.status.toUpperCase()}
-                    </span>
-                    {booking.status === 'completed' && !booking.rating && (
-                      <button className='block mt-1 text-orange-500 hover:text-orange-400 text-xs'>
-                        Rate Artist
-                      </button>
-                    )}
-                  </div>
+                      <img
+                        src={booking.artistAvatar}
+                        alt={booking.artistName}
+                        className='w-12 h-12 object-cover'
+                        onError={e => {
+                          e.currentTarget.src = '/images/artistNotFound.jpeg';
+                        }}
+                      />
+                      <div className='flex-1'>
+                        <p className='text-white font-semibold'>
+                          {booking.eventType}
+                        </p>
+                        <p className='text-white/60 text-sm'>
+                          {booking.artistName} • {booking.date}
+                        </p>
+                      </div>
+                      <div className='text-right'>
+                        <span
+                          className={`px-2 py-1 text-xs font-semibold border ${getStatusColor(
+                            booking.status
+                          )}`}
+                        >
+                          {booking.status.toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            ) : (
+              <div className='text-center py-8'>
+                <div className='w-16 h-16 mx-auto mb-4 bg-white/10 rounded-full flex items-center justify-center'>
+                  <svg
+                    className='w-8 h-8 text-white/40'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'
+                    />
+                  </svg>
                 </div>
-              ))}
-            </div>
+                <h4 className='text-white font-semibold mb-2'>
+                  No Recent Activity
+                </h4>
+                <p className='text-white/60 text-sm mb-4'>
+                  You haven't made any bookings yet. Start exploring artists to
+                  see your activity here.
+                </p>
+                <Link to='/explore'>
+                  <button className='bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 transition-colors'>
+                    EXPLORE ARTISTS
+                  </button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 
@@ -147,9 +203,9 @@ const OverviewTab = ({
             <h3 className='text-lg font-semibold text-white mb-4 font-mondwest'>
               Recommended Artists
             </h3>
-            <div className='space-y-4'>
-              {savedArtists.length > 0 ? (
-                savedArtists.slice(0, 3).map((artist: any) => (
+            {hasSavedArtists ? (
+              <div className='space-y-4'>
+                {savedArtists.slice(0, 3).map((artist: any) => (
                   <Link
                     key={artist.id}
                     to={`/artist/${artist.username}`}
@@ -179,72 +235,40 @@ const OverviewTab = ({
                       </div>
                     </div>
                   </Link>
-                ))
-              ) : (
-                <div className='text-center py-8'>
-                  <div className='w-16 h-16 mx-auto mb-4 bg-white/10 rounded-full flex items-center justify-center'>
-                    <svg
-                      className='w-8 h-8 text-white/40'
-                      fill='none'
-                      stroke='currentColor'
-                      viewBox='0 0 24 24'
-                    >
-                      <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeWidth={2}
-                        d='M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z'
-                      />
-                    </svg>
-                  </div>
-                  <h4 className='text-white font-semibold mb-2'>
-                    No Saved Artists Yet
-                  </h4>
-                  <p className='text-white/60 text-sm mb-4'>
-                    Start exploring and save your favorite artists to see them
-                    here.
-                  </p>
-                  <button
-                    onClick={() => onTabChange('saved')}
-                    className='bg-orange-500 text-black px-4 py-2 text-sm font-semibold hover:bg-orange-600 transition-colors'
+                ))}
+              </div>
+            ) : (
+              <div className='text-center py-8'>
+                <div className='w-16 h-16 mx-auto mb-4 bg-white/10 rounded-full flex items-center justify-center'>
+                  <svg
+                    className='w-8 h-8 text-white/40'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
                   >
-                    VIEW SAVED ARTISTS
-                  </button>
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z'
+                    />
+                  </svg>
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className='bg-white/5 border border-white/10 p-6'>
-            <h3 className='text-lg font-semibold text-white mb-4 font-mondwest'>
-              Quick Actions
-            </h3>
-            <div className='space-y-3'>
-              <Link to='/explore'>
-                <button className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10'>
-                  <span className='text-white text-sm'>🔍 Explore Artists</span>
+                <h4 className='text-white font-semibold mb-2'>
+                  No Saved Artists Yet
+                </h4>
+                <p className='text-white/60 text-sm mb-4'>
+                  Start exploring and save your favorite artists to see them
+                  here.
+                </p>
+                <button
+                  onClick={() => onTabChange('saved')}
+                  className='bg-orange-500 text-black px-4 py-2 text-sm font-semibold hover:bg-orange-600 transition-colors'
+                >
+                  VIEW SAVED ARTISTS
                 </button>
-              </Link>
-              <button
-                onClick={() => onTabChange('saved')}
-                className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10'
-              >
-                <span className='text-white text-sm'>❤️ Saved Artists</span>
-              </button>
-              <button
-                onClick={() => onTabChange('bookings')}
-                className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10'
-              >
-                <span className='text-white text-sm'>📅 My Bookings</span>
-              </button>
-              <button
-                onClick={() => onTabChange('settings')}
-                className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10'
-              >
-                <span className='text-white text-sm'>⚙️ Account Settings</span>
-              </button>
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

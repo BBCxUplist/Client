@@ -22,7 +22,7 @@ function App() {
         <GlobalModelPreloader />
         {/* Auth State Listener for Google Login */}
         <AuthStateListener />
-        <Toaster />
+        <Toaster position='top-right' />
         <Routes>
           <Route path='/' element={<Landing />} />
           <Route path='/explore' element={<Explore />} />

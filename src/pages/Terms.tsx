@@ -1,7 +1,13 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/landing/Navbar';
 
 const Terms = () => {
+  const navigate = useNavigate();
+
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
   return (
     <div className='min-h-screen bg-neutral-950 texture-bg'>
       <Navbar />
@@ -269,12 +275,12 @@ const Terms = () => {
           {/* Back Button */}
         </div>
         <div className='text-right mt-8 sticky bottom-4'>
-          <Link
-            to='/auth'
+          <button
+            onClick={handleGoBack}
             className='inline-flex items-center px-6 py-3 bg-orange-500 text-black font-semibold rounded-lg hover:bg-orange-600 transition-colors ml-auto'
           >
-            ← Back to Registration
-          </Link>
+            ← Go Back
+          </button>
         </div>
       </div>
     </div>

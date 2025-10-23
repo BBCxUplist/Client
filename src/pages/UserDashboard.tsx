@@ -11,7 +11,7 @@ import SettingsTab from '@/components/userDashboard/SettingsTab';
 import { useStore } from '@/stores/store';
 import { useGetUserProfile, useUpdateUserProfile } from '@/hooks/user';
 import { logout } from '@/lib/apiClient';
-import { dummyUserDashboardData } from '@/constants/userDashboardData';
+// import { dummyUserDashboardData } from '@/constants/userDashboardData';
 import { useImageUpload } from '@/hooks/useImageUpload';
 
 const UserDashboard = () => {
@@ -26,10 +26,25 @@ const UserDashboard = () => {
 
   // Get user data from API response
   const userData = userResponse?.data;
-  const dashboardData = dummyUserDashboardData;
 
   // Get saved artists from user data
   const savedArtists = userData?.savedArtists || [];
+
+  // Create dashboard data from real API data - no dummy data
+  // Since the API doesn't provide booking/event data yet, we'll use empty arrays
+  // This will show proper empty states in the UI
+  const dashboardData = {
+    recentBookings: [], // Will be populated when booking API is implemented
+    upcomingEvents: [], // Will be populated when booking API is implemented
+    stats: {
+      totalBookings: 0, // Will be populated when booking API is implemented
+      totalSpent: 0, // Will be populated when booking API is implemented
+      averageRating: 0, // Will be populated when booking API is implemented
+      savedArtists: savedArtists.length,
+      upcomingEvents: 0, // Will be populated when booking API is implemented
+      completedEvents: 0, // Will be populated when booking API is implemented
+    },
+  };
 
   // Profile update mutation
   const updateProfileMutation = useUpdateUserProfile();
