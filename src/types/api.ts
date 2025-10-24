@@ -124,6 +124,12 @@ export interface UpdateUserProfileRequest {
   phone?: string;
   location?: string;
   socials?: Socials;
+  notificationSettings?: {
+    bookingReminders?: boolean;
+    smsNotifications?: boolean;
+    emailNotifications?: boolean;
+    artistRecommendations?: boolean;
+  };
 }
 
 export interface UpdateUserProfileResponse {

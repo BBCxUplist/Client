@@ -201,7 +201,7 @@ const OverviewTab = ({
           {/* Recommendations */}
           <div className='bg-white/5 border border-white/10 p-6'>
             <h3 className='text-lg font-semibold text-white mb-4 font-mondwest'>
-              Recommended Artists
+              Saved Artists
             </h3>
             {hasSavedArtists ? (
               <div className='space-y-4'>

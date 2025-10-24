@@ -40,6 +40,17 @@ export interface ConsolidatedUser {
   savedArtists?: Artist[];
   updatedAt?: string;
 
+  // Notification settings
+  notificationSettings?: {
+    bookingReminders?: boolean;
+    smsNotifications?: boolean;
+    emailNotifications?: boolean;
+    artistRecommendations?: boolean;
+  };
+
+  // Bookings
+  bookings?: any[];
+
   // Additional artist properties
   artistType?: string;
   isActiveArtist?: boolean;

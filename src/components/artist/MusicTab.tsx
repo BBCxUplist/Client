@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import EmbedPlayer from './EmbedPlayer';
+import CustomTrack from './CustomTrack';
 
 interface MusicTabProps {
   artist: {
@@ -35,9 +36,6 @@ const MusicTab = ({ artist }: MusicTabProps) => {
   const [selectedPlatform, setSelectedPlatform] = useState<
     'spotify' | 'soundcloud' | 'youtube' | 'custom' | 'playlist'
   >('spotify');
-  const [playingTrack, setPlayingTrack] = useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Use real artist data from API - always ensure arrays
   const musicData = useMemo(
@@ -96,47 +94,6 @@ const MusicTab = ({ artist }: MusicTabProps) => {
     return `/icons/embeds/${platform}.png`;
   };
 
-  const handlePlayCustomTrack = (trackUrl: string, _trackTitle: string) => {
-    if (playingTrack === trackUrl && isPlaying) {
-      // Pause current track
-      if (audioRef.current) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-        setPlayingTrack(null);
-      }
-    } else {
-      // Play new track
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-
-      const audio = new Audio(trackUrl);
-      audioRef.current = audio;
-
-      audio.addEventListener('loadstart', () => {
-        setIsPlaying(true);
-        setPlayingTrack(trackUrl);
-      });
-
-      audio.addEventListener('ended', () => {
-        setIsPlaying(false);
-        setPlayingTrack(null);
-      });
-
-      audio.addEventListener('error', () => {
-        console.error('Error playing audio:', trackUrl);
-        setIsPlaying(false);
-        setPlayingTrack(null);
-      });
-
-      audio.play().catch(error => {
-        console.error('Error playing audio:', error);
-        setIsPlaying(false);
-        setPlayingTrack(null);
-      });
-    }
-  };
-
   const getAvailablePlatforms = () => {
     const platforms: Array<
       'spotify' | 'soundcloud' | 'youtube' | 'custom' | 'playlist'
@@ -173,16 +130,6 @@ const MusicTab = ({ artist }: MusicTabProps) => {
       setSelectedPlatform(availablePlatforms[0]);
     }
   }, [currentPlatformTracks.length, availablePlatforms]);
-
-  // Cleanup audio when component unmounts
-  useEffect(() => {
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, []);
 
   // Error boundary for the component
   if (!artist || !artist.embeds) {
@@ -411,105 +358,41 @@ const MusicTab = ({ artist }: MusicTabProps) => {
               : `Track ${index + 1}`;
 
             return (
-              <div
-                key={`${selectedPlatform}-${index}`}
-                className={`bg-white/5 border border-white/10 transition-all duration-300 hover:bg-white/[0.08] hover:border-white/20 ${
-                  isCustomTrack ? 'p-6 rounded-xl' : 'p-4'
-                }`}
-              >
-                <div className='flex items-center gap-4 mb-4'>
-                  {selectedPlatform === 'custom' ? (
-                    <div className='w-10 h-10 bg-orange-500/20 rounded-full flex items-center justify-center'>
-                      {getPlatformIcon(selectedPlatform)}
+              <div key={`${selectedPlatform}-${index}`}>
+                {isCustomTrack ? (
+                  <CustomTrack
+                    trackUrl={trackUrl}
+                    trackTitle={trackTitle}
+                    index={index}
+                  />
+                ) : (
+                  <div className='bg-white/5 p-4 border border-white/10 transition-all duration-300 hover:bg-white/[0.08] hover:border-white/20'>
+                    <div className='flex items-center gap-4 mb-4'>
+                      <div className='flex-1'>
+                        <h4 className='text-white font-semibold text-lg'>
+                          {trackTitle}
+                        </h4>
+                      </div>
                     </div>
-                  ) : (
-                    <img
-                      src={getPlatformIconSrc(selectedPlatform) || ''}
-                      alt={selectedPlatform}
-                      className='w-6 h-6'
-                    />
-                  )}
-                  <div className='flex-1'>
-                    <h4 className='text-white font-semibold text-lg'>
-                      {trackTitle}
-                    </h4>
-                    {isCustomTrack && (
-                      <p className='text-white/60 text-sm mt-1'>
-                        Custom Upload
-                      </p>
-                    )}
-                  </div>
-                  {isCustomTrack && (
-                    <div className='flex items-center gap-2 text-orange-400 text-sm'>
-                      <svg
-                        className='w-4 h-4'
-                        fill='none'
-                        stroke='currentColor'
-                        viewBox='0 0 24 24'
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth={2}
-                          d='M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3'
-                        />
-                      </svg>
-                      <span className='font-medium'>Audio Track</span>
-                    </div>
-                  )}
-                </div>
-                <div
-                  className={
-                    selectedPlatform === 'youtube' ? 'max-w-2xl' : 'max-w-4xl'
-                  }
-                >
-                  {isCustomTrack ? (
-                    <div className='flex items-center justify-center py-8'>
-                      <button
-                        onClick={() =>
-                          handlePlayCustomTrack(trackUrl, trackTitle)
-                        }
-                        className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg ${
-                          playingTrack === trackUrl && isPlaying
-                            ? 'bg-red-500 hover:bg-red-600'
-                            : 'bg-orange-500 hover:bg-orange-600'
-                        }`}
-                      >
-                        {playingTrack === trackUrl && isPlaying ? (
-                          // Pause icon
-                          <svg
-                            className='w-8 h-8 text-black'
-                            fill='currentColor'
-                            viewBox='0 0 24 24'
-                          >
-                            <path d='M6 4h4v16H6V4zm8 0h4v16h-4V4z' />
-                          </svg>
-                        ) : (
-                          // Play icon
-                          <svg
-                            className='w-8 h-8 text-black ml-1'
-                            fill='currentColor'
-                            viewBox='0 0 24 24'
-                          >
-                            <path d='M8 5v14l11-7z' />
-                          </svg>
-                        )}
-                      </button>
-                    </div>
-                  ) : (
-                    <EmbedPlayer
-                      url={trackUrl}
-                      platform={
-                        selectedPlatform === 'custom'
-                          ? 'youtube'
-                          : (selectedPlatform as
-                              | 'spotify'
-                              | 'soundcloud'
-                              | 'youtube')
+                    <div
+                      className={
+                        selectedPlatform === 'youtube'
+                          ? 'max-w-2xl'
+                          : 'max-w-4xl'
                       }
-                    />
-                  )}
-                </div>
+                    >
+                      <EmbedPlayer
+                        url={trackUrl}
+                        platform={
+                          selectedPlatform as
+                            | 'spotify'
+                            | 'soundcloud'
+                            | 'youtube'
+                        }
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })

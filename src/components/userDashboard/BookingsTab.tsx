@@ -50,70 +50,101 @@ const BookingsTab = ({ dashboardData }: BookingsTabProps) => {
         </div>
       </div>
 
-      <div className='grid gap-6'>
-        {dashboardData.recentBookings.map((booking: any) => (
-          <div
-            key={booking.id}
-            className='bg-white/5 border border-white/10 p-6'
-          >
-            <div className='flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4'>
-              <div className='flex items-center gap-4'>
-                <Link to={`/artist/${booking.artistSlug}`}>
-                  <img
-                    src={booking.artistAvatar}
-                    alt={booking.artistName}
-                    className='w-16 h-16 object-cover hover:opacity-80 transition-opacity'
-                    onError={e => {
-                      e.currentTarget.src = '/images/artistNotFound.jpeg';
-                    }}
-                  />
-                </Link>
-                <div>
-                  <h4 className='text-white font-semibold text-lg'>
-                    {booking.eventType}
-                  </h4>
-                  <Link
-                    to={`/artist/${booking.artistSlug}`}
-                    className='text-orange-500 hover:text-orange-400'
-                  >
-                    {booking.artistName}
+      {dashboardData.recentBookings &&
+      dashboardData.recentBookings.length > 0 ? (
+        <div className='grid gap-6'>
+          {dashboardData.recentBookings.map((booking: any) => (
+            <div
+              key={booking.id}
+              className='bg-white/5 border border-white/10 p-6'
+            >
+              <div className='flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4'>
+                <div className='flex items-center gap-4'>
+                  <Link to={`/artist/${booking.artistSlug}`}>
+                    <img
+                      src={booking.artistAvatar}
+                      alt={booking.artistName}
+                      className='w-16 h-16 object-cover hover:opacity-80 transition-opacity'
+                      onError={e => {
+                        e.currentTarget.src = '/images/artistNotFound.jpeg';
+                      }}
+                    />
                   </Link>
-                  <p className='text-white/60 text-sm'>
-                    {booking.date} • {booking.location}
-                  </p>
-                  <p className='text-orange-500 font-bold font-mondwest'>
-                    {formatPrice(booking.amount)}
-                  </p>
+                  <div>
+                    <h4 className='text-white font-semibold text-lg'>
+                      {booking.eventType}
+                    </h4>
+                    <Link
+                      to={`/artist/${booking.artistSlug}`}
+                      className='text-orange-500 hover:text-orange-400'
+                    >
+                      {booking.artistName}
+                    </Link>
+                    <p className='text-white/60 text-sm'>
+                      {booking.date} • {booking.location}
+                    </p>
+                    <p className='text-orange-500 font-bold font-mondwest'>
+                      {formatPrice(booking.amount)}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className='flex flex-col sm:flex-row items-start sm:items-center gap-3'>
-                <span
-                  className={`px-3 py-1 text-xs font-semibold border ${getStatusColor(
-                    booking.status
-                  )}`}
-                >
-                  {booking.status.toUpperCase()}
-                </span>
-                <div className='flex gap-2'>
-                  {booking.status === 'completed' && !booking.rating && (
-                    <button className='bg-orange-500 text-black px-3 py-1 text-xs font-semibold hover:bg-orange-600'>
-                      RATE ARTIST
+                <div className='flex flex-col sm:flex-row items-start sm:items-center gap-3'>
+                  <span
+                    className={`px-3 py-1 text-xs font-semibold border ${getStatusColor(
+                      booking.status
+                    )}`}
+                  >
+                    {booking.status.toUpperCase()}
+                  </span>
+                  <div className='flex gap-2'>
+                    {booking.status === 'completed' && !booking.rating && (
+                      <button className='bg-orange-500 text-black px-3 py-1 text-xs font-semibold hover:bg-orange-600'>
+                        RATE ARTIST
+                      </button>
+                    )}
+                    {booking.status === 'pending' && (
+                      <button className='bg-red-500/20 border border-red-500/40 text-red-400 px-3 py-1 text-xs font-semibold hover:bg-red-500/30'>
+                        CANCEL
+                      </button>
+                    )}
+                    <button className='text-orange-500 hover:text-orange-400 text-xs underline'>
+                      View Details
                     </button>
-                  )}
-                  {booking.status === 'pending' && (
-                    <button className='bg-red-500/20 border border-red-500/40 text-red-400 px-3 py-1 text-xs font-semibold hover:bg-red-500/30'>
-                      CANCEL
-                    </button>
-                  )}
-                  <button className='text-orange-500 hover:text-orange-400 text-xs underline'>
-                    View Details
-                  </button>
+                  </div>
                 </div>
               </div>
             </div>
+          ))}
+        </div>
+      ) : (
+        <div className='text-center py-12'>
+          <div className='w-16 h-16 mx-auto mb-4 bg-white/10 rounded-full flex items-center justify-center'>
+            <svg
+              className='w-8 h-8 text-white/40'
+              fill='none'
+              stroke='currentColor'
+              viewBox='0 0 24 24'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
+              />
+            </svg>
           </div>
-        ))}
-      </div>
+          <h4 className='text-white font-semibold mb-2'>No Bookings Yet</h4>
+          <p className='text-white/60 text-sm mb-4'>
+            You haven't made any bookings yet. Start exploring artists to book
+            your first event.
+          </p>
+          <Link to='/explore'>
+            <button className='bg-orange-500 text-black px-6 py-3 font-semibold hover:bg-orange-600 transition-colors'>
+              EXPLORE ARTISTS
+            </button>
+          </Link>
+        </div>
+      )}
     </motion.div>
   );
 };

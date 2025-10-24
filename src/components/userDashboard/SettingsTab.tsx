@@ -1,4 +1,6 @@
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 interface SettingsTabProps {
   userData: any;
@@ -15,6 +17,9 @@ interface SettingsTabProps {
   reset: () => void;
   validateUsername: (username: string) => boolean;
   validatePhone: (phone: string) => boolean;
+  isProfileIncomplete?: boolean;
+  missingFields?: string[];
+  handleNotificationUpdate: (settings: any) => void;
 }
 
 const SettingsTab = ({
@@ -32,7 +37,22 @@ const SettingsTab = ({
   reset,
   validateUsername,
   validatePhone,
+  isProfileIncomplete = false,
+  missingFields = [],
+  handleNotificationUpdate,
 }: SettingsTabProps) => {
+  const [isHelpCenterOpen, setIsHelpCenterOpen] = useState(false);
+
+  // Handle notification toggle changes
+  const handleNotificationToggle = (setting: string, value: boolean) => {
+    const currentSettings = userData?.notificationSettings || {};
+    const updatedSettings = {
+      ...currentSettings,
+      [setting]: value,
+    };
+    handleNotificationUpdate(updatedSettings);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -43,6 +63,27 @@ const SettingsTab = ({
       <h3 className='text-2xl font-semibold text-white font-mondwest'>
         Account Settings
       </h3>
+
+      {/* Profile Completion Warning */}
+      {isProfileIncomplete && (
+        <div className='bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-6'>
+          <div className='flex items-start gap-3'>
+            <div className='text-yellow-400 text-xl'>⚠️</div>
+            <div className='flex-1'>
+              <h4 className='text-yellow-400 font-semibold mb-1'>
+                Please Complete Your Profile
+              </h4>
+              <p className='text-white/70 text-sm mb-2'>
+                Your profile is missing important information. Complete your
+                profile to get the best experience.
+              </p>
+              <div className='text-white/60 text-xs'>
+                <strong>Missing:</strong> {missingFields.join(', ')}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
         {/* Profile Information */}
@@ -240,26 +281,102 @@ const SettingsTab = ({
           <div className='space-y-4'>
             <div className='flex items-center justify-between'>
               <span className='text-white'>Email Notifications</span>
-              <button className='w-12 h-6 bg-orange-500 relative border border-orange-500'>
-                <div className='absolute top-0.5 right-0.5 w-5 h-5 bg-white'></div>
+              <button
+                onClick={() =>
+                  handleNotificationToggle(
+                    'emailNotifications',
+                    !userData?.notificationSettings?.emailNotifications
+                  )
+                }
+                disabled={updateProfileMutation.isPending}
+                className={`w-12 h-6 relative border transition-colors ${
+                  userData?.notificationSettings?.emailNotifications
+                    ? 'bg-orange-500 border-orange-500'
+                    : 'bg-white/10 border-white/30'
+                } ${updateProfileMutation.isPending ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              >
+                <div
+                  className={`absolute top-0.5 w-5 h-5 bg-white transition-all duration-200 ${
+                    userData?.notificationSettings?.emailNotifications
+                      ? 'right-0.5'
+                      : 'left-0.5'
+                  }`}
+                ></div>
               </button>
             </div>
             <div className='flex items-center justify-between'>
               <span className='text-white'>SMS Notifications</span>
-              <button className='w-12 h-6 bg-orange-500 relative border border-orange-500'>
-                <div className='absolute top-0.5 right-0.5 w-5 h-5 bg-white'></div>
+              <button
+                onClick={() =>
+                  handleNotificationToggle(
+                    'smsNotifications',
+                    !userData?.notificationSettings?.smsNotifications
+                  )
+                }
+                disabled={updateProfileMutation.isPending}
+                className={`w-12 h-6 relative border transition-colors ${
+                  userData?.notificationSettings?.smsNotifications
+                    ? 'bg-orange-500 border-orange-500'
+                    : 'bg-white/10 border-white/30'
+                } ${updateProfileMutation.isPending ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              >
+                <div
+                  className={`absolute top-0.5 w-5 h-5 bg-white transition-all duration-200 ${
+                    userData?.notificationSettings?.smsNotifications
+                      ? 'right-0.5'
+                      : 'left-0.5'
+                  }`}
+                ></div>
               </button>
             </div>
             <div className='flex items-center justify-between'>
               <span className='text-white'>Booking Reminders</span>
-              <button className='w-12 h-6 bg-orange-500 relative border border-orange-500'>
-                <div className='absolute top-0.5 right-0.5 w-5 h-5 bg-white'></div>
+              <button
+                onClick={() =>
+                  handleNotificationToggle(
+                    'bookingReminders',
+                    !userData?.notificationSettings?.bookingReminders
+                  )
+                }
+                disabled={updateProfileMutation.isPending}
+                className={`w-12 h-6 relative border transition-colors ${
+                  userData?.notificationSettings?.bookingReminders
+                    ? 'bg-orange-500 border-orange-500'
+                    : 'bg-white/10 border-white/30'
+                } ${updateProfileMutation.isPending ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              >
+                <div
+                  className={`absolute top-0.5 w-5 h-5 bg-white transition-all duration-200 ${
+                    userData?.notificationSettings?.bookingReminders
+                      ? 'right-0.5'
+                      : 'left-0.5'
+                  }`}
+                ></div>
               </button>
             </div>
             <div className='flex items-center justify-between'>
               <span className='text-white'>Artist Recommendations</span>
-              <button className='w-12 h-6 bg-white/10 relative border border-white/30'>
-                <div className='absolute top-0.5 left-0.5 w-5 h-5 bg-white'></div>
+              <button
+                onClick={() =>
+                  handleNotificationToggle(
+                    'artistRecommendations',
+                    !userData?.notificationSettings?.artistRecommendations
+                  )
+                }
+                disabled={updateProfileMutation.isPending}
+                className={`w-12 h-6 relative border transition-colors ${
+                  userData?.notificationSettings?.artistRecommendations
+                    ? 'bg-orange-500 border-orange-500'
+                    : 'bg-white/10 border-white/30'
+                } ${updateProfileMutation.isPending ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              >
+                <div
+                  className={`absolute top-0.5 w-5 h-5 bg-white transition-all duration-200 ${
+                    userData?.notificationSettings?.artistRecommendations
+                      ? 'right-0.5'
+                      : 'left-0.5'
+                  }`}
+                ></div>
               </button>
             </div>
           </div>
@@ -292,15 +409,97 @@ const SettingsTab = ({
             Help & Support
           </h4>
           <div className='space-y-3'>
-            <button className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10'>
-              <span className='text-white text-sm'>📚 Help Center</span>
-            </button>
-            <button className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10'>
-              <span className='text-white text-sm'>💬 Contact Support</span>
-            </button>
-            <button className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10'>
-              <span className='text-white text-sm'>⭐ Rate the App</span>
-            </button>
+            <div>
+              <button
+                onClick={() => setIsHelpCenterOpen(!isHelpCenterOpen)}
+                className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10 flex items-center justify-between'
+              >
+                <span className='text-white text-sm'>📚 Help Center</span>
+                <motion.span
+                  animate={{ rotate: isHelpCenterOpen ? 45 : 0 }}
+                  transition={{ duration: 0.2, ease: 'easeInOut' }}
+                  className='text-white/60 text-sm'
+                >
+                  +
+                </motion.span>
+              </button>
+              <motion.div
+                initial={false}
+                animate={{
+                  height: isHelpCenterOpen ? 'auto' : 0,
+                  opacity: isHelpCenterOpen ? 1 : 0,
+                }}
+                transition={{
+                  duration: 0.3,
+                  ease: 'easeInOut',
+                }}
+                className='overflow-hidden'
+              >
+                <div className='mt-3 p-4 bg-white/5 border border-white/10'>
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{
+                      opacity: isHelpCenterOpen ? 1 : 0,
+                      y: isHelpCenterOpen ? 0 : -10,
+                    }}
+                    transition={{
+                      delay: isHelpCenterOpen ? 0.1 : 0,
+                      duration: 0.2,
+                    }}
+                    className='text-white/80 text-sm mb-2'
+                  >
+                    Need help? We're here to assist you with any questions or
+                    issues you might have.
+                  </motion.p>
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{
+                      opacity: isHelpCenterOpen ? 1 : 0,
+                      y: isHelpCenterOpen ? 0 : -10,
+                    }}
+                    transition={{
+                      delay: isHelpCenterOpen ? 0.15 : 0,
+                      duration: 0.2,
+                    }}
+                    className='text-white/80 text-sm mb-2'
+                  >
+                    For immediate support and updates, please message us on our
+                    Instagram.
+                  </motion.p>
+                  <motion.a
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{
+                      opacity: isHelpCenterOpen ? 1 : 0,
+                      y: isHelpCenterOpen ? 0 : -10,
+                    }}
+                    transition={{
+                      delay: isHelpCenterOpen ? 0.2 : 0,
+                      duration: 0.2,
+                    }}
+                    href='https://www.instagram.com/upl1st/'
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='text-orange-400 hover:text-orange-300 text-sm font-semibold'
+                  >
+                    @upl1st
+                  </motion.a>
+                </div>
+              </motion.div>
+            </div>
+
+            <Link to='/terms'>
+              <button className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10'>
+                <span className='text-white text-sm'>
+                  📋 Terms & Conditions
+                </span>
+              </button>
+            </Link>
+
+            <Link to='/privacy'>
+              <button className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10 mt-3'>
+                <span className='text-white text-sm'>🔒 Privacy Policy</span>
+              </button>
+            </Link>
           </div>
         </div>
       </div>

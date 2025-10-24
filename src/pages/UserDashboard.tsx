@@ -30,6 +30,23 @@ const UserDashboard = () => {
   // Get saved artists from user data
   const savedArtists = userData?.savedArtists || [];
 
+  // Check profile completion
+  const isProfileIncomplete =
+    !userData?.username ||
+    !userData?.displayName ||
+    !userData?.bio ||
+    !userData?.phone ||
+    !userData?.location ||
+    !userData?.avatar;
+
+  const missingFields = [];
+  if (!userData?.username) missingFields.push('Username');
+  if (!userData?.displayName) missingFields.push('Display Name');
+  if (!userData?.bio) missingFields.push('Bio');
+  if (!userData?.phone) missingFields.push('Phone');
+  if (!userData?.location) missingFields.push('Location');
+  if (!userData?.avatar) missingFields.push('Profile Picture');
+
   // Create dashboard data from real API data - no dummy data
   // Since the API doesn't provide booking/event data yet, we'll use empty arrays
   // This will show proper empty states in the UI
@@ -125,6 +142,16 @@ const UserDashboard = () => {
     }
   };
 
+  const handleNotificationUpdate = async (notificationSettings: any) => {
+    try {
+      await updateProfileMutation.mutateAsync({
+        notificationSettings: notificationSettings,
+      });
+    } catch (error) {
+      console.error('Failed to update notification settings:', error);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -214,7 +241,7 @@ const UserDashboard = () => {
   }
 
   return (
-    <div className='min-h-screen bg-neutral-950'>
+    <div className='min-h-screen bg-neutral-950 texture-bg'>
       <Navbar />
 
       <div className='w-full p-4 md:p-6 lg:p-8'>
@@ -282,6 +309,9 @@ const UserDashboard = () => {
               reset={reset}
               validateUsername={validateUsername}
               validatePhone={validatePhone}
+              isProfileIncomplete={isProfileIncomplete}
+              missingFields={missingFields}
+              handleNotificationUpdate={handleNotificationUpdate}
             />
           )}
         </div>
