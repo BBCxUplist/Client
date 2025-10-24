@@ -34,6 +34,31 @@ const ChatList = ({
     }
   };
 
+  const getMessagePreview = (
+    conv: Conversation
+  ): { text: string; isQuote: boolean } => {
+    if (!conv.lastMessage) {
+      return { text: 'No messages yet', isQuote: false };
+    }
+
+    // Check if it's a quote message by looking for the quote format indicator
+    if (conv.lastMessage.includes('📋')) {
+      return { text: conv.lastMessage, isQuote: true };
+    }
+
+    // Truncate long regular messages
+    const maxLength = 50;
+    const truncated =
+      conv.lastMessage.length > maxLength
+        ? `${conv.lastMessage.substring(0, maxLength)}...`
+        : conv.lastMessage;
+    return { text: truncated, isQuote: false };
+  };
+
+  const getMessageTimestamp = (conv: Conversation): string => {
+    return conv.lastMessageTime ? formatTime(conv.lastMessageTime) : 'Just now';
+  };
+
   const totalUnread = conversations.reduce(
     (acc, conv) => acc + (conv.unreadCount || 0),
     0
@@ -131,7 +156,7 @@ const ChatList = ({
                     </h3>
                     <div className='flex items-center gap-2 flex-shrink-0'>
                       <span className='text-xs text-white/50'>
-                        {formatTime(conv.lastMessageTime)}
+                        {getMessageTimestamp(conv)}
                       </span>
                       {conv.unreadCount && conv.unreadCount > 0 && (
                         <div className='bg-orange-500 text-black text-xs font-bold px-2 py-1 min-w-[20px] h-5 flex items-center justify-center'>
@@ -147,7 +172,7 @@ const ChatList = ({
                         : 'text-white/60'
                     }`}
                   >
-                    {conv.lastMessage || 'No messages yet'}
+                    {getMessagePreview(conv).text}
                   </p>
                 </div>
               </div>

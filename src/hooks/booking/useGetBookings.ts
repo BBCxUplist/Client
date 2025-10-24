@@ -5,8 +5,13 @@ interface Booking {
   id: string;
   userId: string;
   artistId: string;
-  status: 'pending' | 'confirmed' | 'cancelled';
-  activeEnquiryId: string | null;
+  status:
+    | 'pending'
+    | 'confirmed'
+    | 'cancelled'
+    | 'paid_escrow'
+    | 'paid_artist'
+    | 'refunded';
   isPaid: boolean;
   eventDate: string;
   eventType: string;

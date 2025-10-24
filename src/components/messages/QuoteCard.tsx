@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+import { useState } from 'react';
 import {
   Calendar,
   MapPin,
@@ -6,8 +7,11 @@ import {
   Users,
   DollarSign,
   FileText,
+  Loader2,
 } from 'lucide-react';
 import type { QuoteData } from '@/types/chat';
+import { useApproveBooking } from '@/hooks/booking/useApproveBooking';
+import { usePayForBooking } from '@/hooks/booking/usePayForBooking';
 
 interface QuoteCardProps {
   quoteData: QuoteData;
@@ -15,7 +19,22 @@ interface QuoteCardProps {
   text?: string | null;
 }
 
+interface BookingStatus {
+  isApproved: boolean;
+  isPaid: boolean;
+}
+
 const QuoteCard = ({ quoteData, isCurrentUser, text }: QuoteCardProps) => {
+  const [bookingStatus, setBookingStatus] = useState<BookingStatus>({
+    isApproved: false,
+    isPaid: false,
+  });
+
+  const { mutate: approveBooking, isPending: isApproving } =
+    useApproveBooking();
+  const { mutate: payForBooking, isPending: isPayingForBooking } =
+    usePayForBooking();
+
   const isExpired = quoteData.validUntil
     ? new Date(quoteData.validUntil) < new Date()
     : false;
@@ -33,6 +52,41 @@ const QuoteCard = ({ quoteData, isCurrentUser, text }: QuoteCardProps) => {
     } catch {
       return dateString;
     }
+  };
+
+  const handleApproveQuote = () => {
+    if (!quoteData.bookingId) {
+      console.error('Booking ID is required');
+      return;
+    }
+
+    approveBooking(quoteData.bookingId, {
+      onSuccess: () => {
+        setBookingStatus(prev => ({ ...prev, isApproved: true }));
+      },
+      onError: error => {
+        console.error('Failed to approve booking:', error);
+      },
+    });
+  };
+
+  const handlePayForBooking = () => {
+    if (!quoteData.bookingId) {
+      console.error('Booking ID is required');
+      return;
+    }
+
+    payForBooking(
+      { bookingId: quoteData.bookingId, isUser: true },
+      {
+        onSuccess: () => {
+          setBookingStatus(prev => ({ ...prev, isPaid: true }));
+        },
+        onError: error => {
+          console.error('Failed to pay for booking:', error);
+        },
+      }
+    );
   };
 
   return (
@@ -219,12 +273,31 @@ const QuoteCard = ({ quoteData, isCurrentUser, text }: QuoteCardProps) => {
         {/* Action Buttons (only for non-current user and not expired) */}
         {!isCurrentUser && !isExpired && (
           <div className='mt-4 flex gap-3'>
-            <button className='flex-1 bg-orange-500 text-black py-2.5 px-4 font-semibold hover:bg-orange-600 transition-colors'>
-              Accept Quote
-            </button>
-            <button className='flex-1 bg-white/5 text-white border border-white/20 py-2.5 px-4 font-semibold hover:bg-white/10 transition-colors'>
-              Decline
-            </button>
+            {!bookingStatus.isApproved ? (
+              <button
+                onClick={handleApproveQuote}
+                disabled={isApproving}
+                className='flex-1 bg-orange-500 text-black py-2.5 px-4 font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2'
+              >
+                {isApproving && <Loader2 className='w-4 h-4 animate-spin' />}
+                {isApproving ? 'Approving...' : 'Accept Quote'}
+              </button>
+            ) : !bookingStatus.isPaid ? (
+              <button
+                onClick={handlePayForBooking}
+                disabled={isPayingForBooking}
+                className='flex-1 bg-green-600 text-white py-2.5 px-4 font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2'
+              >
+                {isPayingForBooking && (
+                  <Loader2 className='w-4 h-4 animate-spin' />
+                )}
+                {isPayingForBooking ? 'Processing...' : 'Pay Now'}
+              </button>
+            ) : (
+              <div className='flex-1 bg-green-500/20 text-green-400 py-2.5 px-4 font-semibold border border-green-500/50 flex items-center justify-center'>
+                ✓ Booking Confirmed & Paid
+              </div>
+            )}
           </div>
         )}
       </div>

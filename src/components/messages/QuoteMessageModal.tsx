@@ -1,19 +1,49 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, DollarSign, Plus, Minus } from 'lucide-react';
 import type { QuoteData } from '@/types/chat';
+import BookingSelector from './BookingSelector';
+import { useQuoteFromBooking } from '@/hooks/booking/useQuoteFromBooking';
+
+interface Booking {
+  id: string;
+  userId: string;
+  artistId: string;
+  status:
+    | 'pending'
+    | 'confirmed'
+    | 'cancelled'
+    | 'paid_escrow'
+    | 'paid_artist'
+    | 'refunded';
+  eventDate: string;
+  eventType: string;
+  duration: number;
+  expectedGuests: number;
+  budgetRange: string;
+  eventLocation: string;
+  specialRequirements?: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
+}
 
 interface QuoteMessageModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSendQuote: (quoteData: QuoteData, text?: string) => void;
+  recipientUserId?: string;
 }
 
 const QuoteMessageModal = ({
   isOpen,
   onClose,
   onSendQuote,
+  recipientUserId,
 }: QuoteMessageModalProps) => {
   const [showBreakdown, setShowBreakdown] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | undefined>(
+    undefined
+  );
   const [formData, setFormData] = useState({
     eventType: '',
     eventDate: '',
@@ -32,6 +62,17 @@ const QuoteMessageModal = ({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const prepopulatedData = useQuoteFromBooking(selectedBooking);
+
+  // Prepopulate form when booking is selected
+  useEffect(() => {
+    if (selectedBooking) {
+      setFormData(prev => ({
+        ...prev,
+        ...prepopulatedData,
+      }));
+    }
+  }, [selectedBooking, prepopulatedData]);
 
   if (!isOpen) return null;
 
@@ -95,6 +136,8 @@ const QuoteMessageModal = ({
     if (formData.notes) quoteData.notes = formData.notes;
     if (formData.validUntil)
       quoteData.validUntil = new Date(formData.validUntil).toISOString();
+    // Add booking ID if booking was selected
+    if (selectedBooking?.id) quoteData.bookingId = selectedBooking.id;
 
     // Add price breakdown if any field is filled
     if (
@@ -137,6 +180,7 @@ const QuoteMessageModal = ({
     });
     setErrors({});
     setShowBreakdown(false);
+    setSelectedBooking(undefined);
     onClose();
   };
 
@@ -158,6 +202,15 @@ const QuoteMessageModal = ({
 
         {/* Form */}
         <form onSubmit={handleSubmit} className='p-6 space-y-4'>
+          {/* Booking Selector */}
+          {recipientUserId && (
+            <BookingSelector
+              recipientUserId={recipientUserId}
+              selectedBookingId={selectedBooking?.id}
+              onBookingSelect={setSelectedBooking}
+            />
+          )}
+
           {/* Event Type */}
           <div>
             <label className='block text-sm font-semibold text-white mb-2'>

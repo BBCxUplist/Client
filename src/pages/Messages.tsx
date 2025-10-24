@@ -8,6 +8,7 @@ import ChatWindow from '@/components/messages/ChatWindow';
 import { useStore } from '@/stores/store';
 import { useConversations, CHAT_QUERY_KEYS } from '@/hooks/useChat';
 import { useChatWebSocket } from '@/hooks/useChatWebSocket';
+import { useUpdateBooking } from '@/hooks/booking/useUpdateBooking';
 import type { Message, QuoteData } from '@/types/chat';
 
 const Messages = () => {
@@ -15,6 +16,7 @@ const Messages = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
+  const { mutate: updateBooking } = useUpdateBooking();
   const [selectedConversationId, setSelectedConversationId] = useState<
     string | null
   >(null);
@@ -114,6 +116,34 @@ const Messages = () => {
   const handleSendQuote = (quoteData: QuoteData, text?: string) => {
     if (!selectedConversationId) return;
 
+    // First, update the booking if bookingId is present
+    if (quoteData.bookingId) {
+      // Prepare booking update data from quote
+      const bookingUpdateData = {
+        eventDate: quoteData.eventDate,
+        eventType: quoteData.eventType,
+        duration: quoteData.duration,
+        expectedGuests: quoteData.expectedGuests,
+        eventLocation: quoteData.eventLocation,
+        specialRequirements: quoteData.notes,
+      };
+
+      // Call the hook to update the booking
+      updateBooking(
+        {
+          bookingId: quoteData.bookingId,
+          payload: bookingUpdateData,
+        },
+        {
+          onError: error => {
+            console.error('Failed to update booking:', error);
+            // Continue with quote sending even if booking update fails
+          },
+        }
+      );
+    }
+
+    // Send the quote message
     sendQuote(selectedConversationId, quoteData, text);
   };
 

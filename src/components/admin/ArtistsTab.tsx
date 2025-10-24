@@ -305,9 +305,9 @@ const ArtistsTab = ({
                 >
                   View Profile
                 </a>
-                <button className='bg-white/10 border border-white/20 text-white px-3 py-1 rounded hover:bg-white/20 transition-colors text-sm'>
+                {/* <button className='bg-white/10 border border-white/20 text-white px-3 py-1 rounded hover:bg-white/20 transition-colors text-sm'>
                   View Documents
-                </button>
+                </button> */}
               </div>
               <div className='flex flex-wrap gap-2'>
                 {/* Approval actions for pending/appeal artists */}

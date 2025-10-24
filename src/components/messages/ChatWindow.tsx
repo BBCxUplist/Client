@@ -279,6 +279,7 @@ const ChatWindow = ({
         isOpen={isQuoteModalOpen}
         onClose={() => setIsQuoteModalOpen(false)}
         onSendQuote={handleSendQuote}
+        recipientUserId={conversation.participantId}
       />
     </div>
   );

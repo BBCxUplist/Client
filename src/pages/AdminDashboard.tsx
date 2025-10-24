@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import OverviewTab from '@/components/admin/OverviewTab';
 import ArtistsTab from '@/components/admin/ArtistsTab';
 import CreateArtistTab from '@/components/admin/CreateArtistTab';
-// import ApprovedTab from '@/components/admin/ApprovedTab';
+import ApprovedTab from '@/components/admin/ApprovedTab';
 import UsersTab from '@/components/admin/UsersTab';
 import ReportsTab from '@/components/admin/ReportsTab';
 import RecentActivityTab from '@/components/admin/RecentActivityTab';
@@ -19,7 +19,7 @@ enum AdminTab {
   OVERVIEW = 'overview',
   ARTISTS = 'artists',
   CREATE_ARTIST = 'create-artist',
-  // APPROVED = 'approved',
+  APPROVED = 'approved',
   USERS = 'users',
   REPORTS = 'reports',
   RECENT_ACTIVITY = 'recent-activity',
@@ -110,6 +110,7 @@ const AdminDashboard = () => {
         bio: artist.bio,
         price: artist.basePrice,
         genres: artist.genres || [],
+        location: artist.location,
         isBookable: artist.isBookable,
         appealStatus: artist.appealStatus,
         isApproved: artist.isApproved,
@@ -137,20 +138,31 @@ const AdminDashboard = () => {
     }));
   }, [usersData]);
 
-  // Filtering logic for artists
+  // Filtering logic for artists - ONLY VERIFIED
   const filteredArtists = useMemo(() => {
-    return adminArtists.filter((artist: any) => {
-      const matchesSearch =
-        artist.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        artist.email.toLowerCase().includes(searchTerm.toLowerCase());
+    return adminArtists
+      .filter((artist: any) => artist.status === 'verified') // Only show verified artists
+      .filter((artist: any) => {
+        const matchesSearch =
+          artist.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          artist.email.toLowerCase().includes(searchTerm.toLowerCase());
 
-      // Filter by status
-      const matchesStatus =
-        filterStatus === 'all' || artist.status === filterStatus;
+        // Filter by status (all are verified, so just apply search)
+        const matchesStatus =
+          filterStatus === 'all' || artist.status === filterStatus;
 
-      return matchesSearch && matchesStatus;
-    });
+        return matchesSearch && matchesStatus;
+      });
   }, [searchTerm, filterStatus, adminArtists]);
+
+  // Get artists with pending appeals (requested or rejected appeal status)
+  const pendingAppealArtists = useMemo(() => {
+    return adminArtists.filter(
+      (artist: any) =>
+        artist.appealStatus === 'requested' ||
+        artist.appealStatus === 'rejected'
+    );
+  }, [adminArtists]);
 
   // Filtering logic for users
   const filteredUsers = useMemo(() => {
@@ -401,7 +413,7 @@ const AdminDashboard = () => {
                 label: 'Create Artist',
                 icon: '/icons/frame.svg',
               },
-              // { id: 'approved', label: 'Approved', icon: '/icons/tick.svg' },
+              { id: 'approved', label: 'Approved', icon: '/icons/tick.svg' },
               { id: 'users', label: 'Users', icon: '/icons/users.png' },
               { id: 'reports', label: 'Reports', icon: '/icons/report.png' },
               {
@@ -458,14 +470,15 @@ const AdminDashboard = () => {
             <CreateArtistTab onCreateArtist={handleCreateArtist} />
           )}
 
-          {/* Approved Tab */}
-          {/* {activeTab === AdminTab.APPROVED && (
+          {/* Approvals Tab */}
+          {activeTab === AdminTab.APPROVED && (
             <ApprovedTab
+              artists={pendingAppealArtists}
               onStatusChange={(id, status) =>
                 console.log(`Artist ${id} ${status}`)
               }
             />
-          )} */}
+          )}
 
           {/* Users Tab */}
           {activeTab === AdminTab.USERS && (
