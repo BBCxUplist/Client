@@ -9,7 +9,6 @@ interface CreateArtistTabProps {
 interface CreateArtistData {
   // Basic Info
   email: string;
-  password: string;
   displayName: string;
   username: string;
   avatar: string;
@@ -36,7 +35,6 @@ interface CreateArtistData {
 const CreateArtistTab = ({ onCreateArtist }: CreateArtistTabProps) => {
   const [formData, setFormData] = useState<CreateArtistData>({
     email: '',
-    password: '',
     displayName: '',
     username: '',
     avatar: '',
@@ -102,7 +100,6 @@ const CreateArtistTab = ({ onCreateArtist }: CreateArtistTabProps) => {
       // Reset form
       setFormData({
         email: '',
-        password: '',
         displayName: '',
         username: '',
         avatar: '',
@@ -158,9 +155,33 @@ const CreateArtistTab = ({ onCreateArtist }: CreateArtistTabProps) => {
           Create New Artist
         </h2>
         <p className='text-white/70'>
-          Create a new artist account that can be claimed by the artist using
-          the provided credentials
+          Create a pre-configured artist profile. The artist can sign up with
+          the provided email to claim their fully set up account.
         </p>
+      </div>
+
+      {/* Info Box */}
+      <div className='bg-blue-500/10 border border-blue-500/30 p-4 rounded-lg'>
+        <div className='flex gap-3'>
+          <div className='text-blue-400 text-xl'>ℹ️</div>
+          <div>
+            <h4 className='text-blue-300 font-semibold mb-1'>How it works</h4>
+            <p className='text-blue-200/70 text-sm'>
+              1. Fill in all the artist details below
+              <br />
+              2. Submit to create a pre-configured profile
+              <br />
+              3. Artist signs up with the email you provide
+              <br />
+              4. Their account is automatically set up with all the info you
+              entered
+            </p>
+            <p className='text-blue-200/60 text-xs mt-2'>
+              💡 No password needed - the artist will create their own during
+              signup
+            </p>
+          </div>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className='space-y-8'>
@@ -212,19 +233,23 @@ const CreateArtistTab = ({ onCreateArtist }: CreateArtistTabProps) => {
                     placeholder='artist@example.com'
                     required
                   />
+                  <p className='text-white/50 text-xs mt-1'>
+                    Artist will use this email to sign up and claim their
+                    profile
+                  </p>
                 </div>
                 <div>
                   <label className='block text-white/70 text-sm mb-2'>
-                    Temporary Password *
+                    Username *
                   </label>
                   <input
-                    type='password'
-                    value={formData.password}
+                    type='text'
+                    value={formData.username}
                     onChange={e =>
-                      handleInputChange('password', e.target.value)
+                      handleInputChange('username', e.target.value)
                     }
                     className='w-full bg-white/5 border border-white/20 text-white p-3 rounded focus:border-orange-500 focus:outline-none'
-                    placeholder='Artist will change this on first login'
+                    placeholder='username'
                     required
                   />
                 </div>
@@ -243,21 +268,6 @@ const CreateArtistTab = ({ onCreateArtist }: CreateArtistTabProps) => {
                     }
                     className='w-full bg-white/5 border border-white/20 text-white p-3 rounded focus:border-orange-500 focus:outline-none'
                     placeholder='Artist Name'
-                    required
-                  />
-                </div>
-                <div>
-                  <label className='block text-white/70 text-sm mb-2'>
-                    Username *
-                  </label>
-                  <input
-                    type='text'
-                    value={formData.username}
-                    onChange={e =>
-                      handleInputChange('username', e.target.value)
-                    }
-                    className='w-full bg-white/5 border border-white/20 text-white p-3 rounded focus:border-orange-500 focus:outline-none'
-                    placeholder='username'
                     required
                   />
                 </div>
@@ -494,7 +504,7 @@ const CreateArtistTab = ({ onCreateArtist }: CreateArtistTabProps) => {
         {/* Form Actions */}
         <div className='flex items-center justify-between pt-6 border-t border-white/10'>
           <div className='text-white/60 text-sm'>
-            Artist will receive login credentials via email
+            Artist will sign up using their email to claim this profile
           </div>
           <div className='flex gap-3'>
             <button
@@ -502,7 +512,6 @@ const CreateArtistTab = ({ onCreateArtist }: CreateArtistTabProps) => {
               onClick={() => {
                 setFormData({
                   email: '',
-                  password: '',
                   displayName: '',
                   username: '',
                   avatar: '',

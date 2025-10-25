@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 export interface CreateArtistData {
   email: string;
   username: string;
-  password?: string; // Temporary password for the artist account
+  // No password needed - artist will create their own when they sign up
   displayName?: string;
   bio?: string;
   phone?: string;
@@ -42,8 +42,7 @@ interface CreateArtistResponse {
   message: string;
   data: {
     message: string;
-    user: any;
-    artist: any;
+    profile: any; // Pre-created artist profile
   };
 }
 
@@ -59,9 +58,15 @@ export const useCreateArtist = () => {
       return response.data;
     },
     onSuccess: data => {
-      toast.success(data.message || 'Artist account created successfully');
+      toast.success(
+        data.data.message ||
+          'Artist profile created successfully! The artist can now sign up to claim their account.'
+      );
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       queryClient.invalidateQueries({ queryKey: ['artists'] });
+      queryClient.invalidateQueries({
+        queryKey: ['admin', 'pre-created-profiles'],
+      });
     },
     onError: (error: any) => {
       toast.error(
