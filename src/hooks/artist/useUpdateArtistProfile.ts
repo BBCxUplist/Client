@@ -24,6 +24,18 @@ interface UpdateArtistProfileData {
     spotify?: string[];
     custom?: { title: string; url: string }[];
   };
+  isBookable?: boolean;
+  notificationSettings?: {
+    bookingReminders?: boolean;
+    smsNotifications?: boolean;
+    emailNotifications?: boolean;
+    artistRecommendations?: boolean;
+  };
+  privacyOptions?: {
+    showContactInfo?: boolean;
+    profileVisibility?: boolean;
+    allowDirectMessages?: boolean;
+  };
 }
 
 interface UpdateArtistProfileResponse {

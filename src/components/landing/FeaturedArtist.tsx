@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import { useGetFeaturedArtist } from '@/hooks/generic/useGetFeaturedArtist';
 import type { Artist } from '@/types/api';
 
 const FeaturedArtist = () => {
   const { data, isLoading, error } = useGetFeaturedArtist();
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 8;
 
   if (isLoading) {
     return (
@@ -59,6 +62,21 @@ const FeaturedArtist = () => {
 
   const artists = data?.data.artists || [];
 
+  // Pagination calculations
+  const totalPages = Math.ceil(artists.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentArtists = artists.slice(startIndex, endIndex);
+  const showPagination = artists.length > ITEMS_PER_PAGE;
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to featured artists section
+    document
+      .getElementById('featured-artists')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
     <div
       id='featured-artists'
@@ -70,7 +88,7 @@ const FeaturedArtist = () => {
         </h2>
 
         <div className='grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8'>
-          {artists.map((artist: Artist) => (
+          {currentArtists.map((artist: Artist) => (
             <Link
               key={artist.id}
               to={`/artist/${artist.username}`}
@@ -78,9 +96,12 @@ const FeaturedArtist = () => {
             >
               <div className='relative mb-4 overflow-hidden'>
                 <img
-                  src={artist.avatar}
-                  alt={artist.displayName}
+                  src={artist.avatar || '/images/artistNotFound.jpeg'}
+                  alt={artist.displayName || 'Artist'}
                   draggable={false}
+                  onError={e => {
+                    e.currentTarget.src = '/images/artistNotFound.jpeg';
+                  }}
                   className='w-full aspect-[9/16] object-cover group-hover:scale-105 transition-transform duration-300'
                 />
               </div>
@@ -106,6 +127,43 @@ const FeaturedArtist = () => {
             </Link>
           ))}
         </div>
+
+        {/* Pagination */}
+        {showPagination && (
+          <div className='flex justify-center items-center gap-2 mt-8 md:mt-12'>
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className='px-4 py-2 bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
+            >
+              Previous
+            </button>
+
+            <div className='flex gap-2'>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`px-4 py-2 transition-colors ${
+                    currentPage === page
+                      ? 'bg-white text-black font-bold'
+                      : 'bg-white/10 text-white hover:bg-white/20'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className='px-4 py-2 bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -64,18 +64,21 @@ const OverviewTab = ({
                     key={event.id}
                     className='flex items-center justify-between p-4 bg-white/5 border border-white/10'
                   >
-                    <div>
+                    <div className='flex-1'>
                       <p className='text-white font-semibold'>
                         {event.eventType}
                       </p>
                       <p className='text-white/60 text-sm'>
-                        {event.artistName} • {event.date}
+                        {new Date(event.eventDate).toLocaleDateString()} •{' '}
+                        {event.duration} minutes
                       </p>
-                      <p className='text-white/50 text-xs'>{event.location}</p>
+                      <p className='text-white/50 text-xs'>
+                        {event.eventLocation}
+                      </p>
                     </div>
                     <div className='text-right'>
                       <p className='text-orange-500 font-bold font-mondwest'>
-                        {formatPrice(event.amount)}
+                        ${event.budgetRange}
                       </p>
                       <span
                         className={`px-2 py-1 text-xs font-semibold border ${getStatusColor(
@@ -132,25 +135,24 @@ const OverviewTab = ({
                   .map((booking: any) => (
                     <div
                       key={booking.id}
-                      className='flex items-center gap-4 p-4 bg-white/5 border border-white/10'
+                      className='flex items-center justify-between p-4 bg-white/5 border border-white/10'
                     >
-                      <img
-                        src={booking.artistAvatar}
-                        alt={booking.artistName}
-                        className='w-12 h-12 object-cover'
-                        onError={e => {
-                          e.currentTarget.src = '/images/artistNotFound.jpeg';
-                        }}
-                      />
                       <div className='flex-1'>
                         <p className='text-white font-semibold'>
                           {booking.eventType}
                         </p>
                         <p className='text-white/60 text-sm'>
-                          {booking.artistName} • {booking.date}
+                          {new Date(booking.eventDate).toLocaleDateString()} •{' '}
+                          {booking.duration} min
+                        </p>
+                        <p className='text-white/50 text-xs'>
+                          {booking.eventLocation}
                         </p>
                       </div>
                       <div className='text-right'>
+                        <p className='text-orange-500 font-bold text-sm mb-1'>
+                          ${booking.budgetRange}
+                        </p>
                         <span
                           className={`px-2 py-1 text-xs font-semibold border ${getStatusColor(
                             booking.status
@@ -204,7 +206,7 @@ const OverviewTab = ({
               Saved Artists
             </h3>
             {hasSavedArtists ? (
-              <div className='space-y-4'>
+              <div className='space-y-3'>
                 {savedArtists.slice(0, 3).map((artist: any) => (
                   <Link
                     key={artist.id}
@@ -215,7 +217,7 @@ const OverviewTab = ({
                       <img
                         src={artist.avatar || '/images/artistNotFound.jpeg'}
                         alt={artist.displayName}
-                        className='w-10 h-10 object-cover'
+                        className='w-10 h-10 object-cover rounded-full'
                         onError={e => {
                           e.currentTarget.src = '/images/artistNotFound.jpeg';
                         }}
@@ -227,11 +229,12 @@ const OverviewTab = ({
                         <p className='text-white/60 text-xs'>
                           @{artist.username} • {formatPrice(artist.basePrice)}
                         </p>
-                        <div className='flex items-center gap-2 mt-1'>
-                          <p className='text-orange-400 text-xs'>
-                            {artist.genres?.join(', ')}
+                        {artist.genres && artist.genres.length > 0 && (
+                          <p className='text-orange-400 text-xs mt-1'>
+                            {artist.genres.slice(0, 2).join(', ')}
+                            {artist.genres.length > 2 && '...'}
                           </p>
-                        </div>
+                        )}
                       </div>
                     </div>
                   </Link>

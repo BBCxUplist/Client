@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useGetBookings } from '@/hooks/booking/useGetBookings';
 import { format } from 'date-fns';
+import { useState, useMemo } from 'react';
 
 interface BookingsTabProps {
   dashboardData: any;
@@ -15,11 +16,57 @@ const BookingsTab = ({
   setSelectedBooking,
   setIsModalOpen,
 }: BookingsTabProps) => {
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [timeFilter, setTimeFilter] = useState('all');
+
   // Fetch bookings from API
   const { data: bookingsResponse, isLoading, error } = useGetBookings();
 
   // Use API data if available, otherwise fallback to dummy data
-  const bookings = bookingsResponse?.data || dashboardData.recentBookings;
+  const allBookings = bookingsResponse?.data || dashboardData.recentBookings;
+
+  // Filter bookings based on selected filters
+  const filteredBookings = useMemo(() => {
+    let bookings = allBookings || [];
+
+    // Filter by status
+    if (statusFilter !== 'all') {
+      bookings = bookings.filter(
+        (booking: any) =>
+          booking.status.toLowerCase() === statusFilter.toLowerCase()
+      );
+    }
+
+    // Filter by time
+    if (timeFilter !== 'all') {
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+
+      bookings = bookings.filter((booking: any) => {
+        const bookingDate = new Date(booking.eventDate);
+        const bookingMonth = bookingDate.getMonth();
+        const bookingYear = bookingDate.getFullYear();
+
+        switch (timeFilter) {
+          case 'this-month':
+            return bookingMonth === currentMonth && bookingYear === currentYear;
+          case 'last-month': {
+            const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+            const lastMonthYear =
+              currentMonth === 0 ? currentYear - 1 : currentYear;
+            return bookingMonth === lastMonth && bookingYear === lastMonthYear;
+          }
+          case 'this-year':
+            return bookingYear === currentYear;
+          default:
+            return true;
+        }
+      });
+    }
+
+    return bookings;
+  }, [allBookings, statusFilter, timeFilter]);
 
   // Loading state
   if (isLoading) {
@@ -63,20 +110,36 @@ const BookingsTab = ({
       className='space-y-6'
     >
       <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between'>
-        <h3 className='text-2xl font-semibold text-white mb-4 sm:mb-0 font-mondwest'>
-          All Bookings
-        </h3>
+        <div>
+          <h3 className='text-2xl font-semibold text-white mb-1 font-mondwest'>
+            All Bookings
+          </h3>
+          <p className='text-white/60 text-sm'>
+            {filteredBookings.length} booking
+            {filteredBookings.length !== 1 ? 's' : ''} found
+          </p>
+        </div>
         <div className='flex gap-2'>
-          <select className='bg-white/5 border border-white/20 text-white p-2 text-sm'>
-            <option>All Status</option>
-            <option>Confirmed</option>
-            <option>Pending</option>
-            <option>Cancelled</option>
+          <select
+            value={statusFilter}
+            onChange={e => setStatusFilter(e.target.value)}
+            className='bg-white/5 border border-white/20 text-white p-2 text-sm focus:outline-none focus:border-orange-500'
+          >
+            <option value='all'>All Status</option>
+            <option value='confirmed'>Confirmed</option>
+            <option value='pending'>Pending</option>
+            <option value='completed'>Completed</option>
+            <option value='cancelled'>Cancelled</option>
           </select>
-          <select className='bg-white/5 border border-white/20 text-white p-2 text-sm'>
-            <option>This Month</option>
-            <option>Last Month</option>
-            <option>All Time</option>
+          <select
+            value={timeFilter}
+            onChange={e => setTimeFilter(e.target.value)}
+            className='bg-white/5 border border-white/20 text-white p-2 text-sm focus:outline-none focus:border-orange-500'
+          >
+            <option value='all'>All Time</option>
+            <option value='this-month'>This Month</option>
+            <option value='last-month'>Last Month</option>
+            <option value='this-year'>This Year</option>
           </select>
         </div>
       </div>
@@ -109,8 +172,8 @@ const BookingsTab = ({
             </tr>
           </thead>
           <tbody>
-            {bookings.length > 0 ? (
-              bookings.map((booking: any) => (
+            {filteredBookings.length > 0 ? (
+              filteredBookings.map((booking: any) => (
                 <tr key={booking.id} className='border-b border-white/5'>
                   <td className='p-4 text-white'>{booking.eventType}</td>
                   <td className='p-4 text-white'>{booking.contactName}</td>

@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { format } from 'date-fns';
-import { ArrowLeft, Phone, MoreVertical, Loader2 } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Loader2 } from 'lucide-react';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
 import QuoteMessageModal from './QuoteMessageModal';
@@ -22,6 +22,7 @@ interface ChatWindowProps {
   onBack: () => void;
   showBackButton: boolean;
   isTyping?: boolean;
+  isConnected?: boolean;
 }
 
 const ChatWindow = ({
@@ -34,6 +35,7 @@ const ChatWindow = ({
   onBack,
   showBackButton,
   isTyping = false,
+  isConnected = true,
 }: ChatWindowProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -47,7 +49,10 @@ const ChatWindow = ({
   // Fetch message history
   const { data: historyData, isLoading } = useMessageHistory(conversationId);
 
-  const messages = historyData?.items || [];
+  const messages = useMemo(
+    () => historyData?.items || [],
+    [historyData?.items]
+  );
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -147,7 +152,7 @@ const ChatWindow = ({
           <div>
             <img
               src={
-                conversation.participantAvatar ?? '/images/artistNotFound.jpeg'
+                conversation.participantAvatar || '/images/artistNotFound.jpeg'
               }
               alt={conversation.participantName}
               className='w-10 h-10 object-cover border border-white/20'
@@ -161,14 +166,22 @@ const ChatWindow = ({
             <h2 className='font-semibold text-white'>
               {conversation.participantName}
             </h2>
-            {isTyping && <p className='text-xs text-green-400'>typing...</p>}
+            {isTyping ? (
+              <p className='text-xs text-green-400'>typing...</p>
+            ) : !isConnected ? (
+              <p className='text-xs text-red-400'>Connecting...</p>
+            ) : null}
           </div>
 
           {/* Actions */}
           <div className='flex items-center gap-2'>
-            <button className='p-2 text-white/60 hover:text-white transition-colors'>
-              <Phone className='w-5 h-5' />
-            </button>
+            {/* Connection status indicator */}
+            <div
+              className={`w-2 h-2 rounded-full ${
+                isConnected ? 'bg-green-500' : 'bg-red-500 animate-pulse'
+              }`}
+              title={isConnected ? 'Connected' : 'Connecting...'}
+            />
             <button className='p-2 text-white/60 hover:text-white transition-colors'>
               <MoreVertical className='w-5 h-5' />
             </button>
@@ -241,8 +254,14 @@ const ChatWindow = ({
             {isTyping && (
               <div className='flex items-center gap-3'>
                 <img
-                  src={conversation.participantAvatar}
-                  alt={conversation.participantName}
+                  src={
+                    conversation.participantAvatar ||
+                    '/images/artistNotFound.jpeg'
+                  }
+                  alt={conversation.participantName || 'Artist Not Found'}
+                  onError={e => {
+                    e.currentTarget.src = '/images/artistNotFound.jpeg';
+                  }}
                   className='w-8 h-8 object-cover border border-white/20'
                 />
                 <div className='bg-white/5 border border-white/10 px-4 py-3 max-w-xs'>

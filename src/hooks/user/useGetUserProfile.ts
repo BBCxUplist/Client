@@ -41,20 +41,28 @@ export const useGetUserProfile = () => {
 
       // Only update store if the fetched data is for the current logged-in user
       if (currentUser.id === apiData.id) {
-        if (!currentUser.username && !currentUser.useremail) {
-          const updatedUser: ConsolidatedUser = {
-            ...currentUser,
-            ...apiData,
-            email: currentUser.email,
-            name: currentUser.name,
-            avatar: apiData.avatar || undefined,
-            bio: apiData.bio || undefined,
-            phone: apiData.phone || undefined,
-            location: apiData.location || undefined,
-            displayName: apiData.displayName || undefined,
-          };
-          setUser(updatedUser);
-        }
+        // Always update with fresh API data to ensure we have the latest information
+        const updatedUser: ConsolidatedUser = {
+          ...currentUser,
+          ...apiData,
+          email: currentUser.email,
+          name: currentUser.name,
+          avatar: apiData.avatar || undefined,
+          bio: apiData.bio || undefined,
+          phone: apiData.phone || undefined,
+          location: apiData.location || undefined,
+          displayName: apiData.displayName || undefined,
+          username: apiData.username || undefined,
+          useremail: apiData.useremail || undefined,
+          isActive: apiData.isActive,
+          isAdmin: apiData.isAdmin,
+          banned: apiData.banned,
+          updatedAt: apiData.updatedAt,
+          notificationSettings: apiData.notificationSettings,
+          bookings: apiData.bookings,
+          savedArtists: apiData.savedArtists,
+        };
+        setUser(updatedUser);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

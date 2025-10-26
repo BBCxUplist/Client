@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { Search, Wifi, WifiOff } from 'lucide-react';
+import { Search } from 'lucide-react';
 import type { Conversation } from '@/types/chat';
 
 interface ChatListProps {
@@ -16,7 +16,6 @@ const ChatList = ({
   selectedConversationId,
   onChatSelect,
   isLoading,
-  isConnected,
 }: ChatListProps) => {
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -73,20 +72,6 @@ const ChatList = ({
             Messages
           </h1>
           <div className='flex items-center gap-3'>
-            {/* Connection Status */}
-            <div
-              className={`flex items-center gap-1 ${
-                isConnected ? 'text-green-400' : 'text-red-400'
-              }`}
-              title={isConnected ? 'Connected' : 'Disconnected'}
-            >
-              {isConnected ? (
-                <Wifi className='w-4 h-4' />
-              ) : (
-                <WifiOff className='w-4 h-4' />
-              )}
-            </div>
-
             {/* Unread Count */}
             {totalUnread > 0 && (
               <span className='text-white/60 text-sm'>
@@ -138,7 +123,7 @@ const ChatList = ({
                 <div className='flex-shrink-0'>
                   <img
                     src={
-                      conv.participantAvatar ?? '/images/artistNotFound.jpeg'
+                      conv.participantAvatar || '/images/artistNotFound.jpeg'
                     }
                     alt={conv.participantName}
                     className='w-12 h-12 object-cover border border-white/20'

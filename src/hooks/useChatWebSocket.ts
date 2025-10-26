@@ -38,6 +38,15 @@ export const useChatWebSocket = ({
       reconnectAttempts: 10,
       reconnectInterval: 3000,
       share: false,
+      onOpen: () => {
+        console.log('WebSocket connected successfully');
+      },
+      onClose: () => {
+        console.log('WebSocket disconnected');
+      },
+      onError: event => {
+        console.error('WebSocket connection error:', event);
+      },
     }
   );
 

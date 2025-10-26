@@ -48,15 +48,39 @@ export interface ConsolidatedUser {
     artistRecommendations?: boolean;
   };
 
+  // Privacy options
+  privacyOptions?: {
+    showContactInfo?: boolean;
+    profileVisibility?: boolean;
+    allowDirectMessages?: boolean;
+  };
+
   // Bookings
-  bookings?: any[];
+  bookings?: Array<{
+    id: string;
+    userId: string;
+    artistId: string;
+    status: string;
+    isPaid: boolean;
+    eventDate: string;
+    eventType: string;
+    duration: number;
+    expectedGuests: number;
+    budgetRange: string;
+    eventLocation: string;
+    specialRequirements: string;
+    contactName: string;
+    contactEmail: string;
+    contactPhone: string;
+    createdAt: string;
+    updatedAt: string;
+  }>;
 
   // Additional artist properties
   artistType?: string;
   isActiveArtist?: boolean;
   isApproved?: boolean;
   isAvailable?: boolean;
-  isLinkpageVisible?: boolean;
 }
 
 export interface AuthState {

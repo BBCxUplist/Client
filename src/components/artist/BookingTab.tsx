@@ -128,7 +128,7 @@ const BookingTab = ({ artist }: BookingTabProps) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className='space-y-6 md:space-y-8'
+      className='space-y-6 md:space-y-8 pb-12 lg:pb-0'
     >
       <h3 className='text-2xl md:text-3xl font-semibold text-orange-500 mb-6 font-mondwest'>
         Book {artist.displayName}
@@ -265,11 +265,12 @@ const BookingTab = ({ artist }: BookingTabProps) => {
                 </div>
                 <div>
                   <label className='block text-white/70 text-sm mb-2'>
-                    Budget Range
+                    Budget
                   </label>
                   <Input
-                    placeholder='₹50,000 - ₹1,00,000'
+                    placeholder='£500 - £2,000'
                     value={bookingForm.budget}
+                    type='number'
                     onChange={e => handleInputChange('budget', e.target.value)}
                     className='bg-white/5 border-white/20 text-white placeholder:text-white/50'
                   />

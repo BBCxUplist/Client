@@ -141,7 +141,7 @@ export const useOptimizedArtists = ({
     }
 
     const newArtists = artistsResponse.data.artists;
-    const hasMore = artistsResponse.data.hasMore ?? false;
+    const hasMore = artistsResponse.data.hasMore || false;
 
     // Store this page's data
     setAccumulatedPages(prev => {
@@ -257,7 +257,7 @@ export const useOptimizedArtists = ({
   // Determine hasMore for pagination
   const hasMore = useMemo(() => {
     if (selectedGenres.length === 0 && !locationSearch) {
-      return cachedData?.hasMore ?? artistsResponse?.data?.hasMore ?? false;
+      return cachedData?.hasMore || artistsResponse?.data?.hasMore || false;
     }
     // For filtering, hasMore is true if we have more filtered results or can fetch more pages
     return filteredArtists.length > limit || globalHasMore;

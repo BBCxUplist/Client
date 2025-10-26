@@ -47,19 +47,37 @@ const UserDashboard = () => {
   if (!userData?.location) missingFields.push('Location');
   if (!userData?.avatar) missingFields.push('Profile Picture');
 
-  // Create dashboard data from real API data - no dummy data
-  // Since the API doesn't provide booking/event data yet, we'll use empty arrays
-  // This will show proper empty states in the UI
+  // Get bookings from user data
+  const bookings = userData?.bookings || [];
+
+  // Process booking data for dashboard
+  const now = new Date();
+  const upcomingEvents = bookings.filter(booking => {
+    const eventDate = new Date(booking.eventDate);
+    return eventDate > now && booking.status !== 'cancelled';
+  });
+
+  const completedEvents = bookings.filter(
+    booking => booking.status === 'completed'
+  );
+
+  // Calculate total spent from completed bookings
+  const totalSpent = completedEvents.reduce((sum, booking) => {
+    const budget = parseInt(booking.budgetRange) || 0;
+    return sum + budget;
+  }, 0);
+
+  // Create dashboard data from real API data
   const dashboardData = {
-    recentBookings: [], // Will be populated when booking API is implemented
-    upcomingEvents: [], // Will be populated when booking API is implemented
+    recentBookings: bookings.slice(0, 5), // Show 5 most recent bookings
+    upcomingEvents: upcomingEvents,
     stats: {
-      totalBookings: 0, // Will be populated when booking API is implemented
-      totalSpent: 0, // Will be populated when booking API is implemented
-      averageRating: 0, // Will be populated when booking API is implemented
+      totalBookings: bookings.length,
+      totalSpent: totalSpent,
+      averageRating: 0, // Not available in current API
       savedArtists: savedArtists.length,
-      upcomingEvents: 0, // Will be populated when booking API is implemented
-      completedEvents: 0, // Will be populated when booking API is implemented
+      upcomingEvents: upcomingEvents.length,
+      completedEvents: completedEvents.length,
     },
   };
 

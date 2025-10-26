@@ -16,6 +16,17 @@ interface SettingsTabProps {
   setSmsNotifications: (value: boolean) => void;
   pushNotifications: boolean;
   setPushNotifications: (value: boolean) => void;
+  onProfileSettingsUpdate: (settings: {
+    profileVisibility?: boolean;
+    acceptBookings?: boolean;
+    showContact?: boolean;
+  }) => Promise<void>;
+  onNotificationSettingsUpdate: (notificationSettings: {
+    emailNotifications?: boolean;
+    smsNotifications?: boolean;
+    bookingReminders?: boolean;
+  }) => Promise<void>;
+  updateProfileMutation: any;
 }
 
 const SettingsTab = ({
@@ -31,6 +42,8 @@ const SettingsTab = ({
   setSmsNotifications,
   pushNotifications,
   setPushNotifications,
+  onProfileSettingsUpdate,
+  onNotificationSettingsUpdate,
 }: SettingsTabProps) => {
   const [isHelpCenterOpen, setIsHelpCenterOpen] = useState(false);
   return (
@@ -53,17 +66,26 @@ const SettingsTab = ({
           <div className='space-y-4'>
             <Toggle
               enabled={profileVisibility}
-              onChange={setProfileVisibility}
+              onChange={async value => {
+                setProfileVisibility(value);
+                await onProfileSettingsUpdate({ profileVisibility: value });
+              }}
               label='Profile Visibility'
             />
             <Toggle
               enabled={acceptBookings}
-              onChange={setAcceptBookings}
+              onChange={async value => {
+                setAcceptBookings(value);
+                await onProfileSettingsUpdate({ acceptBookings: value });
+              }}
               label='Accept Bookings'
             />
             <Toggle
               enabled={showContact}
-              onChange={setShowContact}
+              onChange={async value => {
+                setShowContact(value);
+                await onProfileSettingsUpdate({ showContact: value });
+              }}
               label='Show Contact Info'
             />
           </div>
@@ -77,18 +99,29 @@ const SettingsTab = ({
           <div className='space-y-4'>
             <Toggle
               enabled={emailNotifications}
-              onChange={setEmailNotifications}
+              onChange={async value => {
+                setEmailNotifications(value);
+                await onNotificationSettingsUpdate({
+                  emailNotifications: value,
+                });
+              }}
               label='Email Notifications'
             />
             <Toggle
               enabled={smsNotifications}
-              onChange={setSmsNotifications}
+              onChange={async value => {
+                setSmsNotifications(value);
+                await onNotificationSettingsUpdate({ smsNotifications: value });
+              }}
               label='SMS Notifications'
             />
             <Toggle
               enabled={pushNotifications}
-              onChange={setPushNotifications}
-              label='Push Notifications'
+              onChange={async value => {
+                setPushNotifications(value);
+                await onNotificationSettingsUpdate({ bookingReminders: value });
+              }}
+              label='Booking Reminders'
             />
           </div>
         </div>

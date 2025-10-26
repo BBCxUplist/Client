@@ -108,8 +108,35 @@ const Messages = () => {
   };
 
   const handleSendMessage = (content: string) => {
-    if (!selectedConversationId || !content.trim()) return;
+    if (!selectedConversationId || !content.trim() || !user) return;
 
+    // Create optimistic message
+    const optimisticMessage: Message = {
+      id: `temp-${Date.now()}`,
+      conversationId: selectedConversationId,
+      senderId: user.id,
+      receiverId: selectedConversation?.participantId || '',
+      messageType: 'regular',
+      text: content.trim(),
+      isRead: false,
+      createdAt: new Date().toISOString(),
+      senderName: user.name || user.displayName || '',
+      senderAvatar: user.avatar || '',
+    };
+
+    // Immediately add to UI (optimistic update)
+    queryClient.setQueryData(
+      CHAT_QUERY_KEYS.messageHistory(selectedConversationId),
+      (oldData: any) => {
+        if (!oldData) return { items: [optimisticMessage], hasMore: false };
+        return {
+          ...oldData,
+          items: [...oldData.items, optimisticMessage],
+        };
+      }
+    );
+
+    // Send to server
     sendMessage(selectedConversationId, content.trim());
   };
 
@@ -229,6 +256,7 @@ const Messages = () => {
                   `${selectedConversation.id}-${selectedConversation.participantId}`
                 ] || false
               }
+              isConnected={isConnected}
             />
           ) : (
             <div className='hidden lg:flex h-full items-center justify-center texture-bg'>

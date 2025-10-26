@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
+import type { ConsolidatedUser } from '@/types/store';
 
 interface DashboardHeaderProps {
-  userData: any;
+  userData: ConsolidatedUser;
   onLogout: () => void;
   onEditProfile: () => void;
 }
@@ -31,7 +32,10 @@ const DashboardHeader = ({
 
         <div>
           <h1 className='font-mondwest text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2'>
-            {userData.displayName || userData.username}
+            {userData.displayName ||
+              userData.username ||
+              userData.name ||
+              'User'}
           </h1>
           <p className='text-white/70 text-lg'>
             {userData.location || 'Location not set'}

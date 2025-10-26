@@ -3,13 +3,13 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useStore } from '@/stores/store';
 import { useGetArtistProfile } from '@/hooks/artist/useGetArtistProfile';
+import { useUpdateArtistProfile } from '@/hooks/artist/useUpdateArtistProfile';
 import { useGetBookings } from '@/hooks/booking/useGetBookings';
 import {
   useGetApprovalStatus,
   AppealStatus,
 } from '@/hooks/artist/useGetApprovalStatus';
 import { useApplyApproval } from '@/hooks/artist/useApplyApproval';
-import { formatPrice } from '@/helper';
 import BookingModal from '@/components/ui/BookingModal';
 import OverviewTab from '@/components/artistDashboard/OverviewTab';
 import BookingsTab from '@/components/artistDashboard/BookingsTab';
@@ -39,7 +39,10 @@ const ArtistDashboard = () => {
   // Apply for approval mutation
   const applyApprovalMutation = useApplyApproval();
 
-  // Settings states
+  // Profile update mutation
+  const updateProfileMutation = useUpdateArtistProfile();
+
+  // Settings states - initialize with default values
   const [profileVisibility, setProfileVisibility] = useState(true);
   const [acceptBookings, setAcceptBookings] = useState(true);
   const [showContact, setShowContact] = useState(false);
@@ -65,18 +68,37 @@ const ArtistDashboard = () => {
 
   // Use only real data - no dummy data fallback
   const realBookings = bookingsResponse?.data || [];
+
+  // Calculate real stats from booking data
+  const now = new Date();
+  const completedBookings = realBookings.filter(
+    (booking: any) => booking.status === 'completed'
+  );
+
+  const confirmedBookings = realBookings.filter(
+    (booking: any) => booking.status === 'confirmed'
+  );
+
+  const upcomingBookings = confirmedBookings.filter((booking: any) => {
+    const eventDate = new Date(booking.eventDate);
+    return eventDate > now;
+  });
+
+  // Calculate total earnings from completed bookings using budgetRange
+  const totalEarnings = completedBookings.reduce(
+    (sum: number, booking: any) => {
+      const budget = parseInt(booking.budgetRange) || 0;
+      return sum + budget;
+    },
+    0
+  );
+
   const dashboardData = {
     recentBookings: realBookings,
-    upcomingBookings: realBookings.filter(
-      (booking: any) =>
-        booking.status === 'confirmed' && new Date(booking.date) > new Date()
-    ),
+    upcomingBookings: upcomingBookings,
     stats: {
       totalBookings: realBookings.length,
-      totalEarnings: realBookings
-        .filter((booking: any) => booking.status === 'completed')
-        .reduce((sum: number, booking: any) => sum + (booking.amount || 0), 0),
-      responseTime: '2.5 hours', // This could be calculated from real data
+      totalEarnings: totalEarnings,
     },
   };
 
@@ -93,6 +115,24 @@ const ArtistDashboard = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [artist, setUser]); // Intentionally exclude 'user' to prevent infinite loop
+
+  // Update settings states when artist data changes
+  useEffect(() => {
+    if (artist) {
+      setProfileVisibility(artist.privacyOptions?.profileVisibility || true);
+      setAcceptBookings(artist.isBookable || true);
+      setShowContact(artist.privacyOptions?.showContactInfo || false);
+      setEmailNotifications(
+        artist.notificationSettings?.emailNotifications || true
+      );
+      setSmsNotifications(
+        artist.notificationSettings?.smsNotifications || true
+      );
+      setPushNotifications(
+        artist.notificationSettings?.bookingReminders || false
+      );
+    }
+  }, [artist]);
 
   // Check if profile is incomplete and get missing fields
   const getMissingFields = () => {
@@ -120,6 +160,58 @@ const ArtistDashboard = () => {
         console.error('Failed to submit approval request:', error);
       },
     });
+  };
+
+  // Handle profile settings updates
+  const handleProfileSettingsUpdate = async (settings: {
+    profileVisibility?: boolean;
+    acceptBookings?: boolean;
+    showContact?: boolean;
+  }) => {
+    try {
+      const updateData: any = {};
+
+      if (
+        settings.profileVisibility !== undefined ||
+        settings.showContact !== undefined
+      ) {
+        updateData.privacyOptions = {
+          ...artist?.privacyOptions,
+          ...(settings.profileVisibility !== undefined && {
+            profileVisibility: settings.profileVisibility,
+          }),
+          ...(settings.showContact !== undefined && {
+            showContactInfo: settings.showContact,
+          }),
+        };
+      }
+
+      if (settings.acceptBookings !== undefined) {
+        updateData.isBookable = settings.acceptBookings;
+      }
+
+      await updateProfileMutation.mutateAsync(updateData);
+    } catch (error) {
+      console.error('Failed to update profile settings:', error);
+    }
+  };
+
+  // Handle notification settings updates
+  const handleNotificationSettingsUpdate = async (notificationSettings: {
+    emailNotifications?: boolean;
+    smsNotifications?: boolean;
+    bookingReminders?: boolean;
+  }) => {
+    try {
+      await updateProfileMutation.mutateAsync({
+        notificationSettings: {
+          ...artist?.notificationSettings,
+          ...notificationSettings,
+        },
+      });
+    } catch (error) {
+      console.error('Failed to update notification settings:', error);
+    }
   };
 
   // Loading state
@@ -373,7 +465,7 @@ const ArtistDashboard = () => {
       </div>
 
       {/* Quick Stats Grid */}
-      <div className='grid grid-cols-1 md:grid-cols-4 gap-6 mb-8'>
+      <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-8'>
         <div className='bg-white/5 border border-white/10 p-6'>
           <h3 className='text-white/70 text-sm mb-2'>Profile Status</h3>
           <p
@@ -390,11 +482,11 @@ const ArtistDashboard = () => {
         <div className='bg-white/5 border border-white/10 p-6'>
           <h3 className='text-white/70 text-sm mb-2'>Total Earnings</h3>
           <p className='text-3xl font-bold text-orange-500 font-mondwest'>
-            {formatPrice(dashboardData.stats.totalEarnings)}
+            ${dashboardData.stats.totalEarnings}
           </p>
           <p className='text-white/60 text-xs mt-1'>
             {dashboardData.stats.totalEarnings > 0
-              ? 'From completed bookings'
+              ? `From ${completedBookings.length} completed booking${completedBookings.length !== 1 ? 's' : ''}`
               : 'No earnings yet'}
           </p>
         </div>
@@ -405,19 +497,8 @@ const ArtistDashboard = () => {
           </p>
           <p className='text-white/60 text-xs mt-1'>
             {dashboardData.stats.totalBookings > 0
-              ? 'All time bookings'
+              ? `${upcomingBookings.length} upcoming, ${completedBookings.length} completed`
               : 'No bookings yet'}
-          </p>
-        </div>
-        <div className='bg-white/5 border border-white/10 p-6'>
-          <h3 className='text-white/70 text-sm mb-2'>Response Time</h3>
-          <p className='text-3xl font-bold text-orange-500 font-mondwest'>
-            {dashboardData.stats.responseTime}
-          </p>
-          <p className='text-white/60 text-xs mt-1'>
-            {dashboardData.stats.totalBookings > 0
-              ? 'Average response time'
-              : 'No data yet'}
           </p>
         </div>
       </div>
@@ -489,6 +570,9 @@ const ArtistDashboard = () => {
             setSmsNotifications={setSmsNotifications}
             pushNotifications={pushNotifications}
             setPushNotifications={setPushNotifications}
+            onProfileSettingsUpdate={handleProfileSettingsUpdate}
+            onNotificationSettingsUpdate={handleNotificationSettingsUpdate}
+            updateProfileMutation={updateProfileMutation}
           />
         )}
       </div>

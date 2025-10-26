@@ -29,7 +29,7 @@ const MessageBubble = ({
           >
             {showAvatar && (
               <img
-                src={message.senderAvatar ?? '/images/artistNotFound.jpeg'}
+                src={message.senderAvatar || '/images/artistNotFound.jpeg'}
                 alt={message.senderName}
                 className='w-8 h-8 object-cover border border-white/20'
                 onError={e => {
@@ -92,7 +92,7 @@ const MessageBubble = ({
         >
           {showAvatar && (
             <img
-              src={message.senderAvatar ?? '/images/artistNotFound.jpeg'}
+              src={message.senderAvatar || '/images/artistNotFound.jpeg'}
               alt={message.senderName}
               className='w-8 h-8 object-cover border border-white/20'
               onError={e => {
