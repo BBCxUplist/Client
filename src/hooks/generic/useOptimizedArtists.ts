@@ -71,6 +71,8 @@ export const useOptimizedArtists = ({
     page: pageToFetch,
     limit,
     enabled: isSearching,
+    location: locationSearch,
+    genres: selectedGenres,
   });
 
   // Prefetch next page for normal pagination (no genre filter)
@@ -91,6 +93,8 @@ export const useOptimizedArtists = ({
     page: currentPage + 1,
     limit,
     enabled: isSearching && selectedGenres.length === 0,
+    location: locationSearch,
+    genres: selectedGenres,
   });
 
   // Get the active query result

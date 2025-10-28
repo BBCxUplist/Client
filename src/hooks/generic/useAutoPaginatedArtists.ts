@@ -10,6 +10,7 @@ interface UseAutoPaginatedArtistsParams {
   currentPage: number;
   limit: number;
   selectedGenres: string[];
+  locationSearch?: string;
 }
 
 export const useAutoPaginatedArtists = ({
@@ -19,6 +20,7 @@ export const useAutoPaginatedArtists = ({
   currentPage,
   limit,
   selectedGenres,
+  locationSearch = '',
 }: UseAutoPaginatedArtistsParams) => {
   // Conditionally call only the needed API using enabled option
   const allArtistsQuery = useGetAllArtists({
@@ -38,6 +40,8 @@ export const useAutoPaginatedArtists = ({
     page: currentPage,
     limit,
     enabled: isSearching, // Only enable when searching
+    location: locationSearch,
+    genres: selectedGenres,
   });
 
   // Select the appropriate query result based on current state
