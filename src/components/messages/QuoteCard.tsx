@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Calendar,
   MapPin,
@@ -32,19 +32,21 @@ const QuoteCard = ({ quoteData, isCurrentUser, text }: QuoteCardProps) => {
 
   const { mutate: approveBooking, isPending: isApproving } =
     useApproveBooking();
-  const { mutate: payForBooking, isPending: isPayingForBooking } =
+  // This hook *creates* a Stripe Checkout Session and redirects on success.
+  const { mutate: startCheckout, isPending: isStartingCheckout } =
     usePayForBooking();
 
-  const isExpired = quoteData.validUntil
-    ? new Date(quoteData.validUntil) < new Date()
-    : false;
+  const isExpired = useMemo(() => {
+    return quoteData.validUntil
+      ? new Date(quoteData.validUntil) < new Date()
+      : false;
+  }, [quoteData.validUntil]);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
     }).format(amount);
-  };
 
   const formatDate = (dateString: string) => {
     try {
@@ -59,14 +61,10 @@ const QuoteCard = ({ quoteData, isCurrentUser, text }: QuoteCardProps) => {
       console.error('Booking ID is required');
       return;
     }
-
     approveBooking(quoteData.bookingId, {
-      onSuccess: () => {
-        setBookingStatus(prev => ({ ...prev, isApproved: true }));
-      },
-      onError: error => {
-        console.error('Failed to approve booking:', error);
-      },
+      onSuccess: () =>
+        setBookingStatus(prev => ({ ...prev, isApproved: true })),
+      onError: error => console.error('Failed to approve booking:', error),
     });
   };
 
@@ -75,19 +73,18 @@ const QuoteCard = ({ quoteData, isCurrentUser, text }: QuoteCardProps) => {
       console.error('Booking ID is required');
       return;
     }
-
-    payForBooking(
-      { bookingId: quoteData.bookingId, isUser: true },
+    startCheckout(
+      { bookingId: quoteData.bookingId },
       {
-        onSuccess: () => {
-          setBookingStatus(prev => ({ ...prev, isPaid: true }));
-        },
         onError: error => {
-          console.error('Failed to pay for booking:', error);
+          console.error('Failed to start checkout:', error);
         },
       }
     );
   };
+
+  const showApprove = !bookingStatus.isApproved;
+  const showPay = bookingStatus.isApproved && !bookingStatus.isPaid;
 
   return (
     <div
@@ -99,9 +96,7 @@ const QuoteCard = ({ quoteData, isCurrentUser, text }: QuoteCardProps) => {
     >
       {/* Header */}
       <div
-        className={`px-4 py-3 border-b ${
-          isCurrentUser ? 'border-orange-500/30' : 'border-white/10'
-        }`}
+        className={`px-4 py-3 border-b ${isCurrentUser ? 'border-orange-500/30' : 'border-white/10'}`}
       >
         <div className='flex items-center justify-between'>
           <h3 className='font-semibold text-white text-lg font-mondwest'>
@@ -151,7 +146,7 @@ const QuoteCard = ({ quoteData, isCurrentUser, text }: QuoteCardProps) => {
         )}
 
         {/* Duration */}
-        {quoteData.duration && (
+        {typeof quoteData.duration === 'number' && (
           <div className='flex items-center gap-2'>
             <Clock className='w-4 h-4 text-white/60' />
             <span className='text-white text-sm'>
@@ -162,7 +157,7 @@ const QuoteCard = ({ quoteData, isCurrentUser, text }: QuoteCardProps) => {
         )}
 
         {/* Expected Guests */}
-        {quoteData.expectedGuests && (
+        {typeof quoteData.expectedGuests === 'number' && (
           <div className='flex items-center gap-2'>
             <Users className='w-4 h-4 text-white/60' />
             <span className='text-white text-sm'>
@@ -273,7 +268,7 @@ const QuoteCard = ({ quoteData, isCurrentUser, text }: QuoteCardProps) => {
         {/* Action Buttons (only for non-current user and not expired) */}
         {!isCurrentUser && !isExpired && (
           <div className='mt-4 flex gap-3'>
-            {!bookingStatus.isApproved ? (
+            {showApprove ? (
               <button
                 onClick={handleApproveQuote}
                 disabled={isApproving}
@@ -282,16 +277,17 @@ const QuoteCard = ({ quoteData, isCurrentUser, text }: QuoteCardProps) => {
                 {isApproving && <Loader2 className='w-4 h-4 animate-spin' />}
                 {isApproving ? 'Approving...' : 'Accept Quote'}
               </button>
-            ) : !bookingStatus.isPaid ? (
+            ) : showPay ? (
               <button
                 onClick={handlePayForBooking}
-                disabled={isPayingForBooking}
+                disabled={isStartingCheckout}
                 className='flex-1 bg-green-600 text-white py-2.5 px-4 font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2'
+                title='You’ll be securely redirected to Stripe'
               >
-                {isPayingForBooking && (
+                {isStartingCheckout && (
                   <Loader2 className='w-4 h-4 animate-spin' />
                 )}
-                {isPayingForBooking ? 'Processing...' : 'Pay Now'}
+                {isStartingCheckout ? 'Redirecting…' : 'Pay Now'}
               </button>
             ) : (
               <div className='flex-1 bg-green-500/20 text-green-400 py-2.5 px-4 font-semibold border border-green-500/50 flex items-center justify-center'>
