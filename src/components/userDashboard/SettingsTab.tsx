@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import ChangePasswordModal from '@/components/ui/ChangePasswordModal';
 
 interface SettingsTabProps {
   userData: any;
@@ -42,6 +43,7 @@ const SettingsTab = ({
   handleNotificationUpdate,
 }: SettingsTabProps) => {
   const [isHelpCenterOpen, setIsHelpCenterOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   // Handle notification toggle changes
   const handleNotificationToggle = (setting: string, value: boolean) => {
@@ -388,9 +390,14 @@ const SettingsTab = ({
             Account Management
           </h4>
           <div className='space-y-3'>
-            <button className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10'>
+            <button
+              onClick={() => setIsPasswordModalOpen(true)}
+              className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10'
+            >
               <span className='text-white text-sm'>🔐 Change Password</span>
             </button>
+            {/* Commented out sections as requested */}
+            {/* 
             <button className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10'>
               <span className='text-white text-sm'>💳 Payment Methods</span>
             </button>
@@ -400,6 +407,7 @@ const SettingsTab = ({
             <button className='w-full text-left p-3 bg-red-500/20 hover:bg-red-500/30 transition-colors border border-red-500/40'>
               <span className='text-red-400 text-sm'>⚠️ Delete Account</span>
             </button>
+            */}
           </div>
         </div>
 
@@ -503,6 +511,12 @@ const SettingsTab = ({
           </div>
         </div>
       </div>
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+      />
     </motion.div>
   );
 };

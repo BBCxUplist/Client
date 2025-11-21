@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import Toggle from '@/components/ui/Toggle';
+import ChangePasswordModal from '@/components/ui/ChangePasswordModal';
 
 interface SettingsTabProps {
   profileVisibility: boolean;
@@ -46,6 +47,7 @@ const SettingsTab = ({
   onNotificationSettingsUpdate,
 }: SettingsTabProps) => {
   const [isHelpCenterOpen, setIsHelpCenterOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -132,9 +134,14 @@ const SettingsTab = ({
             Account Management
           </h4>
           <div className='space-y-3'>
-            <button className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10'>
+            <button
+              onClick={() => setIsPasswordModalOpen(true)}
+              className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10'
+            >
               <span className='text-white text-sm'>🔐 Change Password</span>
             </button>
+            {/* Commented out sections as requested */}
+            {/* 
             <button className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10'>
               <span className='text-white text-sm'>💳 Payment Settings</span>
             </button>
@@ -146,6 +153,7 @@ const SettingsTab = ({
                 ⚠️ Deactivate Account
               </span>
             </button>
+            */}
           </div>
         </div>
 
@@ -249,6 +257,12 @@ const SettingsTab = ({
           </div>
         </div>
       </div>
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+      />
     </motion.div>
   );
 };
