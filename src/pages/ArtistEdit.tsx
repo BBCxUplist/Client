@@ -21,6 +21,7 @@ import GalleryTab from '@/components/artistEdit/GalleryTab';
 import RiderTab from '@/components/artistEdit/RiderTab';
 import PlaylistTab from '@/components/artistEdit/PlaylistTab';
 import SettingsTab from '@/components/artistEdit/SettingsTab';
+import NewsletterTab from '@/components/artist/NewsletterTab';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
 enum ArtistEditTab {
@@ -29,6 +30,7 @@ enum ArtistEditTab {
   GALLERY = 'gallery',
   RIDER = 'rider',
   PLAYLIST = 'playlist',
+  NEWSLETTER = 'newsletter',
   SETTINGS = 'settings',
 }
 
@@ -611,6 +613,7 @@ const ArtistEdit = () => {
             ArtistEditTab.GALLERY,
             ArtistEditTab.RIDER,
             ArtistEditTab.PLAYLIST,
+            ArtistEditTab.NEWSLETTER,
             ArtistEditTab.SETTINGS,
           ].map(tab => (
             <button
@@ -685,6 +688,9 @@ const ArtistEdit = () => {
               isDeleting={deletePlaylistMutation.isPending}
             />
           )}
+
+          {/* Newsletter Tab */}
+          {activeTab === ArtistEditTab.NEWSLETTER && <NewsletterTab />}
 
           {/* Settings Tab */}
           {activeTab === ArtistEditTab.SETTINGS && (

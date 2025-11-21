@@ -2,6 +2,9 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import Toggle from '@/components/ui/Toggle';
+import MailchimpConnect from '@/components/artist/MailchimpConnect';
+import IntegrationSettings from '@/components/artist/IntegrationSettings';
+import { Mail } from 'lucide-react';
 
 interface SettingsTabProps {
   profileVisibility: boolean;
@@ -46,6 +49,8 @@ const SettingsTab = ({
   onNotificationSettingsUpdate,
 }: SettingsTabProps) => {
   const [isHelpCenterOpen, setIsHelpCenterOpen] = useState(false);
+  const [showNewsletterSettings, setShowNewsletterSettings] = useState(false);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -146,6 +151,55 @@ const SettingsTab = ({
                 ⚠️ Deactivate Account
               </span>
             </button>
+          </div>
+        </div>
+
+        {/* Newsletter Management */}
+        <div className='bg-white/5 border border-white/10 p-6'>
+          <h4 className='text-xl font-semibold text-white mb-4 font-mondwest flex items-center'>
+            <Mail className='w-5 h-5 mr-2' />
+            Newsletter
+          </h4>
+          <div className='space-y-4'>
+            <div>
+              <p className='text-white/70 text-sm mb-3'>
+                Connect your Mailchimp account to collect fan email
+                subscriptions and send newsletters.
+              </p>
+              <button
+                onClick={() =>
+                  setShowNewsletterSettings(!showNewsletterSettings)
+                }
+                className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10 flex items-center justify-between'
+              >
+                <span className='text-white text-sm'>📧 Manage Newsletter</span>
+                <motion.span
+                  animate={{ rotate: showNewsletterSettings ? 45 : 0 }}
+                  transition={{ duration: 0.2, ease: 'easeInOut' }}
+                  className='text-white/60 text-sm'
+                >
+                  +
+                </motion.span>
+              </button>
+              <motion.div
+                initial={false}
+                animate={{
+                  height: showNewsletterSettings ? 'auto' : 0,
+                  opacity: showNewsletterSettings ? 1 : 0,
+                }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className='overflow-hidden'
+              >
+                <div className='pt-4'>
+                  {!showNewsletterSettings ? null : (
+                    <div className='space-y-4'>
+                      <MailchimpConnect />
+                      <IntegrationSettings isConnected={false} />
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </div>
           </div>
         </div>
 

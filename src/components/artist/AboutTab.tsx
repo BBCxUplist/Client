@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { ArtistSubscribeWidget } from '@/components/user/ArtistSubscribeForm';
 import type { AboutTabData } from '../../types/tabs';
 
 interface AboutTabProps {
@@ -49,6 +50,17 @@ const AboutTab = ({ artist }: AboutTabProps) => {
           <p className='text-white/80 text-base md:text-lg'>
             {artist.location}
           </p>
+        </div>
+      )}
+
+      {/* Newsletter Subscription */}
+      {artist?.id && artist?.displayName && (
+        <div className='mb-6'>
+          <ArtistSubscribeWidget
+            artistId={artist.id}
+            artistName={artist.displayName}
+            className='max-w-lg'
+          />
         </div>
       )}
     </motion.div>

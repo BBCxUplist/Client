@@ -1,6 +1,8 @@
 // Types for tab components - only include necessary data
 
 export interface AboutTabData {
+  id?: string;
+  displayName?: string;
   bio?: string;
 }
 
