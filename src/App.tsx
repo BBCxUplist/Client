@@ -10,6 +10,10 @@ import Admin from './pages/Admin';
 import Messages from './pages/Messages';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
+import PaymentSuccess from './pages/PaymentSuccess';
+import PaymentCancel from './pages/PaymentCancel';
+import PaymentExpire from './pages/PaymentExpire';
+import PaymentFailed from './pages/PaymentFailed';
 import { QueryProvider } from './providers/QueryProvider';
 import GlobalModelPreloader from './components/3D/GlobalModelPreloader';
 import AuthStateListener from './components/auth/AuthStateListener';
@@ -34,6 +38,10 @@ function App() {
           <Route path='/admin' element={<Admin />} />
           <Route path='/terms' element={<Terms />} />
           <Route path='/privacy' element={<Privacy />} />
+          <Route path='/payment/success' element={<PaymentSuccess />} />
+          <Route path='/payment/cancel' element={<PaymentCancel />} />
+          <Route path='/payment/expire' element={<PaymentExpire />} />
+          <Route path='/payment/failed' element={<PaymentFailed />} />
         </Routes>
       </div>
     </QueryProvider>

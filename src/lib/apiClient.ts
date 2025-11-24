@@ -3,9 +3,14 @@ import { authService } from './authService';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+// Validate API URL is set
+if (!API_URL) {
+  console.error('VITE_API_URL is not set in environment variables');
+}
+
 // Create axios instance
 export const apiClient = axios.create({
-  baseURL: API_URL,
+  baseURL: API_URL || 'http://localhost:3000/api/v1', // Fallback for development
   headers: {
     'Content-Type': 'application/json',
   },
