@@ -163,17 +163,17 @@ export const createSearchCacheKey = (
   const key = [
     baseKey,
     filters.query,
-    page,
-    limit,
+    page.toString(),
+    limit.toString(),
     filters.location || '',
     filters.genres?.sort().join(',') || '',
-    filters.minPrice || '',
-    filters.maxPrice || '',
-    filters.isBookable || '',
-    filters.isAvailable || '',
+    filters.minPrice?.toString() || '',
+    filters.maxPrice?.toString() || '',
+    filters.isBookable?.toString() || '',
+    filters.isAvailable?.toString() || '',
     filters.sortBy || '',
     filters.sortOrder || '',
   ];
 
-  return key.filter(Boolean);
+  return key.filter(Boolean) as string[];
 };

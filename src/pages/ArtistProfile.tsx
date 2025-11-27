@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Star } from 'lucide-react';
+import toast from 'react-hot-toast';
 import Navbar from '@/components/landing/Navbar';
 import AboutTab from '@/components/artist/AboutTab';
 import MusicTab from '@/components/artist/MusicTab';
 import GalleryTab from '@/components/artist/GalleryTab';
 import RiderTab from '@/components/artist/RiderTab';
-import BookingTab from '@/components/artist/BookingTab';
+import BookingTab, { type BookingTabRef } from '@/components/artist/BookingTab';
 import SocialLinks from '@/components/ui/SocialLinks';
 import { formatPrice } from '@/helper';
 import { useGetArtist } from '@/hooks/artist/useGetArtist';
@@ -27,6 +28,7 @@ const ArtistProfile = () => {
   const { username } = useParams();
   const [activeTab, setActiveTab] = useState<ArtistTab>(ArtistTab.MUSIC);
   const { user } = useStore();
+  const bookingTabRef = useRef<BookingTabRef>(null);
 
   // Fetch artist data from API
   const { data, isLoading, error } = useGetArtist(username || '');
@@ -273,10 +275,33 @@ const ArtistProfile = () => {
                       </p>
                     </div>
                     <button
-                      onClick={() => setActiveTab(ArtistTab.BOOKING)}
+                      onClick={() => {
+                        if (activeTab === ArtistTab.BOOKING) {
+                          // If already on booking tab, try to submit the form
+                          if (bookingTabRef.current) {
+                            if (bookingTabRef.current.isFormValid()) {
+                              bookingTabRef.current.submitForm();
+                            } else {
+                              // Form is not valid, show toast message
+                              toast.error(
+                                'Please fill out all required fields'
+                              );
+                            }
+                          }
+                        } else {
+                          // Navigate to booking tab
+                          setActiveTab(ArtistTab.BOOKING);
+                        }
+                      }}
+                      disabled={bookingTabRef.current?.isLoading}
                       className='w-full bg-orange-500 text-black py-3 font-semibold hover:bg-orange-600 transition-colors duration-300 text-sm md:text-base'
                     >
-                      BOOK NOW
+                      {bookingTabRef.current?.isLoading
+                        ? 'SUBMITTING...'
+                        : activeTab === ArtistTab.BOOKING &&
+                            bookingTabRef.current?.isFormValid()
+                          ? 'SUBMIT BOOKING'
+                          : 'BOOK NOW'}
                     </button>
                   </div>
                 </div>
@@ -333,6 +358,7 @@ const ArtistProfile = () => {
               )}
               {activeTab === ArtistTab.BOOKING && !isOwnProfile && (
                 <BookingTab
+                  ref={bookingTabRef}
                   artist={{
                     id: artist?.id || '',
                     displayName: artist?.displayName || '',
@@ -358,8 +384,32 @@ const ArtistProfile = () => {
                 </p>
                 <p className='text-white/60 text-sm'>Booking price</p>
               </div>
-              <button className='bg-orange-500 text-black px-6 py-3 font-semibold'>
-                BOOK NOW
+              <button
+                onClick={() => {
+                  if (activeTab === ArtistTab.BOOKING) {
+                    // If already on booking tab, try to submit the form
+                    if (bookingTabRef.current) {
+                      if (bookingTabRef.current.isFormValid()) {
+                        bookingTabRef.current.submitForm();
+                      } else {
+                        // Form is not valid, show toast message
+                        toast.error('Please fill out all required fields');
+                      }
+                    }
+                  } else {
+                    // Navigate to booking tab
+                    setActiveTab(ArtistTab.BOOKING);
+                  }
+                }}
+                disabled={bookingTabRef.current?.isLoading}
+                className='bg-orange-500 text-black px-6 py-3 font-semibold'
+              >
+                {bookingTabRef.current?.isLoading
+                  ? 'SUBMITTING...'
+                  : activeTab === ArtistTab.BOOKING &&
+                      bookingTabRef.current?.isFormValid()
+                    ? 'SUBMIT BOOKING'
+                    : 'BOOK NOW'}
               </button>
             </div>
           </div>

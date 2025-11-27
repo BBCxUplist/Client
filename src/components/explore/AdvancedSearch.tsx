@@ -75,7 +75,11 @@ const AdvancedSearch = ({ onResults, onClear }: AdvancedSearchProps) => {
 
   // Handle search results
   useCallback(() => {
-    onResults(searchQuery.data, searchQuery.isLoading, searchQuery.error);
+    onResults(
+      searchQuery.data ?? null,
+      searchQuery.isLoading,
+      searchQuery.error
+    );
   }, [searchQuery.data, searchQuery.isLoading, searchQuery.error, onResults]);
 
   const handleInputChange = (field: string, value: any) => {
