@@ -15,6 +15,7 @@ import OverviewTab from '@/components/artistDashboard/OverviewTab';
 import BookingsTab from '@/components/artistDashboard/BookingsTab';
 import AnalyticsTab from '@/components/artistDashboard/AnalyticsTab';
 import SettingsTab from '@/components/artistDashboard/SettingsTab';
+import SavedArtistsTab from '@/components/userDashboard/SavedArtistsTab';
 import { DashboardTab } from '@/types';
 import { Info } from 'lucide-react';
 
@@ -52,6 +53,9 @@ const ArtistDashboard = () => {
 
   // Get artist data from API response
   const artist = artistResponse?.data;
+
+  // Get saved artists from artist data
+  const savedArtists = artist?.savedArtists || [];
 
   // Get approval status data
   const approvalStatus = approvalStatusResponse?.data;
@@ -461,6 +465,12 @@ const ArtistDashboard = () => {
               EDIT PROFILE
             </button>
           </Link>
+          <button
+            onClick={handleLogout}
+            className='bg-red-500/20 border border-red-500/40 text-red-400 px-3 py-2 text-sm font-semibold hover:bg-red-500/30 transition-colors'
+          >
+            LOGOUT
+          </button>
         </div>
       </div>
 
@@ -509,6 +519,7 @@ const ArtistDashboard = () => {
           DashboardTab.OVERVIEW,
           DashboardTab.BOOKINGS,
           DashboardTab.ANALYTICS,
+          DashboardTab.SAVED,
           DashboardTab.SETTINGS,
         ].map(tab => (
           <button
@@ -553,6 +564,11 @@ const ArtistDashboard = () => {
         {/* Analytics Tab */}
         {activeTab === DashboardTab.ANALYTICS && (
           <AnalyticsTab dashboardData={dashboardData} />
+        )}
+
+        {/* Saved Artists Tab */}
+        {activeTab === DashboardTab.SAVED && (
+          <SavedArtistsTab savedArtists={savedArtists} />
         )}
 
         {/* Settings Tab */}

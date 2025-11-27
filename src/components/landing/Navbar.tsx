@@ -160,7 +160,7 @@ const Navbar = () => {
                 }}
                 onMouseLeave={handleMouseLeave}
               >
-                <div className='relative p-4 overflow-hidden'>
+                <div className='relative p-4 pb-2 overflow-hidden'>
                   <span className='absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-black'></span>
                   <span className='absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-black'></span>
                   <span className='absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-black'></span>

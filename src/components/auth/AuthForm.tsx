@@ -195,8 +195,8 @@ const AuthForm = ({
                 className='mt-4 p-3 bg-orange-500/10 border border-orange-500/20'
               >
                 <p className='text-orange-400 text-xs'>
-                  🎵 You'll be able to create your artist profile, upload music,
-                  and receive booking requests after registration.
+                  Upload music and set up your account anytime. Complete your
+                  profile and get approved to start receiving booking requests.
                 </p>
               </motion.div>
             )}
