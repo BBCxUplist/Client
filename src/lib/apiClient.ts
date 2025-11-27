@@ -27,7 +27,6 @@ export const isAuthenticated = (): boolean => {
 // Helper function to logout and clear tokens
 export const logout = async (): Promise<void> => {
   await authService.logout();
-  window.location.href = '/auth';
 };
 
 // Helper function to get current user

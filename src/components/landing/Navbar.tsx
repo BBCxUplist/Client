@@ -26,6 +26,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
+      // Use the store's logout method which handles both API and local cleanup
       await logout();
       setIsMenuOpen(false);
       // Navigate to home page using React Router

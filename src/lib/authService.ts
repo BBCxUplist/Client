@@ -304,9 +304,9 @@ class AuthService {
       // Even if logout API call fails, we should clear local auth
       console.warn('Logout API call failed:', error);
     } finally {
-      // Always clear local auth state
+      // Always clear local auth state using clearAuth to avoid circular dependency
       const store = useStore.getState();
-      store.logout();
+      store.clearAuth();
     }
   }
 

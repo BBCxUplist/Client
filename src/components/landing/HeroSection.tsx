@@ -19,18 +19,21 @@ const HeroSection = () => {
       </div>
 
       <div className='w-full max-w-4xl mx-auto'>
-        <div className='relative cursor-pointer' onClick={handleSearchBarClick}>
+        <div
+          className='flex cursor-pointer bg-black border border-white'
+          onClick={handleSearchBarClick}
+        >
           <input
             type='text'
-            placeholder='Search for artists, genres, or venues...'
-            className='w-full px-8 py-4 text-xl md:text-3xl bg-black border border-white text-white placeholder-white/60 transition-all duration-300 focus:outline-none focus:ring-0 cursor-pointer'
+            placeholder='Search for artists, genres'
+            className='w-full px-4 md:px-8 py-4 text-xl md:text-3xl text-white placeholder-white/60 transition-all duration-300 focus:outline-none focus:ring-0 cursor-pointer'
             readOnly
           />
           <img
             src='/icons/search.png'
             alt='search'
             draggable={false}
-            className='absolute right-4 top-1/2 transform -translate-y-1/2 md:w-24 md:h-24 w-16 h-16 z-10 cursor-pointer hover:opacity-80 transition-opacity'
+            className='w-16 h-16 z-10 cursor-pointer hover:opacity-80 transition-opacity p-2'
           />
         </div>
       </div>

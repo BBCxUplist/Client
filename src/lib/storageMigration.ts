@@ -18,8 +18,6 @@ export function migrateStorageData(): void {
 
       // If we have old token data in localStorage, migrate it to cookies
       if (parsedData.state?.accessToken && parsedData.state?.refreshToken) {
-        console.log('Migrating tokens from localStorage to cookies...');
-
         // Store tokens in cookies
         tokenCookies.setAccessToken(parsedData.state.accessToken);
         tokenCookies.setRefreshToken(parsedData.state.refreshToken);
@@ -31,13 +29,10 @@ export function migrateStorageData(): void {
         if (parsedData.state.user?.role) {
           userDataCookies.setUserRole(parsedData.state.user.role);
         }
-
-        console.log('Token migration completed');
       }
 
       // Clean up the old localStorage data
       localStorage.removeItem('auth-storage');
-      console.log('Cleaned up old localStorage data');
     }
 
     // Clean up any other potentially sensitive data
@@ -53,7 +48,6 @@ export function migrateStorageData(): void {
     keysToRemove.forEach(key => {
       if (localStorage.getItem(key)) {
         localStorage.removeItem(key);
-        console.log(`Removed sensitive data: ${key}`);
       }
     });
   } catch (error) {
@@ -80,8 +74,6 @@ export function initializeStorageMigration(): void {
     // We have tokens but no user data in store
     // This might happen after a page refresh
     // The user will need to re-authenticate or we can try to fetch user data
-    console.log('Found tokens in cookies but no user data in store');
-    console.log('User may need to re-authenticate');
   }
 }
 
@@ -111,8 +103,6 @@ export function clearAllAuthData(): void {
   authKeys.forEach(key => {
     localStorage.removeItem(key);
   });
-
-  console.log('Cleared all authentication data');
 }
 
 /**

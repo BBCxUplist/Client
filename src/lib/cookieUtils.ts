@@ -84,6 +84,15 @@ export function getCookie(name: string): string | null {
  * Remove a cookie by setting its expiration date to the past
  */
 export function removeCookie(name: string, path: string = '/'): void {
+  // Try to remove with the same attributes that were used to set it
+  setCookie(name, '', {
+    expires: new Date(0),
+    path,
+    secure: true,
+    sameSite: 'lax',
+  });
+
+  // Also try without secure/sameSite for compatibility
   setCookie(name, '', {
     expires: new Date(0),
     path,
@@ -151,6 +160,10 @@ export const tokenCookies = {
   clearTokens: (): void => {
     removeCookie('access_token');
     removeCookie('refresh_token');
+
+    // Double check - also try to clear with different paths
+    removeCookie('access_token', '/');
+    removeCookie('refresh_token', '/');
   },
 };
 
@@ -200,5 +213,55 @@ export const userDataCookies = {
   clearUserData: (): void => {
     removeCookie('user_id');
     removeCookie('user_role');
+
+    // Double check - also try to clear with different paths
+    removeCookie('user_id', '/');
+    removeCookie('user_role', '/');
   },
 };
+
+/**
+ * Aggressively clear all auth-related cookies
+ */
+export function clearAllAuthCookies(): void {
+  const cookieNames = ['access_token', 'refresh_token', 'user_id', 'user_role'];
+  const paths = ['/', '/auth', '/dashboard'];
+
+  cookieNames.forEach(cookieName => {
+    // Try different combinations of path
+    paths.forEach(path => {
+      try {
+        // Try with secure and sameSite
+        setCookie(cookieName, '', {
+          expires: new Date(0),
+          path,
+          secure: true,
+          sameSite: 'lax',
+        });
+
+        // Try without secure
+        setCookie(cookieName, '', {
+          expires: new Date(0),
+          path,
+          sameSite: 'lax',
+        });
+
+        // Try with just path
+        setCookie(cookieName, '', {
+          expires: new Date(0),
+          path,
+        });
+      } catch {
+        // Ignore errors for invalid combinations
+      }
+    });
+
+    // Also try the simple removal
+    try {
+      document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`;
+    } catch {
+      // Ignore errors
+    }
+  });
+}

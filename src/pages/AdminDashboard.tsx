@@ -1,4 +1,3 @@
-// pages/AdminDashboard.tsx
 import { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import OverviewTab from '@/components/admin/OverviewTab';
@@ -177,14 +176,6 @@ const AdminDashboard = () => {
   }, [searchTerm, filterStatus, allUsers]);
 
   // No longer needed - actions are handled directly in ArtistsTab
-  // const handleStatusChange = (
-  //   id: string,
-  //   newStatus: string,
-  //   type: 'artist' | 'user'
-  // ) => {
-  //   console.log(`Changing ${type} ${id} status to ${newStatus}`);
-  // };
-
   const handleCreateArtist = async (artistData: any) => {
     try {
       // Map the form data to match the API expected format
@@ -216,10 +207,12 @@ const AdminDashboard = () => {
     try {
       await logout();
       toast.success('Logged out successfully');
-      navigate('/auth');
+      navigate('/');
     } catch (error) {
       console.error('Logout error:', error);
       toast.error('Failed to logout');
+      // Even if logout fails, redirect to home
+      navigate('/');
     }
   };
 
@@ -474,9 +467,9 @@ const AdminDashboard = () => {
           {activeTab === AdminTab.APPROVED && (
             <ApprovedTab
               artists={pendingAppealArtists}
-              onStatusChange={(id, status) =>
-                console.log(`Artist ${id} ${status}`)
-              }
+              onStatusChange={(_id, _status) => {
+                // Handle status change if needed
+              }}
             />
           )}
 

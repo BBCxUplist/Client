@@ -13,29 +13,32 @@ import Privacy from './pages/Privacy';
 import { QueryProvider } from './providers/QueryProvider';
 import GlobalModelPreloader from './components/3D/GlobalModelPreloader';
 import AuthStateListener from './components/auth/AuthStateListener';
+import AuthProvider from './components/auth/AuthProvider';
 import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
     <QueryProvider>
-      <div>
-        <GlobalModelPreloader />
-        {/* Auth State Listener for Google Login */}
-        <AuthStateListener />
-        <Toaster position='top-right' />
-        <Routes>
-          <Route path='/' element={<Landing />} />
-          <Route path='/explore' element={<Explore />} />
-          <Route path='/artist/:username' element={<ArtistProfile />} />
-          <Route path='/dashboard/edit' element={<ArtistEdit />} />
-          <Route path='/dashboard' element={<Dashboard />} />
-          <Route path='/messages' element={<Messages />} />
-          <Route path='/auth' element={<Auth />} />
-          <Route path='/admin' element={<Admin />} />
-          <Route path='/terms' element={<Terms />} />
-          <Route path='/privacy' element={<Privacy />} />
-        </Routes>
-      </div>
+      <AuthProvider>
+        <div>
+          <GlobalModelPreloader />
+          {/* Auth State Listener for Google Login */}
+          <AuthStateListener />
+          <Toaster position='top-right' />
+          <Routes>
+            <Route path='/' element={<Landing />} />
+            <Route path='/explore' element={<Explore />} />
+            <Route path='/artist/:username' element={<ArtistProfile />} />
+            <Route path='/dashboard/edit' element={<ArtistEdit />} />
+            <Route path='/dashboard' element={<Dashboard />} />
+            <Route path='/messages' element={<Messages />} />
+            <Route path='/auth' element={<Auth />} />
+            <Route path='/admin' element={<Admin />} />
+            <Route path='/terms' element={<Terms />} />
+            <Route path='/privacy' element={<Privacy />} />
+          </Routes>
+        </div>
+      </AuthProvider>
     </QueryProvider>
   );
 }

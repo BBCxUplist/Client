@@ -2,12 +2,14 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { devtools } from 'zustand/middleware';
 import { supabase } from '@/lib/supabase';
-import { tokenCookies, userDataCookies } from '@/lib/cookieUtils';
+import {
+  tokenCookies,
+  userDataCookies,
+  clearAllAuthCookies,
+} from '@/lib/cookieUtils';
 import type { Store, ConsolidatedUser } from '@/types/store';
 import type { Role } from '@/types';
 import type { Artist } from '@/types/api';
-
-// Force TypeScript recompilation
 
 export const useStore = create<Store>()(
   devtools(
@@ -37,6 +39,9 @@ export const useStore = create<Store>()(
             if (user.role) {
               userDataCookies.setUserRole(user.role);
             }
+          } else {
+            // Clear user data cookies when user is null
+            userDataCookies.clearUserData();
           }
         },
 
@@ -66,6 +71,31 @@ export const useStore = create<Store>()(
           tokenCookies.clearTokens();
           userDataCookies.clearUserData();
 
+          // Use aggressive cookie clearing as backup
+          try {
+            clearAllAuthCookies();
+          } catch (error) {
+            console.warn('Failed to run aggressive cookie clearing:', error);
+          }
+
+          // Also clear persisted storage
+          try {
+            localStorage.removeItem('auth-storage');
+            // Also try clearing any other potential auth storage keys
+            const authKeys = [
+              'auth-storage',
+              'user-storage',
+              'token-storage',
+              'session-storage',
+            ];
+            authKeys.forEach(key => {
+              localStorage.removeItem(key);
+              sessionStorage.removeItem(key);
+            });
+          } catch (error) {
+            console.warn('Failed to clear persisted auth storage:', error);
+          }
+
           set({
             user: null,
             isAuthenticated: false,
@@ -76,6 +106,30 @@ export const useStore = create<Store>()(
 
         logout: async () => {
           try {
+            // Call the backend logout endpoint directly
+            const accessToken = tokenCookies.getAccessToken();
+            const refreshToken = tokenCookies.getRefreshToken();
+
+            if (accessToken && refreshToken) {
+              const API_URL = import.meta.env.VITE_API_URL;
+              await fetch(`${API_URL}/auth/logout`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify({ refreshToken }),
+              }).catch(error => {
+                console.warn('Backend logout API call failed:', error);
+              });
+            }
+          } catch (error) {
+            console.warn('Backend logout failed:', error);
+            // Continue with local cleanup even if API call fails
+          }
+
+          // Try Supabase logout as well (for Google auth)
+          try {
             await supabase.auth.signOut();
           } catch (error) {
             console.warn('Supabase logout failed:', error);
@@ -84,6 +138,30 @@ export const useStore = create<Store>()(
           // Clear all auth data
           tokenCookies.clearTokens();
           userDataCookies.clearUserData();
+
+          // Use aggressive cookie clearing as backup
+          try {
+            clearAllAuthCookies();
+          } catch (error) {
+            console.warn('Failed to run aggressive cookie clearing:', error);
+          }
+
+          // Also clear persisted storage
+          try {
+            localStorage.removeItem('auth-storage');
+            const authKeys = [
+              'auth-storage',
+              'user-storage',
+              'token-storage',
+              'session-storage',
+            ];
+            authKeys.forEach(key => {
+              localStorage.removeItem(key);
+              sessionStorage.removeItem(key);
+            });
+          } catch (error) {
+            console.warn('Failed to clear persisted auth storage:', error);
+          }
 
           set({
             user: null,
@@ -131,47 +209,86 @@ export const useStore = create<Store>()(
       }),
       {
         name: 'auth-storage',
-        // Persist both Supabase auth and backend data in localStorage
+        // Only persist user data, not authentication tokens (those are in cookies)
+        // Also be more conservative about what user data we persist
         partialize: state => ({
-          user: {
-            id: state.user?.id,
-            email: state.user?.email,
-            name: state.user?.name,
-            role: state.user?.role,
-            // Backend user fields
-            username: state.user?.username,
-            useremail: state.user?.useremail,
-            displayName: state.user?.displayName,
-            avatar: state.user?.avatar,
-            bio: state.user?.bio,
-            phone: state.user?.phone,
-            location: state.user?.location,
-            socials: state.user?.socials,
-            isActive: state.user?.isActive,
-            isAdmin: state.user?.isAdmin,
-            banned: state.user?.banned,
-            savedArtists: state.user?.savedArtists,
-            updatedAt: state.user?.updatedAt,
-            notificationSettings: state.user?.notificationSettings,
-            bookings: state.user?.bookings,
-            // Additional artist fields
-            slug: state.user?.slug,
-            photos: state.user?.photos,
-            basePrice: state.user?.basePrice,
-            genres: state.user?.genres,
-            embeds: state.user?.embeds,
-            // Additional artist properties
-            isBookable: state.user?.isBookable,
-            appealStatus: state.user?.appealStatus,
-            artistType: state.user?.artistType,
-            featured: state.user?.featured,
-            isActiveArtist: state.user?.isActiveArtist,
-            isApproved: state.user?.isApproved,
-            isAvailable: state.user?.isAvailable,
-          },
-          isAuthenticated: state.isAuthenticated,
+          // Only persist basic user info, not sensitive data
+          user: state.user
+            ? {
+                id: state.user.id,
+                email: state.user.email,
+                name: state.user.name,
+                role: state.user.role,
+                username: state.user.username,
+                displayName: state.user.displayName,
+                avatar: state.user.avatar,
+                bio: state.user.bio,
+                // Don't persist sensitive or frequently changing data
+              }
+            : null,
+          // Don't persist isAuthenticated - this should be determined by token validation
           authMode: state.authMode,
         }),
+        // Add version to handle breaking changes
+        version: 1,
+        // Custom storage to handle errors gracefully
+        storage: {
+          getItem: name => {
+            try {
+              const item = localStorage.getItem(name);
+              if (!item) return null;
+
+              const parsed = JSON.parse(item);
+
+              // If we have persisted user data, also check if we have tokens
+              if (parsed.state?.user) {
+                const hasAccessToken = tokenCookies.getAccessToken();
+                const hasRefreshToken = tokenCookies.getRefreshToken();
+
+                // Only restore authentication state if we have tokens
+                if (hasAccessToken && hasRefreshToken) {
+                  return {
+                    ...parsed,
+                    state: {
+                      ...parsed.state,
+                      isAuthenticated: true, // Set authenticated if we have both user and tokens
+                    },
+                  };
+                } else {
+                  // Clear persisted user data if no tokens
+                  return {
+                    ...parsed,
+                    state: {
+                      ...parsed.state,
+                      user: null,
+                      isAuthenticated: false,
+                    },
+                  };
+                }
+              }
+
+              return parsed;
+            } catch (error) {
+              console.warn('Failed to parse stored auth data:', error);
+              localStorage.removeItem(name);
+              return null;
+            }
+          },
+          setItem: (name, value) => {
+            try {
+              localStorage.setItem(name, JSON.stringify(value));
+            } catch (error) {
+              console.warn('Failed to store auth data:', error);
+            }
+          },
+          removeItem: name => {
+            try {
+              localStorage.removeItem(name);
+            } catch (error) {
+              console.warn('Failed to remove stored auth data:', error);
+            }
+          },
+        },
       }
     )
   )

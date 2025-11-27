@@ -87,8 +87,9 @@ export function setupAxiosInterceptors() {
         } catch (refreshError) {
           processQueue(refreshError, null);
 
-          // If refresh fails, clear auth and redirect to login
-          authService.logout();
+          // If refresh fails, clear auth using clearAuth to avoid circular dependency
+          const store = (await import('@/stores/store')).useStore.getState();
+          store.clearAuth();
 
           // Redirect to login page
           if (typeof window !== 'undefined') {

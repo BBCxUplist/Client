@@ -9,13 +9,12 @@ import SavedArtistsTab from '@/components/userDashboard/SavedArtistsTab';
 import SettingsTab from '@/components/userDashboard/SettingsTab';
 import { useStore } from '@/stores/store';
 import { useGetUserProfile, useUpdateUserProfile } from '@/hooks/user';
-import { logout } from '@/lib/apiClient';
 // import { dummyUserDashboardData } from '@/constants/userDashboardData';
 import { useImageUpload } from '@/hooks/useImageUpload';
 
 const UserDashboard = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useStore();
+  const { user, isAuthenticated, logout } = useStore();
   const [activeTab, setActiveTab] = useState<
     'overview' | 'bookings' | 'saved' | 'settings'
   >('overview');
@@ -172,10 +171,12 @@ const UserDashboard = () => {
   const handleLogout = async () => {
     try {
       await logout();
+      // Navigate to home after successful logout
+      navigate('/');
     } catch (error) {
       console.error('Logout failed:', error);
-      // Even if logout fails, redirect to auth page
-      navigate('/auth');
+      // Even if logout fails, clear local state and redirect
+      navigate('/');
     }
   };
 

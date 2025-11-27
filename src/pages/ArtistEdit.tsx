@@ -449,8 +449,6 @@ const ArtistEdit = () => {
         return;
       }
 
-      console.log('Sending only changed fields:', changedFields);
-
       // Call the API with only changed fields
       const result = await updateProfileMutation.mutateAsync(changedFields);
 
