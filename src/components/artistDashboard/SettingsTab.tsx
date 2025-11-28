@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import Toggle from '@/components/ui/Toggle';
 import ChangePasswordModal from '@/components/ui/ChangePasswordModal';
+import DeleteAccountModal from '@/components/ui/DeleteAccountModal';
+import { useDeleteArtistAccount } from '@/hooks/artist/useDeleteArtistAccount';
 
 interface SettingsTabProps {
   profileVisibility: boolean;
@@ -48,6 +50,15 @@ const SettingsTab = ({
 }: SettingsTabProps) => {
   const [isHelpCenterOpen, setIsHelpCenterOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  // Delete account mutation
+  const deleteAccountMutation = useDeleteArtistAccount();
+
+  const handleDeleteAccount = () => {
+    deleteAccountMutation.mutate();
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -140,20 +151,19 @@ const SettingsTab = ({
             >
               <span className='text-white text-sm'>🔐 Change Password</span>
             </button>
-            {/* Commented out sections as requested */}
-            {/* 
-            <button className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10'>
+
+            {/* <button className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10'>
               <span className='text-white text-sm'>💳 Payment Settings</span>
             </button>
             <button className='w-full text-left p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10'>
               <span className='text-white text-sm'>📄 Download Data</span>
+            </button> */}
+            <button
+              onClick={() => setIsDeleteModalOpen(true)}
+              className='w-full text-left p-3 bg-red-500/20 hover:bg-red-500/30 transition-colors border border-red-500/40'
+            >
+              <span className='text-red-400 text-sm'>⚠️ Delete Account</span>
             </button>
-            <button className='w-full text-left p-3 bg-red-500/20 hover:bg-red-500/30 transition-colors border border-red-500/40'>
-              <span className='text-red-400 text-sm'>
-                ⚠️ Deactivate Account
-              </span>
-            </button>
-            */}
           </div>
         </div>
 
@@ -262,6 +272,14 @@ const SettingsTab = ({
       <ChangePasswordModal
         isOpen={isPasswordModalOpen}
         onClose={() => setIsPasswordModalOpen(false)}
+      />
+
+      {/* Delete Account Modal */}
+      <DeleteAccountModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteAccount}
+        isDeleting={deleteAccountMutation.isPending}
       />
     </motion.div>
   );
