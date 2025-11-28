@@ -186,14 +186,14 @@ const Explore = () => {
 
             {/* Artists grid */}
             {!isLoading && !error && (
-              <div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 divide-y divide-dashed divide-white'>
+              <div className='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-4 divide-y divide-dashed divide-white'>
                 {artists.map((artist: Artist, index: number) => (
                   <Link
                     key={artist.id}
                     onMouseEnter={() => setIsHovered(index)}
                     onMouseLeave={() => setIsHovered(null)}
                     to={`/artist/${artist.username}`}
-                    className='mx-2 p-4 [&:nth-child(-n+1)]:border-t sm:[&:nth-child(-n+2)]:border-t lg:[&:nth-child(-n+3)]:border-t border-dashed border-white relative group'
+                    className=' relative group pb-2'
                   >
                     {/* Mobile: Image always visible */}
                     <div className='lg:hidden mb-3'>
@@ -236,7 +236,7 @@ const Explore = () => {
                             isHovered === index ? 'blur(0px)' : 'blur(8px)',
                         }}
                         transition={{ duration: 0.2, ease: 'easeOut' }}
-                        className='absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 hidden lg:group-hover:block aspect-square w-4/5 object-cover z-10'
+                        className='absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 hidden lg:group-hover:block aspect-square w-44 h-44 xl:w-52 xl:h-52  object-cover z-10'
                         onError={e => {
                           e.currentTarget.src = '/images/artistNotFound.jpeg';
                         }}
