@@ -9,7 +9,6 @@ import SavedArtistsTab from '@/components/userDashboard/SavedArtistsTab';
 import SettingsTab from '@/components/userDashboard/SettingsTab';
 import { useStore } from '@/stores/store';
 import { useGetUserProfile, useUpdateUserProfile } from '@/hooks/user';
-// import { dummyUserDashboardData } from '@/constants/userDashboardData';
 import { useImageUpload } from '@/hooks/useImageUpload';
 
 const UserDashboard = () => {
