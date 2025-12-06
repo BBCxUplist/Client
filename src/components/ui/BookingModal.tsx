@@ -84,10 +84,10 @@ const BookingModal = ({ isOpen, onClose, booking }: BookingModalProps) => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className='relative w-full max-w-2xl bg-neutral-900 border border-white/20 p-6 pr-3 max-h-[90vh] overflow-y-auto '
+        className='relative w-full max-w-2xl bg-neutral-900 border border-white/20 p-4 max-h-[90vh] overflow-y-auto '
       >
         {/* Header */}
-        <div className='flex items-center justify-between mb-6'>
+        <div className='flex items-center justify-between mb-4'>
           <h2 className='text-2xl font-semibold text-white font-mondwest'>
             Booking Request Details
           </h2>
@@ -100,13 +100,13 @@ const BookingModal = ({ isOpen, onClose, booking }: BookingModalProps) => {
         </div>
 
         {/* Content */}
-        <div className='space-y-6'>
+        <div className='space-y-3'>
           {/* Event Details */}
-          <div className='bg-white/5 border border-white/10 p-6'>
-            <h3 className='text-lg font-semibold text-white mb-4 font-mondwest'>
+          <div className='bg-white/5 border border-white/10 p-3'>
+            <h3 className='text-base font-semibold text-white mb-2 font-mondwest'>
               Event Information
             </h3>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
               <div>
                 <p className='text-white/70 text-sm'>Event Type</p>
                 <p className='text-white font-semibold'>{booking.eventType}</p>
@@ -141,11 +141,11 @@ const BookingModal = ({ isOpen, onClose, booking }: BookingModalProps) => {
           </div>
 
           {/* Client Details */}
-          <div className='bg-white/5 border border-white/10 p-6'>
-            <h3 className='text-lg font-semibold text-white mb-4 font-mondwest'>
+          <div className='bg-white/5 border border-white/10 p-3'>
+            <h3 className='text-base font-semibold text-white mb-2 font-mondwest'>
               Client Information
             </h3>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
               <div>
                 <p className='text-white/70 text-sm'>Name</p>
                 <p className='text-white font-semibold'>{booking.clientName}</p>
@@ -169,8 +169,8 @@ const BookingModal = ({ isOpen, onClose, booking }: BookingModalProps) => {
 
           {/* Message */}
           {booking.message && (
-            <div className='bg-white/5 border border-white/10 p-6'>
-              <h3 className='text-lg font-semibold text-white mb-4 font-mondwest'>
+            <div className='bg-white/5 border border-white/10 p-3'>
+              <h3 className='text-base font-semibold text-white mb-2 font-mondwest'>
                 Special Requirements
               </h3>
               <p className='text-white/80'>{booking.message}</p>
@@ -178,8 +178,8 @@ const BookingModal = ({ isOpen, onClose, booking }: BookingModalProps) => {
           )}
 
           {/* Status */}
-          <div className='bg-white/5 border border-white/10 p-6'>
-            <h3 className='text-lg font-semibold text-white mb-4 font-mondwest'>
+          <div className='bg-white/5 border border-white/10 p-3'>
+            <h3 className='text-base font-semibold text-white mb-2 font-mondwest'>
               Request Status
             </h3>
             <span
@@ -197,17 +197,17 @@ const BookingModal = ({ isOpen, onClose, booking }: BookingModalProps) => {
         </div>
 
         {/* Action Buttons */}
-        <div className='flex gap-4 mt-8'>
+        <div className='flex gap-3 mt-4'>
           <button
             onClick={onClose}
-            className='flex-1 bg-white/10 border border-white/30 text-white px-6 py-3 font-semibold hover:bg-white/20 transition-colors'
+            className='flex-1 bg-white/10 border border-white/30 text-white px-4 py-2 font-semibold hover:bg-white/20 transition-colors'
           >
             Dismiss
           </button>
           <button
             onClick={handleChatWithClient}
             disabled={startConversationMutation.isPending || !booking.clientId}
-            className='flex-1 bg-orange-500 text-black px-6 py-3 font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+            className='flex-1 bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
           >
             {startConversationMutation.isPending
               ? 'Opening Chat...'

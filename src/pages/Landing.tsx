@@ -4,6 +4,7 @@ import HeroSection from '@/components/landing/HeroSection';
 import About from '@/components/landing/About';
 import FeaturedArtist from '@/components/landing/FeaturedArtist';
 import HowItWorks from '@/components/landing/HowItWorks';
+// import MailchimpFeatureSection from '@/components/landing/MailchimpFeatureSection';
 import Faq from '@/components/landing/Faq';
 import Footer from '@/components/landing/Footer';
 import { useEffect } from 'react';
@@ -48,6 +49,7 @@ const Landing = () => {
         <div className='space-y-0'>
           <About />
           <FeaturedArtist />
+          {/* <MailchimpFeatureSection /> */}
           <HowItWorks />
           <Faq />
           <Footer />

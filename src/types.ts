@@ -129,6 +129,7 @@ export enum DashboardTab {
   OVERVIEW = 'overview',
   BOOKINGS = 'bookings',
   ANALYTICS = 'analytics',
+  NEWSLETTER = 'newsletter',
   SAVED = 'saved',
   SETTINGS = 'settings',
 }

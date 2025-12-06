@@ -26,6 +26,9 @@ export const useStore = create<Store>()(
           { artists: Artist[]; hasMore: boolean; timestamp: number }
         >,
 
+        // Newsletter subscription state
+        newsletterSubscriptions: [] as string[],
+
         // Auth actions
         setUser: (user: ConsolidatedUser | null) => {
           set({
@@ -198,6 +201,29 @@ export const useStore = create<Store>()(
 
         clearArtistCache: () => {
           set({ artistCache: {} });
+        },
+
+        // Newsletter subscription actions
+        addNewsletterSubscription: (artistId: string) => {
+          set(state => ({
+            newsletterSubscriptions: state.newsletterSubscriptions.includes(
+              artistId
+            )
+              ? state.newsletterSubscriptions
+              : [...state.newsletterSubscriptions, artistId],
+          }));
+        },
+
+        removeNewsletterSubscription: (artistId: string) => {
+          set(state => ({
+            newsletterSubscriptions: state.newsletterSubscriptions.filter(
+              id => id !== artistId
+            ),
+          }));
+        },
+
+        isSubscribedToNewsletter: (artistId: string) => {
+          return get().newsletterSubscriptions.includes(artistId);
         },
 
         // Helper methods

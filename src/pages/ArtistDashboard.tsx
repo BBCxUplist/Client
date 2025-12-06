@@ -13,9 +13,10 @@ import { useApplyApproval } from '@/hooks/artist/useApplyApproval';
 import BookingModal from '@/components/ui/BookingModal';
 import OverviewTab from '@/components/artistDashboard/OverviewTab';
 import BookingsTab from '@/components/artistDashboard/BookingsTab';
-import AnalyticsTab from '@/components/artistDashboard/AnalyticsTab';
+// import AnalyticsTab from '@/components/artistDashboard/AnalyticsTab';
 import SettingsTab from '@/components/artistDashboard/SettingsTab';
 import SavedArtistsTab from '@/components/userDashboard/SavedArtistsTab';
+import MailchimpPanel from '@/components/ui/MailchimpPanel';
 import { DashboardTab } from '@/types';
 import { Info } from 'lucide-react';
 
@@ -518,7 +519,8 @@ const ArtistDashboard = () => {
         {[
           DashboardTab.OVERVIEW,
           DashboardTab.BOOKINGS,
-          DashboardTab.ANALYTICS,
+          // DashboardTab.ANALYTICS,
+          DashboardTab.NEWSLETTER,
           DashboardTab.SAVED,
           DashboardTab.SETTINGS,
         ].map(tab => (
@@ -562,9 +564,12 @@ const ArtistDashboard = () => {
         )}
 
         {/* Analytics Tab */}
-        {activeTab === DashboardTab.ANALYTICS && (
+        {/* {activeTab === DashboardTab.ANALYTICS && (
           <AnalyticsTab dashboardData={dashboardData} />
-        )}
+        )} */}
+
+        {/* Newsletter Tab */}
+        {activeTab === DashboardTab.NEWSLETTER && <MailchimpPanel />}
 
         {/* Saved Artists Tab */}
         {activeTab === DashboardTab.SAVED && (

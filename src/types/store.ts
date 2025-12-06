@@ -91,6 +91,7 @@ export interface AuthState {
     string,
     { artists: Artist[]; hasMore: boolean; timestamp: number }
   >;
+  newsletterSubscriptions: string[]; // Array of artist IDs user is subscribed to
 }
 
 export interface AuthActions {
@@ -110,6 +111,11 @@ export interface AuthActions {
     key: string
   ) => { artists: Artist[]; hasMore: boolean; timestamp: number } | null;
   clearArtistCache: () => void;
+
+  // Newsletter subscription actions
+  addNewsletterSubscription: (artistId: string) => void;
+  removeNewsletterSubscription: (artistId: string) => void;
+  isSubscribedToNewsletter: (artistId: string) => boolean;
 
   // Helper methods
   getAccessToken: () => string | null;

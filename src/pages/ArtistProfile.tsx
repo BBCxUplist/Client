@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Star } from 'lucide-react';
+import { Star, Mail } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Navbar from '@/components/landing/Navbar';
 import AboutTab from '@/components/artist/AboutTab';
@@ -9,6 +9,8 @@ import GalleryTab from '@/components/artist/GalleryTab';
 import RiderTab from '@/components/artist/RiderTab';
 import BookingTab, { type BookingTabRef } from '@/components/artist/BookingTab';
 import SocialLinks from '@/components/ui/SocialLinks';
+import NewsletterModal from '@/components/ui/NewsletterModal';
+import NewsletterSignup from '@/components/ui/NewsletterSignup';
 import { formatPrice } from '@/helper';
 import { useGetArtist } from '@/hooks/artist/useGetArtist';
 import { useSaveArtist } from '@/hooks/artist/useSaveArtist';
@@ -27,7 +29,8 @@ enum ArtistTab {
 const ArtistProfile = () => {
   const { username } = useParams();
   const [activeTab, setActiveTab] = useState<ArtistTab>(ArtistTab.MUSIC);
-  const { user } = useStore();
+  const [isNewsletterModalOpen, setIsNewsletterModalOpen] = useState(false);
+  const { user, isSubscribedToNewsletter } = useStore();
   const bookingTabRef = useRef<BookingTabRef>(null);
 
   // Fetch artist data from API
@@ -262,6 +265,18 @@ const ArtistProfile = () => {
                 </div>
               )}
 
+              {/* Newsletter Signup for own profile */}
+              {isOwnProfile && artist?.id && (
+                <NewsletterSignup
+                  artistId={artist.id}
+                  className='hidden lg:block mt-4'
+                  showSubscriberCount={true}
+                  onSubscribe={email => {
+                    console.log('Newsletter subscription:', email);
+                  }}
+                />
+              )}
+
               {/* Booking Info */}
               {!isOwnProfile && (
                 <div className='bg-white/5 p-4 border border-white/10 hidden lg:block'>
@@ -332,6 +347,23 @@ const ArtistProfile = () => {
                   {tab.toUpperCase()}
                 </button>
               ))}
+
+              {/* Subscribe Button */}
+              {artist?.id && (
+                <button
+                  onClick={() => setIsNewsletterModalOpen(true)}
+                  className={`ml-auto flex items-center gap-2 px-4 py-2 text-sm md:text-base font-semibold transition-all duration-300 border ${
+                    isSubscribedToNewsletter(artist.id)
+                      ? 'bg-green-500/20 text-green-400 border-green-500/40 hover:bg-green-500/30'
+                      : 'bg-orange-500/20 text-orange-400 border-orange-500/40 hover:bg-orange-500/30 hover:bg-orange-500 hover:text-black'
+                  }`}
+                >
+                  <Mail className='w-4 h-4' />
+                  {isSubscribedToNewsletter(artist.id)
+                    ? 'SUBSCRIBED'
+                    : 'SUBSCRIBE'}
+                </button>
+              )}
             </div>
 
             {/* Content Sections */}
@@ -426,6 +458,16 @@ const ArtistProfile = () => {
           </div>
         )}
       </div>
+
+      {/* Newsletter Modal */}
+      {artist && (
+        <NewsletterModal
+          isOpen={isNewsletterModalOpen}
+          onClose={() => setIsNewsletterModalOpen(false)}
+          artistId={artist.id}
+          artistName={artist.displayName || artist.username}
+        />
+      )}
     </div>
   );
 };
