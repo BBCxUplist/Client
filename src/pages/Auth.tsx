@@ -18,6 +18,7 @@ import OTPVerification from '@/components/auth/OTPVerification';
 import ArtistSelectionModal from '@/components/auth/ArtistSelectionModal';
 import { useStore } from '@/stores/store';
 import type { FormData, AuthMode } from '@/components/auth/types';
+import type { Role } from '@/types';
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -208,10 +209,29 @@ const Auth = () => {
                     'An account with this email already exists. Please try signing in instead.'
                   );
                 } else if (registerResult.success === true) {
-                  setSuccessMessage(
-                    'Registration successful! You can now sign in.'
+                  // Auto-login and redirect user after successful duplicate registration resolution
+                  const userData = {
+                    id: result.user.id,
+                    email: result.user.email,
+                    name: formData.name,
+                    role: (formData.isArtist ? 'artist' : 'user') as Role,
+                    created_at: result.user.created_at,
+                    updated_at: result.user.updated_at,
+                  };
+
+                  setAuth(
+                    userData,
+                    result.session.access_token,
+                    result.session.refresh_token
                   );
-                  setActiveMode('signin');
+                  setSuccessMessage(
+                    'Welcome to UPLIST! Registration completed successfully.'
+                  );
+
+                  // Navigate to explore page after successful registration
+                  setTimeout(() => {
+                    navigate('/explore');
+                  }, 1000);
                 } else {
                   setError(
                     registerResult.message ||
@@ -236,7 +256,7 @@ const Auth = () => {
             setSuccessMessage('');
             setError('');
           } else {
-            // Email already verified - call register API immediately
+            // Email already verified - call register API immediately and auto-login
 
             if (result.session?.access_token) {
               try {
@@ -250,9 +270,29 @@ const Auth = () => {
                 });
 
                 if (registerResult.success === true) {
-                  setSuccessMessage(
-                    'Registration successful! You can now sign in.'
+                  // Auto-login and redirect user after successful registration
+                  const userData = {
+                    id: result.user.id,
+                    email: result.user.email,
+                    name: formData.name,
+                    role: (formData.isArtist ? 'artist' : 'user') as Role,
+                    created_at: result.user.created_at,
+                    updated_at: result.user.updated_at,
+                  };
+
+                  setAuth(
+                    userData,
+                    result.session.access_token,
+                    result.session.refresh_token
                   );
+                  setSuccessMessage(
+                    'Welcome to UPLIST! Registration completed successfully.'
+                  );
+
+                  // Navigate to explore page after successful registration
+                  setTimeout(() => {
+                    navigate('/explore');
+                  }, 1000);
                 } else {
                   setError(
                     registerResult.message ||
@@ -265,12 +305,12 @@ const Auth = () => {
                 );
               }
             } else {
+              // No session token available - likely needs email confirmation
               setSuccessMessage(
-                'Registration successful! You can now sign in.'
+                'Registration successful! Please check your email to confirm your account.'
               );
+              setActiveMode('signin');
             }
-
-            setActiveMode('signin');
           }
         } else {
           // No user data returned - likely needs email confirmation
@@ -304,13 +344,31 @@ const Auth = () => {
     setSuccessMessage('');
   };
 
-  const handleOTPVerificationSuccess = () => {
+  const handleOTPVerificationSuccess = async (
+    userData?: any,
+    accessToken?: string,
+    refreshToken?: string
+  ) => {
     console.log('OTP verification successful!');
     setShowOTPVerification(false);
     setVerificationEmail('');
     setVerificationUserRole('user');
-    setSuccessMessage('Email verified successfully! You can now sign in.');
-    setActiveMode('signin');
+
+    // If user data is provided, automatically sign them in and redirect
+    if (userData && accessToken && refreshToken) {
+      setAuth(userData, accessToken, refreshToken);
+      setSuccessMessage(
+        'Welcome to UPLIST! Registration completed successfully.'
+      );
+
+      // Navigate to explore page after successful registration
+      setTimeout(() => {
+        navigate('/explore');
+      }, 1000);
+    } else {
+      setSuccessMessage('Email verified successfully! You can now sign in.');
+      setActiveMode('signin');
+    }
   };
 
   const handleOTPVerificationBack = () => {

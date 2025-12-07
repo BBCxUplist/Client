@@ -1,12 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRegisterAPI } from '@/hooks/login/useRegisterAPI';
+import type { Role } from '@/types';
 
 interface OTPVerificationProps {
   email: string;
   userRole: 'artist' | 'user';
   displayName: string;
-  onVerificationSuccess: () => void;
+  onVerificationSuccess: (
+    userData?: any,
+    accessToken?: string,
+    refreshToken?: string
+  ) => void;
   onBack: () => void;
   className?: string;
 }
@@ -106,7 +111,7 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
       }
 
       // Step 2: Call your register API with the access token
-      if (data.session?.access_token) {
+      if (data.session?.access_token && data.user) {
         try {
           await registerAPIMutation.mutateAsync({
             data: {
@@ -116,13 +121,31 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
             },
             token: data.session.access_token,
           });
-        } catch (apiError: any) {
-          // Don't throw here - OTP verification was successful
-          console.error('Register API error:', apiError);
-        }
-      }
 
-      onVerificationSuccess();
+          // Create user data object for auto-login
+          const userData = {
+            id: data.user.id,
+            email: data.user.email,
+            name: displayName,
+            role: userRole as Role,
+            created_at: data.user.created_at,
+            updated_at: data.user.updated_at,
+          };
+
+          // Pass user data back for automatic login and redirect
+          onVerificationSuccess(
+            userData,
+            data.session.access_token,
+            data.session.refresh_token
+          );
+        } catch (apiError: any) {
+          // If register API fails, still proceed with basic verification success
+          console.error('Register API error:', apiError);
+          onVerificationSuccess();
+        }
+      } else {
+        onVerificationSuccess();
+      }
     } catch (error: any) {
       console.error('OTP verification error:', error);
       setError(error.message || 'Invalid verification code. Please try again.');
