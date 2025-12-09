@@ -1,47 +1,51 @@
+import React, { useMemo } from 'react';
+
 interface EmbedPlayerProps {
   url: string;
   platform: 'youtube' | 'spotify' | 'soundcloud';
 }
 
-const EmbedPlayer = ({ url, platform }: EmbedPlayerProps) => {
-  const getEmbedUrl = (originalUrl: string, platform: string) => {
-    switch (platform) {
-      case 'youtube':
-        // Convert YouTube watch URL to embed URL
-        if (originalUrl.includes('youtube.com/watch?v=')) {
-          const videoId = originalUrl.split('v=')[1]?.split('&')[0];
-          return `https://www.youtube.com/embed/${videoId}?rel=0&cc_load_policy=1`;
-        } else if (originalUrl.includes('youtu.be/')) {
-          const videoId = originalUrl.split('youtu.be/')[1]?.split('?')[0];
-          return `https://www.youtube.com/embed/${videoId}?rel=0&cc_load_policy=1`;
-        }
-        return originalUrl;
+const getEmbedUrl = (originalUrl: string, platform: string) => {
+  switch (platform) {
+    case 'youtube':
+      // Convert YouTube watch URL to embed URL
+      if (originalUrl.includes('youtube.com/watch?v=')) {
+        const videoId = originalUrl.split('v=')[1]?.split('&')[0];
+        return `https://www.youtube.com/embed/${videoId}?rel=0&cc_load_policy=1`;
+      } else if (originalUrl.includes('youtu.be/')) {
+        const videoId = originalUrl.split('youtu.be/')[1]?.split('?')[0];
+        return `https://www.youtube.com/embed/${videoId}?rel=0&cc_load_policy=1`;
+      }
+      return originalUrl;
 
-      case 'spotify':
-        // Convert Spotify track/album URL to embed URL
-        if (originalUrl.includes('open.spotify.com/track/')) {
-          const trackId = originalUrl.split('track/')[1]?.split('?')[0];
-          return `https://open.spotify.com/embed/track/${trackId}?utm_source=oembed`;
-        } else if (originalUrl.includes('open.spotify.com/album/')) {
-          const albumId = originalUrl.split('album/')[1]?.split('?')[0];
-          return `https://open.spotify.com/embed/album/${albumId}?utm_source=oembed`;
-        } else if (originalUrl.includes('open.spotify.com/playlist/')) {
-          const playlistId = originalUrl.split('playlist/')[1]?.split('?')[0];
-          return `https://open.spotify.com/embed/playlist/${playlistId}?utm_source=oembed`;
-        }
-        return originalUrl;
+    case 'spotify':
+      // Convert Spotify track/album URL to embed URL
+      if (originalUrl.includes('open.spotify.com/track/')) {
+        const trackId = originalUrl.split('track/')[1]?.split('?')[0];
+        return `https://open.spotify.com/embed/track/${trackId}?utm_source=oembed`;
+      } else if (originalUrl.includes('open.spotify.com/album/')) {
+        const albumId = originalUrl.split('album/')[1]?.split('?')[0];
+        return `https://open.spotify.com/embed/album/${albumId}?utm_source=oembed`;
+      } else if (originalUrl.includes('open.spotify.com/playlist/')) {
+        const playlistId = originalUrl.split('playlist/')[1]?.split('?')[0];
+        return `https://open.spotify.com/embed/playlist/${playlistId}?utm_source=oembed`;
+      }
+      return originalUrl;
 
-      case 'soundcloud':
-        // Convert SoundCloud URL to embed URL
-        if (originalUrl.includes('soundcloud.com/')) {
-          return `https://w.soundcloud.com/player/?visual=false&url=${encodeURIComponent(originalUrl)}&show_artwork=true&show_comments=false`;
-        }
-        return originalUrl;
+    case 'soundcloud':
+      // Convert SoundCloud URL to embed URL
+      if (originalUrl.includes('soundcloud.com/')) {
+        return `https://w.soundcloud.com/player/?visual=false&url=${encodeURIComponent(originalUrl)}&show_artwork=true&show_comments=false`;
+      }
+      return originalUrl;
 
-      default:
-        return originalUrl;
-    }
-  };
+    default:
+      return originalUrl;
+  }
+};
+
+const EmbedPlayer = React.memo(({ url, platform }: EmbedPlayerProps) => {
+  const embedUrl = useMemo(() => getEmbedUrl(url, platform), [url, platform]);
 
   const getContainerStyle = (platform: string) => {
     switch (platform) {
@@ -117,13 +121,11 @@ const EmbedPlayer = ({ url, platform }: EmbedPlayerProps) => {
     }
   };
 
-  const embedUrl = getEmbedUrl(url, platform);
-
   return (
     <div style={getContainerStyle(platform)}>
       <iframe src={embedUrl} {...getIframeProps(platform)} />
     </div>
   );
-};
+});
 
 export default EmbedPlayer;

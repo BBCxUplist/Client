@@ -63,10 +63,7 @@ export const useCreatePlaylist = ({
 
   return useMutation<PlaylistResponse, Error, CreatePlaylistData>({
     mutationFn: async (playlistData: CreatePlaylistData) => {
-      const response = await apiClient.post(
-        '/api/v1/artists/playlists',
-        playlistData
-      );
+      const response = await apiClient.post('/artists/playlists', playlistData);
       return response.data;
     },
     onSuccess: (data: PlaylistResponse) => {
@@ -103,7 +100,7 @@ export const useUpdatePlaylist = ({
   >({
     mutationFn: async ({ playlistId, data }) => {
       const response = await apiClient.patch(
-        `/api/v1/artists/playlists/${playlistId}`,
+        `/artists/playlists/${playlistId}`,
         data
       );
       return response.data;
@@ -138,7 +135,7 @@ export const useDeletePlaylist = ({
   return useMutation<PlaylistResponse, Error, string>({
     mutationFn: async (playlistId: string) => {
       const response = await apiClient.delete(
-        `/api/v1/artists/playlists/${playlistId}`
+        `/artists/playlists/${playlistId}`
       );
       return response.data;
     },

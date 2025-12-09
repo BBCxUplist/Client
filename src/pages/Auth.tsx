@@ -73,11 +73,16 @@ const Auth = () => {
       ...prev,
       [field]: value,
     }));
+    // Clear field-specific errors
     if (errors[field]) {
       setErrors(prev => ({
         ...prev,
         [field]: '',
       }));
+    }
+    // Clear general error message when user starts typing
+    if (error) {
+      setError('');
     }
   };
 
@@ -323,19 +328,26 @@ const Auth = () => {
   const switchMode = (mode: 'signin' | 'register') => {
     setActiveMode(mode);
     setErrors({});
-    setFormData({
+    setFormData(prev => ({
       name: '',
-      email: '',
+      email: prev.email, // Preserve email when switching tabs
       password: '',
       confirmPassword: '',
       isArtist: false,
-    });
+    }));
     setShowOTPVerification(false);
     setVerificationEmail('');
     setVerificationUserRole('user');
     setVerificationDisplayName('');
     setError('');
     setSuccessMessage('');
+
+    // Reset any mutation errors by clearing their internal state
+    registerMutation.reset();
+    loginMutation.reset();
+    googleLoginMutation.reset();
+    registerAPIMutation.reset();
+    artistSelectionMutation.reset();
   };
 
   const handleOTPVerificationSuccess = async (

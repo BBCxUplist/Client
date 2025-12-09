@@ -1,7 +1,9 @@
 import { motion } from 'framer-motion';
 import { useState, useMemo, useEffect } from 'react';
+import { Music } from 'lucide-react';
 import EmbedPlayer from './EmbedPlayer';
 import CustomTrack from './CustomTrack';
+import PlaylistCard from './PlaylistCard';
 
 interface MusicTabProps {
   artist: {
@@ -49,40 +51,11 @@ const MusicTab = ({ artist }: MusicTabProps) => {
     [artist.embeds, artist.playlists]
   );
 
-  const getPlatformIcon = (platform: string) => {
-    if (platform === 'playlist') {
-      return (
-        <svg
-          className='w-4 h-4 text-orange-400'
-          fill='none'
-          stroke='currentColor'
-          viewBox='0 0 24 24'
-        >
-          <path
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            strokeWidth={2}
-            d='M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3'
-          />
-        </svg>
-      );
-    }
-    if (platform === 'custom') {
-      return (
-        <svg
-          className='w-4 h-4 text-white'
-          fill='none'
-          stroke='currentColor'
-          viewBox='0 0 24 24'
-        >
-          <path
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            strokeWidth={2}
-            d='M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3'
-          />
-        </svg>
-      );
+  const getPlatformIcon = (platform: string, isSelected: boolean = false) => {
+    const iconColor = isSelected ? 'text-black' : 'text-white';
+
+    if (platform === 'playlist' || platform === 'custom') {
+      return <Music className={`w-4 h-4 ${iconColor}`} />;
     }
     return `/icons/embeds/${platform}.png`;
   };
@@ -173,15 +146,15 @@ const MusicTab = ({ artist }: MusicTabProps) => {
             <button
               key={platform}
               onClick={() => setSelectedPlatform(platform)}
-              className={`px-4 py-2 text-sm font-semibold transition-all duration-300 border flex rounded ${
+              className={`px-4 py-2 text-sm font-semibold transition-all duration-300 border flex ${
                 selectedPlatform === platform
-                  ? 'bg-orange-500 text-black border-orange-500'
+                  ? 'bg-white text-black '
                   : 'text-white border-white/30 hover:border-white/60'
               }`}
             >
               {platform === 'playlist' || platform === 'custom' ? (
                 <div className='w-4 h-4 mr-2 flex items-center justify-center'>
-                  {getPlatformIcon(platform)}
+                  {getPlatformIcon(platform, selectedPlatform === platform)}
                 </div>
               ) : (
                 <img
@@ -197,142 +170,19 @@ const MusicTab = ({ artist }: MusicTabProps) => {
       )}
 
       {/* All Tracks as Embedded Players */}
-      <div className='space-y-6'>
+      <div
+        className={`grid grid-cols-1 gap-4 ${selectedPlatform === 'playlist' ? 'md:grid-cols-1' : 'md:grid-cols-2'}`}
+      >
         {selectedPlatform === 'playlist' ? (
           // Playlist Display
           musicData.playlists.length > 0 ? (
             musicData.playlists.map((playlist, playlistIndex) => (
-              <div
+              <PlaylistCard
                 key={`playlist-${playlistIndex}`}
-                className='bg-white/5 p-4 border border-white/10'
-              >
-                <div className='flex items-start gap-4 mb-4'>
-                  {/* Playlist Thumbnail */}
-                  {playlist.thumbnailUrl && (
-                    <img
-                      src={playlist.thumbnailUrl}
-                      alt={playlist.title}
-                      className='w-16 h-16 object-cover rounded border border-white/20 flex-shrink-0'
-                      onError={e => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  )}
-
-                  <div className='flex-1'>
-                    <div className='flex items-center gap-3 mb-2'>
-                      <div className='w-6 h-6 flex items-center justify-center'>
-                        {getPlatformIcon('playlist')}
-                      </div>
-                      <h4 className='text-white font-semibold text-lg'>
-                        {playlist.title}
-                      </h4>
-                    </div>
-
-                    {playlist.description && (
-                      <p className='text-white/60 text-sm mb-2 line-clamp-2'>
-                        {playlist.description}
-                      </p>
-                    )}
-
-                    <div className='flex items-center gap-4 text-xs text-white/50'>
-                      <span>
-                        {(() => {
-                          const totalTracks =
-                            (playlist.embeds.youtube?.length || 0) +
-                            (playlist.embeds.soundcloud?.length || 0) +
-                            (playlist.embeds.spotify?.length || 0) +
-                            (playlist.embeds.custom?.length || 0);
-                          return `${totalTracks} ${totalTracks === 1 ? 'track' : 'tracks'}`;
-                        })()}
-                      </span>
-                      <span>{playlist.saves} saves</span>
-                      <span>{playlist.listens} listens</span>
-                    </div>
-                  </div>
-                </div>
-                <div className='space-y-4'>
-                  {(() => {
-                    // Convert API playlist structure to display format
-                    const allTracks: {
-                      platform: string;
-                      title: string;
-                      url: string;
-                    }[] = [];
-
-                    // Add YouTube tracks
-                    playlist.embeds.youtube?.forEach(url => {
-                      allTracks.push({ platform: 'youtube', title: url, url });
-                    });
-
-                    // Add SoundCloud tracks
-                    playlist.embeds.soundcloud?.forEach(url => {
-                      allTracks.push({
-                        platform: 'soundcloud',
-                        title: url,
-                        url,
-                      });
-                    });
-
-                    // Add Spotify tracks
-                    playlist.embeds.spotify?.forEach(url => {
-                      allTracks.push({ platform: 'spotify', title: url, url });
-                    });
-
-                    // Add custom tracks
-                    playlist.embeds.custom?.forEach(track => {
-                      allTracks.push({
-                        platform: 'custom',
-                        title: track.title,
-                        url: track.url,
-                      });
-                    });
-
-                    return allTracks.map((track, itemIndex) => (
-                      <div
-                        key={`${playlistIndex}-${itemIndex}`}
-                        className='bg-white/5 p-3 border border-white/10'
-                      >
-                        <div className='flex items-center gap-3 mb-2'>
-                          {track.platform === 'custom' ? (
-                            <div className='w-4 h-4 flex items-center justify-center'>
-                              {getPlatformIcon(track.platform)}
-                            </div>
-                          ) : (
-                            <img
-                              src={getPlatformIconSrc(track.platform) || ''}
-                              alt={track.platform}
-                              className='w-4 h-4'
-                            />
-                          )}
-                          <span className='text-white/80 text-sm font-medium'>
-                            {track.title}
-                          </span>
-                        </div>
-                        <div
-                          className={
-                            track.platform === 'youtube'
-                              ? 'max-w-2xl'
-                              : 'max-w-4xl'
-                          }
-                        >
-                          <EmbedPlayer
-                            url={track.url}
-                            platform={
-                              track.platform === 'custom'
-                                ? 'youtube'
-                                : (track.platform as
-                                    | 'spotify'
-                                    | 'soundcloud'
-                                    | 'youtube')
-                            }
-                          />
-                        </div>
-                      </div>
-                    ));
-                  })()}
-                </div>
-              </div>
+                playlist={playlist}
+                playlistIndex={playlistIndex}
+                getPlatformIconSrc={getPlatformIconSrc}
+              />
             ))
           ) : (
             <div className='flex flex-col items-center justify-center py-12 text-center'>
@@ -366,31 +216,17 @@ const MusicTab = ({ artist }: MusicTabProps) => {
                     index={index}
                   />
                 ) : (
-                  <div className='bg-white/5 p-4 border border-white/10 transition-all duration-300 hover:bg-white/[0.08] hover:border-white/20'>
-                    <div className='flex items-center gap-4 mb-4'>
-                      <div className='flex-1'>
-                        <h4 className='text-white font-semibold text-lg'>
-                          {trackTitle}
-                        </h4>
-                      </div>
-                    </div>
-                    <div
-                      className={
-                        selectedPlatform === 'youtube'
-                          ? 'max-w-2xl'
-                          : 'max-w-4xl'
+                  <div
+                    className={
+                      selectedPlatform === 'youtube' ? 'max-w-2xl' : 'w-full'
+                    }
+                  >
+                    <EmbedPlayer
+                      url={trackUrl}
+                      platform={
+                        selectedPlatform as 'spotify' | 'soundcloud' | 'youtube'
                       }
-                    >
-                      <EmbedPlayer
-                        url={trackUrl}
-                        platform={
-                          selectedPlatform as
-                            | 'spotify'
-                            | 'soundcloud'
-                            | 'youtube'
-                        }
-                      />
-                    </div>
+                    />
                   </div>
                 )}
               </div>
