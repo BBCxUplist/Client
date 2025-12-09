@@ -10,7 +10,7 @@ const GoogleLoginButton = ({
   className = '',
 }: GoogleLoginButtonProps) => {
   return (
-    <div className={`mt-6 ${className}`}>
+    <div className={` ${className}`}>
       <button
         type='button'
         onClick={onClick}

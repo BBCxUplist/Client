@@ -91,6 +91,7 @@ const Explore = () => {
                 onChange={e => handleSearchChange(e.target.value)}
                 placeholder='Search artists by name, bio, or genres...'
                 className='w-full px-6 py-4 text-lg bg-black/20 border border-white/20 text-white placeholder-white/60 transition-all duration-300 focus:outline-none focus:ring-0 focus:border-orange-500'
+                autoFocus
               />
               <img
                 src='/icons/search.png'

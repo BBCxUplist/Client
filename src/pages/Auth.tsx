@@ -570,11 +570,11 @@ const Auth = () => {
                       onSubmit={handleSubmit}
                       className='space-y-5'
                     />
+                    <p className='py-2 text-center'>or</p>
 
                     <GoogleLoginButton
                       onClick={onGoogleLogin}
                       disabled={isLoading}
-                      className='mt-5'
                     />
 
                     <AuthMessages

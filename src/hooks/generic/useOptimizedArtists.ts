@@ -92,7 +92,7 @@ export const useOptimizedArtists = ({
     query: searchQuery,
     page: currentPage + 1,
     limit,
-    enabled: isSearching && selectedGenres.length === 0,
+    enabled: isSearching && selectedGenres.length === 0 && !locationSearch,
     location: locationSearch,
     genres: selectedGenres,
   });

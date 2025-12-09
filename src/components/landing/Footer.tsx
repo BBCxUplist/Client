@@ -23,22 +23,18 @@ const Footer = () => {
               >
                 INSTAGRAM
               </a>
-              <a
-                href='#'
-                className='text-white hover:text-orange-500 transition-colors duration-300 font-semibold text-sm md:text-base'
-              >
+              <p className='text-white/50  transition-colors duration-300 font-semibold text-sm md:text-base'>
                 TWITTER
-              </a>
-              <a
-                href='#'
-                className='text-white hover:text-orange-500 transition-colors duration-300 font-semibold text-sm md:text-base'
-              >
+              </p>
+              <p className='text-white/50  transition-colors duration-300 font-semibold text-sm md:text-base'>
                 MEDIUM
-              </a>
+              </p>
             </div>
 
-            <div className='text-white/70 text-xs md:text-sm'>
-              © UPLIST 2025
+            <div className='flex items-center gap-2'>
+              <p className='text-white/70 text-xs md:text-sm'>© UPLIST 2025</p>
+              |<p className='text-white/70 text-xs md:text-sm'>TERMS</p>|
+              <p className='text-white/70 text-xs md:text-sm'>PRIVACY</p>
             </div>
           </div>
         </div>

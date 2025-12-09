@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface FilterProps {
   onFilterChange: (filters: FilterState) => void;
@@ -36,6 +37,9 @@ const Sidebar = ({
   );
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
+  // Debounce location search to avoid too many API calls
+  const debouncedLocationSearch = useDebounce(locationSearch, 500);
+
   // Use availableGenres if provided, otherwise fallback to hardcoded genres
   const genres = useMemo(() => {
     if (availableGenres.length > 0) {
@@ -63,7 +67,7 @@ const Sidebar = ({
 
   const handleTabChange = (tab: ActivityTab) => {
     setActiveTab(tab);
-    updateFilters(tab, selectedGenres, locationSearch);
+    updateFilters(tab, selectedGenres, debouncedLocationSearch);
   };
 
   const handleGenreChange = (genre: string) => {
@@ -71,13 +75,16 @@ const Sidebar = ({
       ? selectedGenres.filter(g => g !== genre)
       : [...selectedGenres, genre];
     setSelectedGenres(newGenres);
-    updateFilters(activeTab, newGenres, locationSearch);
+    updateFilters(activeTab, newGenres, debouncedLocationSearch);
   };
 
   const handleLocationSearch = (search: string) => {
     setLocationSearch(search);
-    updateFilters(activeTab, selectedGenres, search);
   };
+
+  useEffect(() => {
+    updateFilters(activeTab, selectedGenres, debouncedLocationSearch);
+  }, [debouncedLocationSearch]);
 
   const updateFilters = (
     tab: ActivityTab,
@@ -98,7 +105,8 @@ const Sidebar = ({
     updateFilters(ActivityTab.ALL, [], '');
   };
 
-  const activeFiltersCount = selectedGenres.length + (locationSearch ? 1 : 0);
+  const activeFiltersCount =
+    selectedGenres.length + (debouncedLocationSearch ? 1 : 0);
 
   // Sync state when currentFilters prop changes
   useEffect(() => {
