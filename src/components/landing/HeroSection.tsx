@@ -1,4 +1,3 @@
-import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
 const HeroSection = () => {
@@ -11,10 +10,7 @@ const HeroSection = () => {
   return (
     <div className='absolute inset-0 z-20 flex flex-col items-center justify-center p-4'>
       <div className=' mb-16'>
-        <p
-          onClick={() => toast.success('Hello from HeroSection!')}
-          className='text-5xl md:text-7xl lg:text-8xl leading-none text-white  mb-4 font-medium'
-        >
+        <p className='text-5xl md:text-7xl lg:text-8xl leading-none text-white  mb-4 font-medium'>
           ARTIST DISCOVERY &
         </p>
         <p className='text-7xl md:text-9xl lg:text-[10rem] leading-none font-mondwest font-bold'>
