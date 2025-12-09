@@ -24,7 +24,70 @@ function App() {
           <GlobalModelPreloader />
           {/* Auth State Listener for Google Login */}
           <AuthStateListener />
-          <Toaster position='top-right' />
+          <Toaster
+            position='top-right'
+            toastOptions={{
+              style: {
+                background: 'rgba(255, 255, 255, 0.4)',
+                color: '#0a0a0a',
+                border: '2px solid #ffffff',
+                borderRadius: '0px',
+                fontFamily: 'NonNaturalGrotesk, sans-serif',
+                fontSize: '14px',
+                fontWeight: '400',
+                boxShadow:
+                  '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                backdropFilter: 'blur(8px)',
+                padding: '12px',
+                minWidth: '60px',
+                minHeight: '60px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              },
+              // Success toasts
+              success: {
+                style: {
+                  background: 'rgba(255, 255, 255, 0.8)',
+                  color: '#16a34a',
+                  border: '2px solid #ffffff',
+                  borderRadius: '0px',
+                },
+                iconTheme: {
+                  primary: '#22c55e',
+                  secondary: '#ffffff',
+                },
+              },
+              // Error toasts
+              error: {
+                style: {
+                  background: 'rgba(255, 255, 255, 0.8)',
+                  color: '#dc2626',
+                  border: '2px solid #ffffff',
+                  borderRadius: '0px',
+                },
+                iconTheme: {
+                  primary: '#ef4444',
+                  secondary: '#ffffff',
+                },
+              },
+              // Loading toasts
+              loading: {
+                style: {
+                  background: 'rgba(255, 255, 255, 0.8)',
+                  color: '#ea580c',
+                  border: '2px solid #ffffff',
+                  borderRadius: '0px',
+                },
+                iconTheme: {
+                  primary: '#f97316',
+                  secondary: '#ffffff',
+                },
+              },
+              // Animation duration
+              duration: 4000,
+            }}
+          />
           <Routes>
             <Route path='/' element={<Landing />} />
             <Route path='/explore' element={<Explore />} />
