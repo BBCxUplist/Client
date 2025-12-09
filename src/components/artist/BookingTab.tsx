@@ -2,6 +2,7 @@
 import { useState, forwardRef, useImperativeHandle } from 'react';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
 import { Form } from '@/components/ui/form';
 import { useCreateBooking } from '@/hooks/booking/useCreateBooking';
 import type { BookingTabData } from '../../types/tabs';
@@ -66,8 +67,7 @@ const BookingTab = forwardRef<BookingTabRef, BookingTabProps>(
     // Booking API hook
     const createBookingMutation = useCreateBooking();
 
-    // Success/Error message states
-    const [successMessage, setSuccessMessage] = useState('');
+    // Error message state (success now uses toast)
     const [errorMessage, setErrorMessage] = useState('');
 
     // Watch form values for validation
@@ -76,10 +76,30 @@ const BookingTab = forwardRef<BookingTabRef, BookingTabProps>(
     // Expose form state and submit function to parent
     useImperativeHandle(ref, () => ({
       isFormValid: () => {
-        return isValid && isDirty && !!watchedValues.eventDate;
+        const allRequiredFieldsFilled = Boolean(
+          watchedValues.eventDate &&
+            watchedValues.eventType &&
+            watchedValues.duration &&
+            watchedValues.budget &&
+            watchedValues.location &&
+            watchedValues.contactName &&
+            watchedValues.contactEmail &&
+            watchedValues.contactPhone
+        );
+        return isValid && isDirty && allRequiredFieldsFilled;
       },
       submitForm: async () => {
-        if (isValid && watchedValues.eventDate) {
+        const allRequiredFieldsFilled = Boolean(
+          watchedValues.eventDate &&
+            watchedValues.eventType &&
+            watchedValues.duration &&
+            watchedValues.budget &&
+            watchedValues.location &&
+            watchedValues.contactName &&
+            watchedValues.contactEmail &&
+            watchedValues.contactPhone
+        );
+        if (isValid && allRequiredFieldsFilled) {
           await handleBookingSubmit(watchedValues as Required<BookingFormData>);
         }
       },
@@ -88,7 +108,6 @@ const BookingTab = forwardRef<BookingTabRef, BookingTabProps>(
 
     const handleBookingSubmit = async (data: Required<BookingFormData>) => {
       // Clear previous messages
-      setSuccessMessage('');
       setErrorMessage('');
 
       try {
@@ -113,7 +132,8 @@ const BookingTab = forwardRef<BookingTabRef, BookingTabProps>(
         const result = await createBookingMutation.mutateAsync(bookingData);
 
         if (result.success === true || result.success === undefined) {
-          setSuccessMessage(
+          // Show success toast
+          toast.success(
             'Booking request submitted successfully! We will get back to you soon.'
           );
           // Reset form
@@ -147,11 +167,8 @@ const BookingTab = forwardRef<BookingTabRef, BookingTabProps>(
           Book {artist.displayName}
         </h3>
 
-        {/* Success/Error Messages */}
-        <BookingMessages
-          successMessage={successMessage}
-          errorMessage={errorMessage}
-        />
+        {/* Error Messages (Success now uses toast) */}
+        <BookingMessages successMessage='' errorMessage={errorMessage} />
 
         {/* Booking Status */}
         <BookingStatus

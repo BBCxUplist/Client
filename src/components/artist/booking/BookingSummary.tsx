@@ -31,6 +31,17 @@ const BookingSummary = ({
   isSubmitting,
   isFormValid,
 }: BookingSummaryProps) => {
+  // Check if all required fields are filled
+  const isAllRequiredFieldsFilled = Boolean(
+    watchedValues.eventDate &&
+      watchedValues.eventType &&
+      watchedValues.duration &&
+      watchedValues.budget &&
+      watchedValues.location &&
+      watchedValues.contactName &&
+      watchedValues.contactEmail &&
+      watchedValues.contactPhone
+  );
   return (
     <div className='space-y-6'>
       {/* Booking Summary */}
@@ -80,8 +91,8 @@ const BookingSummary = ({
       <button
         type='submit'
         title='Send Booking Request'
-        className='w-full bg-orange-500 text-black hover:bg-orange-600 font-semibold py-2 text-sm hidden lg:block'
-        disabled={isSubmitting || !isFormValid || !watchedValues.eventDate}
+        className='w-full bg-orange-500 text-black hover:bg-orange-600 font-semibold py-2 text-sm hidden lg:block disabled:opacity-50 disabled:cursor-not-allowed'
+        disabled={isSubmitting || !isFormValid || !isAllRequiredFieldsFilled}
       >
         {isSubmitting ? 'SUBMITTING...' : 'SEND BOOKING REQUEST'}
       </button>

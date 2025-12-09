@@ -285,7 +285,7 @@ const ArtistProfile = () => {
                             } else {
                               // Form is not valid, show toast message
                               toast.error(
-                                'Please fill out all required fields'
+                                'Please fill out all required fields correctly'
                               );
                             }
                           }
@@ -295,7 +295,7 @@ const ArtistProfile = () => {
                         }
                       }}
                       disabled={bookingTabRef.current?.isLoading}
-                      className='w-full bg-orange-500 text-black py-3 font-semibold hover:bg-orange-600 transition-colors duration-300 text-sm md:text-base'
+                      className='w-full bg-orange-500 text-black py-3 font-semibold hover:bg-orange-600 transition-colors duration-300 text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed'
                     >
                       {bookingTabRef.current?.isLoading
                         ? 'SUBMITTING...'
@@ -411,7 +411,9 @@ const ArtistProfile = () => {
                         bookingTabRef.current.submitForm();
                       } else {
                         // Form is not valid, show toast message
-                        toast.error('Please fill out all required fields');
+                        toast.error(
+                          'Please fill out all required fields correctly'
+                        );
                       }
                     }
                   } else {
@@ -420,7 +422,7 @@ const ArtistProfile = () => {
                   }
                 }}
                 disabled={bookingTabRef.current?.isLoading}
-                className='bg-orange-500 text-black px-6 py-3 font-semibold'
+                className='bg-orange-500 text-black px-6 py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed'
               >
                 {bookingTabRef.current?.isLoading
                   ? 'SUBMITTING...'
