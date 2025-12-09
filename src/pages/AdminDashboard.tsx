@@ -12,18 +12,14 @@ import { formatPrice } from '@/helper';
 import { useGetAllUsers, useHealthCheck } from '@/hooks/admin';
 import { useCreateArtist } from '@/hooks/admin/useCreateArtist';
 import { useStore } from '@/stores/store';
+import {
+  AdminTab,
+  adminNavItems,
+  mobileAdminNavItems,
+  adminTabDisplayMap,
+} from '@/constants/adminDashboard';
+import LoadingState from '@/components/ui/LoadingState';
 import toast from 'react-hot-toast';
-
-enum AdminTab {
-  OVERVIEW = 'overview',
-  ARTISTS = 'artists',
-  CREATE_ARTIST = 'create-artist',
-  APPROVED = 'approved',
-  USERS = 'users',
-  REPORTS = 'reports',
-  RECENT_ACTIVITY = 'recent-activity',
-  SETTINGS = 'settings',
-}
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -218,14 +214,7 @@ const AdminDashboard = () => {
 
   // Show loading state
   if (usersLoading) {
-    return (
-      <div className='min-h-screen bg-neutral-950 flex items-center justify-center'>
-        <div className='text-center'>
-          <div className='animate-spin w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full mx-auto mb-4'></div>
-          <p className='text-white text-lg'>Loading admin dashboard...</p>
-        </div>
-      </div>
-    );
+    return <LoadingState type='admin' />;
   }
 
   return (
@@ -299,32 +288,13 @@ const AdminDashboard = () => {
             <div className='flex items-center gap-3'>
               <img
                 src={
-                  [
-                    { id: 'overview', icon: '/icons/overview.png' },
-                    { id: 'artists', icon: '/icons/artist.png' },
-                    { id: 'users', icon: '/icons/users.png' },
-                    { id: 'bookings', icon: '/icons/calendar.png' },
-                    { id: 'reports', icon: '/icons/report.png' },
-                    { id: 'settings', icon: '/icons/settings.png' },
-                  ].find(tab => tab.id === activeTab)?.icon
+                  mobileAdminNavItems.find(tab => tab.id === activeTab)?.icon
                 }
                 alt='Active tab'
                 className='w-6 h-6 invert'
               />
               <span className='text-white font-semibold'>
-                {
-                  [
-                    { id: 'overview', label: 'Overview' },
-                    { id: 'artists', label: 'Artists' },
-                    { id: 'create-artist', label: 'Create Artist' },
-                    // { id: 'approved', label: 'Approved' },
-                    { id: 'users', label: 'Users' },
-                    { id: 'bookings', label: 'Bookings' },
-                    { id: 'reports', label: 'Reports' },
-                    { id: 'recent-activity', label: 'Recent Activity' },
-                    { id: 'settings', label: 'Settings' },
-                  ].find(tab => tab.id === activeTab)?.label
-                }
+                {adminTabDisplayMap.find(tab => tab.id === activeTab)?.label}
               </span>
             </div>
             <img
@@ -342,32 +312,7 @@ const AdminDashboard = () => {
           }`}
         >
           <nav className='p-4 space-y-2'>
-            {[
-              {
-                id: 'overview',
-                label: 'Overview',
-                icon: '/icons/overview.png',
-              },
-              { id: 'artists', label: 'Artists', icon: '/icons/artist.png' },
-              {
-                id: 'create-artist',
-                label: 'Create Artist',
-                icon: '/icons/frame.svg',
-              },
-              { id: 'approved', label: 'Approved', icon: '/icons/check.png' },
-              { id: 'users', label: 'Users', icon: '/icons/users.png' },
-              { id: 'reports', label: 'Reports', icon: '/icons/tick.svg' },
-              {
-                id: 'recent-activity',
-                label: 'Recent Activity',
-                icon: '/icons/overview.png',
-              },
-              {
-                id: 'settings',
-                label: 'Settings',
-                icon: '/icons/settings.png',
-              },
-            ].map(tab => (
+            {mobileAdminNavItems.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => {
@@ -394,32 +339,7 @@ const AdminDashboard = () => {
         {/* Desktop Sidebar */}
         <div className='hidden lg:block lg:w-64 bg-neutral-900 border-r border-dashed border-white/20 p-4 sticky top-[121px] h-[calc(100dvh-121px)]'>
           <nav className='space-y-2'>
-            {[
-              {
-                id: 'overview',
-                label: 'Overview',
-                icon: '/icons/overview.png',
-              },
-              { id: 'artists', label: 'Artists', icon: '/icons/artist.png' },
-              {
-                id: 'create-artist',
-                label: 'Create Artist',
-                icon: '/icons/frame.svg',
-              },
-              { id: 'approved', label: 'Approved', icon: '/icons/tick.svg' },
-              { id: 'users', label: 'Users', icon: '/icons/users.png' },
-              { id: 'reports', label: 'Reports', icon: '/icons/report.png' },
-              {
-                id: 'recent-activity',
-                label: 'Recent Activity',
-                icon: '/icons/overview.png',
-              },
-              {
-                id: 'settings',
-                label: 'Settings',
-                icon: '/icons/settings.png',
-              },
-            ].map(tab => (
+            {adminNavItems.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as AdminTab)}

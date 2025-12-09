@@ -18,6 +18,12 @@ import SettingsTab from '@/components/artistDashboard/SettingsTab';
 import SavedArtistsTab from '@/components/userDashboard/SavedArtistsTab';
 import MailchimpPanel from '@/components/ui/MailchimpPanel';
 import { DashboardTab } from '@/types';
+import {
+  artistDashboardTabs,
+  bookingStatusColors,
+} from '@/constants/artistDashboard';
+import LoadingState from '@/components/ui/LoadingState';
+import ErrorState from '@/components/ui/ErrorState';
 import { Info } from 'lucide-react';
 
 const ArtistDashboard = () => {
@@ -221,45 +227,32 @@ const ArtistDashboard = () => {
 
   // Loading state
   if (isLoading) {
-    return (
-      <div className='min-h-screen bg-neutral-950 text-white flex items-center justify-center'>
-        <div className='text-center'>
-          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4'></div>
-          <p className='text-white/60'>Loading your dashboard...</p>
-        </div>
-      </div>
-    );
+    return <LoadingState />;
   }
 
   // Error state
   if (error || !artistResponse?.success) {
     return (
-      <div className='min-h-screen bg-neutral-950 text-white flex items-center justify-center'>
-        <div className='text-center'>
-          <h1 className='text-2xl font-bold mb-2'>Unable to Load Dashboard</h1>
-          <p className='text-white/60 mb-4'>
-            {error?.message || 'Failed to fetch artist data'}
-          </p>
-          <Link
-            to='/'
-            className='bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 transition-colors'
-          >
-            Go to home
-          </Link>
-        </div>
-      </div>
+      <ErrorState
+        title='Unable to Load Dashboard'
+        message={error?.message || 'Failed to fetch artist data'}
+        actionText='Go to home'
+        actionPath='/'
+        type='error'
+      />
     );
   }
 
   // No artist data
   if (!artist) {
     return (
-      <div className='min-h-screen bg-neutral-950 text-white flex items-center justify-center'>
-        <div className='text-center'>
-          <h1 className='text-2xl font-bold mb-2'>Artist Not Found</h1>
-          <p className='text-white/60'>Unable to load dashboard data.</p>
-        </div>
-      </div>
+      <ErrorState
+        title='Artist Not Found'
+        message='Unable to load dashboard data.'
+        actionText='Go Home'
+        actionPath='/'
+        type='not-found'
+      />
     );
   }
 
@@ -288,16 +281,10 @@ const ArtistDashboard = () => {
   }
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'confirmed':
-        return 'bg-green-500/20 text-green-400 border-green-500/40';
-      case 'pending':
-        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40';
-      case 'cancelled':
-        return 'bg-red-500/20 text-red-400 border-red-500/40';
-      default:
-        return 'bg-gray-500/20 text-gray-400 border-gray-500/40';
-    }
+    return (
+      bookingStatusColors[status as keyof typeof bookingStatusColors] ||
+      bookingStatusColors.default
+    );
   };
 
   return (
@@ -516,14 +503,7 @@ const ArtistDashboard = () => {
 
       {/* Tab Navigation */}
       <div className='flex flex-wrap gap-4 mb-8 border-b border-dashed border-white pb-4'>
-        {[
-          DashboardTab.OVERVIEW,
-          DashboardTab.BOOKINGS,
-          // DashboardTab.ANALYTICS,
-          DashboardTab.NEWSLETTER,
-          DashboardTab.SAVED,
-          DashboardTab.SETTINGS,
-        ].map(tab => (
+        {artistDashboardTabs.map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}

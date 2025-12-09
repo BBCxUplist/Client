@@ -10,13 +10,19 @@ import SettingsTab from '@/components/userDashboard/SettingsTab';
 import { useStore } from '@/stores/store';
 import { useGetUserProfile, useUpdateUserProfile } from '@/hooks/user';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import {
+  type UserDashboardTab,
+  userTabDisplayMap,
+  userValidationRules,
+} from '@/constants/userDashboard';
+import LoadingState from '@/components/ui/LoadingState';
+import ErrorState from '@/components/ui/ErrorState';
+import AuthenticationCheck from '@/components/ui/AuthenticationCheck';
 
 const UserDashboard = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useStore();
-  const [activeTab, setActiveTab] = useState<
-    'overview' | 'bookings' | 'saved' | 'settings'
-  >('overview');
+  const [activeTab, setActiveTab] = useState<UserDashboardTab>('overview');
 
   // Fetch user profile data
   const { data: userResponse, isLoading, error } = useGetUserProfile();
@@ -102,13 +108,11 @@ const UserDashboard = () => {
 
   // Validation functions
   const validateUsername = (username: string) => {
-    const usernameRegex = /^[a-z0-9._]+$/;
-    return usernameRegex.test(username);
+    return userValidationRules.username.test(username);
   };
 
   const validatePhone = (phone: string) => {
-    const phoneRegex = /^[+]?[0-9\s\-()]+$/;
-    return phoneRegex.test(phone);
+    return userValidationRules.phone.test(phone);
   };
 
   const handleUsernameChange = (value: string) => {
@@ -182,33 +186,16 @@ const UserDashboard = () => {
   // Check if user is authenticated
   if (!isAuthenticated || !user) {
     return (
-      <div className='min-h-screen bg-neutral-950 text-white flex items-center justify-center'>
-        <div className='text-center'>
-          <h1 className='text-2xl font-bold mb-2'>Authentication Required</h1>
-          <p className='text-white/60 mb-4'>
-            Please log in to access your dashboard.
-          </p>
-          <button
-            onClick={() => navigate('/auth')}
-            className='bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 transition-colors'
-          >
-            Go to Login
-          </button>
-        </div>
-      </div>
+      <AuthenticationCheck isAuthenticated={isAuthenticated} user={user}>
+        {/* This will never render because AuthenticationCheck handles the redirect */}
+        <div />
+      </AuthenticationCheck>
     );
   }
 
   // Loading state
   if (isLoading) {
-    return (
-      <div className='min-h-screen bg-neutral-950 text-white flex items-center justify-center'>
-        <div className='text-center'>
-          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4'></div>
-          <p className='text-white/60'>Loading your dashboard...</p>
-        </div>
-      </div>
-    );
+    return <LoadingState />;
   }
 
   // Error state
@@ -218,42 +205,39 @@ const UserDashboard = () => {
       errorMessage.includes('not authenticated') ||
       errorMessage.includes('401');
 
+    if (isAuthError) {
+      return (
+        <ErrorState
+          title='Authentication Error'
+          message={errorMessage}
+          actionText='Go to Login'
+          actionPath='/auth'
+          type='auth'
+        />
+      );
+    }
+
     return (
-      <div className='min-h-screen bg-neutral-950 text-white flex items-center justify-center'>
-        <div className='text-center'>
-          <h1 className='text-2xl font-bold mb-2'>
-            {isAuthError ? 'Authentication Error' : 'Unable to Load Dashboard'}
-          </h1>
-          <p className='text-white/60 mb-4'>{errorMessage}</p>
-          {isAuthError ? (
-            <button
-              onClick={() => navigate('/auth')}
-              className='bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 transition-colors'
-            >
-              Go to Login
-            </button>
-          ) : (
-            <button
-              onClick={() => window.location.reload()}
-              className='bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 transition-colors'
-            >
-              Try Again
-            </button>
-          )}
-        </div>
-      </div>
+      <ErrorState
+        title='Unable to Load Dashboard'
+        message={errorMessage}
+        actionText='Try Again'
+        onAction={() => window.location.reload()}
+        type='error'
+      />
     );
   }
 
   // No user data
   if (!userData) {
     return (
-      <div className='min-h-screen bg-neutral-950 text-white flex items-center justify-center'>
-        <div className='text-center'>
-          <h1 className='text-2xl font-bold mb-2'>User Not Found</h1>
-          <p className='text-white/60'>Unable to load dashboard data.</p>
-        </div>
-      </div>
+      <ErrorState
+        title='User Not Found'
+        message='Unable to load dashboard data.'
+        actionText='Go Home'
+        actionPath='/'
+        type='not-found'
+      />
     );
   }
 
@@ -277,17 +261,17 @@ const UserDashboard = () => {
 
         {/* Tab Navigation */}
         <div className='flex flex-wrap gap-4 mb-8 border-b border-dashed border-white pb-4'>
-          {['overview', 'bookings', 'saved', 'settings'].map(tab => (
+          {userTabDisplayMap.map(tab => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab as any)}
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as UserDashboardTab)}
               className={`px-4 py-2 text-sm md:text-base font-semibold transition-all duration-300 border ${
-                activeTab === tab
+                activeTab === tab.id
                   ? 'bg-white text-black border-white'
                   : 'text-white border-white/30 hover:border-white/60'
               }`}
             >
-              {tab.toUpperCase()}
+              {tab.label}
             </button>
           ))}
         </div>

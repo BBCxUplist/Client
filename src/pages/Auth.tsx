@@ -7,14 +7,8 @@ import { useRegisterWithValidation } from '@/hooks/login/useRegister';
 import { useLogin, useGoogleLogin } from '@/hooks/login/useLogin';
 import { useRegisterAPI } from '@/hooks/login/useRegisterAPI';
 import { useArtistSelection } from '@/hooks/login/useArtistSelection';
-import AuthHeader from '@/components/auth/AuthHeader';
-import ModeToggle from '@/components/auth/ModeToggle';
-import AuthForm from '@/components/auth/AuthForm';
-import GoogleLoginButton from '@/components/auth/GoogleLoginButton';
-import AuthMessages from '@/components/auth/AuthMessages';
-import AuthFooter from '@/components/auth/AuthFooter';
-import DesktopBranding from '@/components/auth/DesktopBranding';
-import OTPVerification from '@/components/auth/OTPVerification';
+import MobileAuthLayout from '@/components/auth/MobileAuthLayout';
+import DesktopAuthLayout from '@/components/auth/DesktopAuthLayout';
 import ArtistSelectionModal from '@/components/auth/ArtistSelectionModal';
 import { useStore } from '@/stores/store';
 import type { FormData, AuthMode } from '@/components/auth/types';
@@ -470,167 +464,58 @@ const Auth = () => {
 
       <div className='w-full'>
         {/* Mobile/Tablet Layout */}
-        <div className='lg:hidden p-4 md:p-6 min-h-[calc(100vh-80px)] flex flex-col justify-center'>
-          <div className='max-w-md mx-auto w-full'>
-            {showOTPVerification ? (
-              <OTPVerification
-                email={verificationEmail}
-                userRole={verificationUserRole}
-                displayName={verificationDisplayName}
-                onVerificationSuccess={handleOTPVerificationSuccess}
-                onBack={handleOTPVerificationBack}
-              />
-            ) : (
-              <>
-                <AuthHeader activeMode={activeMode} />
-                <ModeToggle activeMode={activeMode} onModeChange={switchMode} />
+        <MobileAuthLayout
+          activeMode={activeMode}
+          formData={formData}
+          errors={errors}
+          isLoading={isLoading}
+          showPassword={showPassword}
+          showConfirmPassword={showConfirmPassword}
+          displayError={displayError}
+          successMessage={successMessage}
+          showOTPVerification={showOTPVerification}
+          verificationEmail={verificationEmail}
+          verificationUserRole={verificationUserRole}
+          verificationDisplayName={verificationDisplayName}
+          onModeChange={switchMode}
+          onInputChange={handleInputChange}
+          onPasswordToggle={() => setShowPassword(!showPassword)}
+          onConfirmPasswordToggle={() =>
+            setShowConfirmPassword(!showConfirmPassword)
+          }
+          onSubmit={handleSubmit}
+          onGoogleLogin={onGoogleLogin}
+          onForgotPassword={onForgotPassword}
+          onOTPVerificationSuccess={handleOTPVerificationSuccess}
+          onOTPVerificationBack={handleOTPVerificationBack}
+        />
 
-                <AuthForm
-                  activeMode={activeMode}
-                  formData={formData}
-                  errors={errors}
-                  isLoading={isLoading}
-                  showPassword={showPassword}
-                  showConfirmPassword={showConfirmPassword}
-                  onInputChange={handleInputChange}
-                  onPasswordToggle={() => setShowPassword(!showPassword)}
-                  onConfirmPasswordToggle={() =>
-                    setShowConfirmPassword(!showConfirmPassword)
-                  }
-                  onSubmit={handleSubmit}
-                />
-
-                <GoogleLoginButton
-                  onClick={onGoogleLogin}
-                  disabled={isLoading}
-                />
-
-                <AuthMessages
-                  error={displayError}
-                  successMessage={successMessage}
-                />
-                <AuthFooter
-                  activeMode={activeMode}
-                  onForgotPassword={onForgotPassword}
-                />
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Desktop Layout - Two Column */}
-        <div className='hidden lg:block min-h-[calc(100vh-80px)]'>
-          <div className='grid lg:grid-cols-2 h-full'>
-            {/* Left Column - Branding & Marketing */}
-            <DesktopBranding activeMode={activeMode} />
-
-            {/* Right Column - Form */}
-            <div className='p-8 xl:p-12 flex flex-col justify-center'>
-              <div className='max-w-md mx-auto w-full'>
-                {showOTPVerification ? (
-                  <OTPVerification
-                    email={verificationEmail}
-                    userRole={verificationUserRole}
-                    displayName={verificationDisplayName}
-                    onVerificationSuccess={handleOTPVerificationSuccess}
-                    onBack={handleOTPVerificationBack}
-                  />
-                ) : (
-                  <>
-                    {/* Form Header */}
-                    <div className='text-center mb-8'>
-                      <h2 className='font-mondwest text-3xl xl:text-4xl font-bold text-white mb-4'>
-                        {activeMode === 'signin' ? 'SIGN IN' : 'CREATE ACCOUNT'}
-                      </h2>
-                      <p className='text-white/70'>
-                        {activeMode === 'signin'
-                          ? 'Access your dashboard'
-                          : 'Start your journey today'}
-                      </p>
-                    </div>
-
-                    <ModeToggle
-                      activeMode={activeMode}
-                      onModeChange={switchMode}
-                      className='mb-8'
-                    />
-
-                    <AuthForm
-                      activeMode={activeMode}
-                      formData={formData}
-                      errors={errors}
-                      isLoading={isLoading}
-                      showPassword={showPassword}
-                      showConfirmPassword={showConfirmPassword}
-                      onInputChange={handleInputChange}
-                      onPasswordToggle={() => setShowPassword(!showPassword)}
-                      onConfirmPasswordToggle={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                      onSubmit={handleSubmit}
-                      className='space-y-5'
-                    />
-                    <p className='py-2 text-center'>or</p>
-
-                    <GoogleLoginButton
-                      onClick={onGoogleLogin}
-                      disabled={isLoading}
-                    />
-
-                    <AuthMessages
-                      error={displayError}
-                      successMessage={successMessage}
-                    />
-
-                    {/* Additional Links */}
-                    <div className='mt-6 text-center space-y-3'>
-                      {activeMode === 'signin' && (
-                        <button
-                          type='button'
-                          onClick={onForgotPassword}
-                          className='block text-white/60 hover:text-orange-500 transition-colors text-sm w-full'
-                        >
-                          Forgot your password?
-                        </button>
-                      )}
-
-                      <a
-                        href='/'
-                        className='block text-white/60 hover:text-white transition-colors text-sm'
-                      >
-                        ← Back to Home
-                      </a>
-                    </div>
-
-                    {/* Footer Info */}
-                    <div className='mt-8 pt-6 border-t border-dashed border-white/20 text-center'>
-                      <p className='text-white/40 text-xs'>
-                        By{' '}
-                        {activeMode === 'signin'
-                          ? 'signing in'
-                          : 'creating an account'}
-                        , you agree to our{' '}
-                        <a
-                          href='/terms'
-                          className='text-orange-500 hover:underline'
-                        >
-                          Terms
-                        </a>{' '}
-                        and{' '}
-                        <a
-                          href='/privacy'
-                          className='text-orange-500 hover:underline'
-                        >
-                          Privacy Policy
-                        </a>
-                      </p>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Desktop Layout */}
+        <DesktopAuthLayout
+          activeMode={activeMode}
+          formData={formData}
+          errors={errors}
+          isLoading={isLoading}
+          showPassword={showPassword}
+          showConfirmPassword={showConfirmPassword}
+          displayError={displayError}
+          successMessage={successMessage}
+          showOTPVerification={showOTPVerification}
+          verificationEmail={verificationEmail}
+          verificationUserRole={verificationUserRole}
+          verificationDisplayName={verificationDisplayName}
+          onModeChange={switchMode}
+          onInputChange={handleInputChange}
+          onPasswordToggle={() => setShowPassword(!showPassword)}
+          onConfirmPasswordToggle={() =>
+            setShowConfirmPassword(!showConfirmPassword)
+          }
+          onSubmit={handleSubmit}
+          onGoogleLogin={onGoogleLogin}
+          onForgotPassword={onForgotPassword}
+          onOTPVerificationSuccess={handleOTPVerificationSuccess}
+          onOTPVerificationBack={handleOTPVerificationBack}
+        />
       </div>
 
       {/* Artist Selection Modal */}
