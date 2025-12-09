@@ -23,11 +23,20 @@ import toast from 'react-hot-toast';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const { user, logout } = useStore();
-  const [activeTab, setActiveTab] = useState<AdminTab>(AdminTab.OVERVIEW);
+  const { user, logout, adminDashboardTab, setAdminDashboardTab } = useStore();
+
+  const [activeTab, setActiveTab] = useState<AdminTab>(
+    (adminDashboardTab as AdminTab) || AdminTab.OVERVIEW
+  );
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleTabChange = (tab: AdminTab) => {
+    setActiveTab(tab);
+    setAdminDashboardTab(tab);
+  };
 
   // Fetch real data from APIs
   const { data: usersData, isLoading: usersLoading } = useGetAllUsers();
@@ -316,7 +325,7 @@ const AdminDashboard = () => {
               <button
                 key={tab.id}
                 onClick={() => {
-                  setActiveTab(tab.id as AdminTab);
+                  handleTabChange(tab.id as AdminTab);
                   setMobileMenuOpen(false);
                 }}
                 className={`w-full text-left p-3 font-semibold transition-all duration-300 flex items-center gap-3  ${
@@ -342,7 +351,7 @@ const AdminDashboard = () => {
             {adminNavItems.map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as AdminTab)}
+                onClick={() => handleTabChange(tab.id as AdminTab)}
                 className={`w-full text-left p-3 font-semibold transition-all duration-300 flex items-center gap-2 ${
                   activeTab === tab.id
                     ? 'bg-orange-500 text-black'

@@ -60,7 +60,7 @@ const BookingTab = forwardRef<BookingTabRef, BookingTabProps>(
       mode: 'onChange',
     });
 
-    const { handleSubmit, control, formState, reset, watch } = form;
+    const { handleSubmit, control, formState, reset, watch, setValue } = form;
     const { isValid, isDirty } = formState;
 
     // Booking API hook
@@ -170,7 +170,7 @@ const BookingTab = forwardRef<BookingTabRef, BookingTabProps>(
               {/* Left Column - Booking Form */}
               <div className='space-y-6'>
                 <BookingEventDetails control={control} />
-                <BookingContactInfo control={control} />
+                <BookingContactInfo control={control} setValue={setValue} />
               </div>
 
               {/* Right Column - Booking Summary */}

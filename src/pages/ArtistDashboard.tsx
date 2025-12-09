@@ -27,12 +27,20 @@ import ErrorState from '@/components/ui/ErrorState';
 import { Info } from 'lucide-react';
 
 const ArtistDashboard = () => {
-  const { user, setUser, logout } = useStore();
+  const { user, setUser, logout, artistDashboardTab, setArtistDashboardTab } =
+    useStore();
+
   const [activeTab, setActiveTab] = useState<DashboardTab>(
-    DashboardTab.OVERVIEW
+    (artistDashboardTab as DashboardTab) || DashboardTab.OVERVIEW
   );
+
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleTabChange = (tab: DashboardTab) => {
+    setActiveTab(tab);
+    setArtistDashboardTab(tab);
+  };
 
   // Fetch artist profile data
   const { data: artistResponse, isLoading, error } = useGetArtistProfile();
@@ -506,7 +514,7 @@ const ArtistDashboard = () => {
         {artistDashboardTabs.map(tab => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => handleTabChange(tab)}
             className={`px-4 py-2 text-sm md:text-base font-semibold transition-all duration-300 border ${
               activeTab === tab
                 ? 'bg-white text-black border-white'
@@ -524,7 +532,7 @@ const ArtistDashboard = () => {
         {activeTab === DashboardTab.OVERVIEW && (
           <OverviewTab
             dashboardData={dashboardData}
-            setActiveTab={setActiveTab}
+            setActiveTab={handleTabChange}
             setSelectedBooking={setSelectedBooking}
             setIsModalOpen={setIsModalOpen}
             isProfileIncomplete={isProfileIncomplete}

@@ -29,6 +29,11 @@ export const useStore = create<Store>()(
         // Newsletter subscription state
         newsletterSubscriptions: [] as string[],
 
+        // Dashboard tab states
+        adminDashboardTab: 'overview',
+        artistDashboardTab: 'overview',
+        userDashboardTab: 'overview',
+
         // Auth actions
         setUser: (user: ConsolidatedUser | null) => {
           set({
@@ -226,6 +231,19 @@ export const useStore = create<Store>()(
           return get().newsletterSubscriptions.includes(artistId);
         },
 
+        // Dashboard tab actions
+        setAdminDashboardTab: (tab: string) => {
+          set({ adminDashboardTab: tab });
+        },
+
+        setArtistDashboardTab: (tab: string) => {
+          set({ artistDashboardTab: tab });
+        },
+
+        setUserDashboardTab: (tab: string) => {
+          set({ userDashboardTab: tab });
+        },
+
         // Helper methods
         getAccessToken: () => tokenCookies.getAccessToken(),
         getRefreshToken: () => tokenCookies.getRefreshToken(),
@@ -254,6 +272,10 @@ export const useStore = create<Store>()(
             : null,
           // Don't persist isAuthenticated - this should be determined by token validation
           authMode: state.authMode,
+          // Persist dashboard tabs
+          adminDashboardTab: state.adminDashboardTab,
+          artistDashboardTab: state.artistDashboardTab,
+          userDashboardTab: state.userDashboardTab,
         }),
         // Add version to handle breaking changes
         version: 1,

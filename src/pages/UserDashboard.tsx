@@ -21,8 +21,22 @@ import AuthenticationCheck from '@/components/ui/AuthenticationCheck';
 
 const UserDashboard = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useStore();
-  const [activeTab, setActiveTab] = useState<UserDashboardTab>('overview');
+  const {
+    user,
+    isAuthenticated,
+    logout,
+    userDashboardTab,
+    setUserDashboardTab,
+  } = useStore();
+
+  const [activeTab, setActiveTab] = useState<UserDashboardTab>(
+    (userDashboardTab as UserDashboardTab) || 'overview'
+  );
+
+  const handleTabChange = (tab: UserDashboardTab) => {
+    setActiveTab(tab);
+    setUserDashboardTab(tab);
+  };
 
   // Fetch user profile data
   const { data: userResponse, isLoading, error } = useGetUserProfile();
@@ -250,7 +264,7 @@ const UserDashboard = () => {
         <DashboardHeader
           userData={userData}
           onLogout={handleLogout}
-          onEditProfile={() => setActiveTab('settings')}
+          onEditProfile={() => handleTabChange('settings')}
         />
 
         {/* Quick Stats Grid */}
@@ -264,7 +278,7 @@ const UserDashboard = () => {
           {userTabDisplayMap.map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as UserDashboardTab)}
+              onClick={() => handleTabChange(tab.id as UserDashboardTab)}
               className={`px-4 py-2 text-sm md:text-base font-semibold transition-all duration-300 border ${
                 activeTab === tab.id
                   ? 'bg-white text-black border-white'
@@ -282,7 +296,9 @@ const UserDashboard = () => {
             <OverviewTab
               dashboardData={dashboardData}
               savedArtists={savedArtists}
-              onTabChange={(tab: string) => setActiveTab(tab as any)}
+              onTabChange={(tab: string) =>
+                handleTabChange(tab as UserDashboardTab)
+              }
             />
           )}
 

@@ -1,6 +1,5 @@
 // components/artist/booking/BookingSummary.tsx
 import { format } from 'date-fns';
-import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/helper';
 
 interface BookingFormData {
@@ -78,13 +77,14 @@ const BookingSummary = ({
       </div>
 
       {/* Submit Button */}
-      <Button
+      <button
         type='submit'
-        className='w-full bg-orange-500 text-black hover:bg-orange-600 font-semibold py-3 hidden lg:block'
+        title='Send Booking Request'
+        className='w-full bg-orange-500 text-black hover:bg-orange-600 font-semibold py-2 text-sm hidden lg:block'
         disabled={isSubmitting || !isFormValid || !watchedValues.eventDate}
       >
         {isSubmitting ? 'SUBMITTING...' : 'SEND BOOKING REQUEST'}
-      </Button>
+      </button>
     </div>
   );
 };

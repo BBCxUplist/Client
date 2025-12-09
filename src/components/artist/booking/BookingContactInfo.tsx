@@ -1,6 +1,8 @@
 // components/artist/booking/BookingContactInfo.tsx
+import { useEffect } from 'react';
 import type { Control } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
+import { useStore } from '@/stores/store';
 import {
   FormControl,
   FormField,
@@ -24,9 +26,28 @@ interface BookingFormData {
 
 interface BookingContactInfoProps {
   control: Control<BookingFormData>;
+  setValue: (name: keyof BookingFormData, value: any) => void;
 }
 
-const BookingContactInfo = ({ control }: BookingContactInfoProps) => {
+const BookingContactInfo = ({ control, setValue }: BookingContactInfoProps) => {
+  const { user } = useStore();
+
+  useEffect(() => {
+    if (user) {
+      const contactName = user.displayName || user.name || '';
+      if (contactName) {
+        setValue('contactName', contactName);
+      }
+
+      if (user.email) {
+        setValue('contactEmail', user.email);
+      }
+
+      if (user.phone) {
+        setValue('contactPhone', user.phone);
+      }
+    }
+  }, [user, setValue]);
   return (
     <div>
       <h4 className='text-xl font-semibold text-white mb-4 font-mondwest'>

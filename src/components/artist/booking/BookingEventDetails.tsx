@@ -197,21 +197,34 @@ const BookingEventDetails = ({ control }: BookingEventDetailsProps) => {
           control={control}
           name='budget'
           rules={{
-            minLength: {
-              value: 3,
-              message: 'Budget must be at least 3 characters',
+            required: 'Budget is required',
+            pattern: {
+              value: /^\d+$/,
+              message: 'Budget must be a number only',
+            },
+            min: {
+              value: 1,
+              message: 'Budget must be greater than 0',
             },
           }}
           render={({ field }) => (
             <FormItem>
               <FormLabel className='block text-white/70 text-sm mb-2'>
-                Budget(£)
+                Budget (£)
               </FormLabel>
               <FormControl>
                 <Input
-                  placeholder='£500 - £2,000'
+                  type='number'
+                  placeholder='500'
+                  min='1'
+                  step='1'
                   className='bg-white/5 border-white/20 text-white placeholder:text-white/50'
                   {...field}
+                  onChange={e => {
+                    // Only allow numbers
+                    const value = e.target.value.replace(/\D/g, '');
+                    field.onChange(value);
+                  }}
                 />
               </FormControl>
               <FormMessage className='text-red-400 text-xs mt-1' />
