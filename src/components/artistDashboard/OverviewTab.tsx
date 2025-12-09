@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
 import { DashboardTab } from '@/types';
 import { AppealStatus } from '@/hooks/artist/useGetApprovalStatus';
+import { useGetBookings } from '@/hooks/booking/useGetBookings';
+import { format } from 'date-fns';
 
 interface OverviewTabProps {
   dashboardData: any;
@@ -21,12 +23,22 @@ const OverviewTab = ({
   approvalStatus,
   isApprovalLoading,
 }: OverviewTabProps) => {
+  const { data: bookingsResponse } = useGetBookings();
+
+  const allBookings =
+    bookingsResponse?.data || dashboardData?.recentBookings || [];
+
+  const now = new Date();
+  const upcomingBookings = allBookings.filter((booking: any) => {
+    const eventDate = new Date(booking.eventDate);
+    return booking.status === 'confirmed' && eventDate > now;
+  });
+
+  const recentBookings = allBookings;
+
   // Check if data exists and is not empty
-  const hasRecentBookings =
-    dashboardData?.recentBookings && dashboardData.recentBookings.length > 0;
-  const hasUpcomingBookings =
-    dashboardData?.upcomingBookings &&
-    dashboardData.upcomingBookings.length > 0;
+  const hasRecentBookings = recentBookings && recentBookings.length > 0;
+  const hasUpcomingBookings = upcomingBookings && upcomingBookings.length > 0;
 
   // Determine the appropriate message and action based on account status
   const getEmptyStateContent = () => {
@@ -113,34 +125,59 @@ const OverviewTab = ({
           </div>
           {hasRecentBookings ? (
             <div className='space-y-4'>
-              {dashboardData.recentBookings.slice(0, 3).map((booking: any) => (
+              {recentBookings.slice(0, 3).map((booking: any) => (
                 <div
                   key={booking.id}
                   className='flex items-center justify-between p-4 bg-white/5 border border-white/10'
                 >
                   <div className='flex-1'>
-                    <p className='text-white font-semibold'>
-                      {booking.contactName || booking.clientName}
-                    </p>
-                    <p className='text-white/60 text-sm'>
-                      {booking.contactEmail ||
-                        `${(booking.contactName || booking.clientName || '').toLowerCase().replace(' ', '.')}@example.com`}
-                    </p>
+                    <div className='flex items-center gap-4 mb-2'>
+                      <div className='flex-1'>
+                        <p className='text-white font-semibold'>
+                          {booking.contactName ||
+                            booking.clientName ||
+                            'Unknown Client'}
+                        </p>
+                        <p className='text-white/60 text-sm'>
+                          {booking.eventType || 'Event'} •{' '}
+                          {booking.eventDate
+                            ? format(
+                                new Date(booking.eventDate),
+                                'MMM dd, yyyy'
+                              )
+                            : 'Date TBD'}
+                        </p>
+                      </div>
+                      <div className='text-right'>
+                        <p className='text-orange-500 font-semibold text-sm'>
+                          {booking.budgetRange || 'Budget TBD'}
+                        </p>
+                        <p className='text-white/60 text-xs'>
+                          {booking.eventLocation || 'Location TBD'}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div>
+                  <div className='ml-4'>
                     <button
                       onClick={() => {
                         setSelectedBooking({
                           ...booking,
                           clientId: booking.userId, // Add client user ID for chat functionality
-                          clientEmail:
-                            booking.contactEmail ||
-                            `${(booking.contactName || booking.clientName || '').toLowerCase().replace(' ', '.')}@example.com`,
-                          duration: `${booking.duration || 3} hours`,
-                          guests: booking.expectedGuests || 150,
+                          clientEmail: booking.contactEmail,
+                          clientName: booking.contactName,
+                          date: booking.eventDate
+                            ? format(
+                                new Date(booking.eventDate),
+                                'MMM dd, yyyy'
+                              )
+                            : 'N/A',
+                          location: booking.eventLocation,
+                          amount: booking.budgetRange || 0,
+                          duration: `${booking.duration || 0} hours`,
+                          guests: booking.expectedGuests || 0,
                           message: booking.specialRequirements,
-                          contactPhone:
-                            booking.contactPhone || booking.clientPhone,
+                          contactPhone: booking.contactPhone,
                         });
                         setIsModalOpen(true);
                       }}
@@ -193,20 +230,33 @@ const OverviewTab = ({
             </h3>
             {hasUpcomingBookings ? (
               <div className='space-y-3'>
-                {dashboardData.upcomingBookings
+                {upcomingBookings
                   .slice(0, 3)
                   .map((booking: any, index: number) => (
                     <div
-                      key={index}
+                      key={booking.id || index}
                       className='flex items-center gap-3 p-3 bg-white/5'
                     >
                       <div className='w-2 h-2 bg-orange-500 flex-shrink-0'></div>
                       <div>
                         <p className='text-white text-sm font-semibold'>
-                          {booking.event}
+                          {booking.eventType || booking.event}
                         </p>
                         <p className='text-white/60 text-xs'>
-                          {booking.date} • {booking.location}
+                          {booking.eventDate
+                            ? new Date(booking.eventDate).toLocaleDateString(
+                                'en-US',
+                                {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                }
+                              )
+                            : 'TBD'}{' '}
+                          •{' '}
+                          {booking.eventLocation ||
+                            booking.location ||
+                            'Location TBD'}
                         </p>
                       </div>
                     </div>
