@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useStore } from '@/stores/store';
 import { tokenCookies } from '@/lib/cookieUtils';
+import { api } from '@/config';
 import type { User } from '@/types/auth';
 
 // Type for user data that comes from the backend API
@@ -37,7 +38,7 @@ interface BackendUser extends User {
   isAvailable?: boolean;
 }
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = api.url;
 
 export interface RefreshTokenResponse {
   success: boolean;

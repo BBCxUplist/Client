@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useRef } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { useStore } from '@/stores/store';
+import { api } from '@/config';
 import type {
   WebSocketMessage,
   SendMessagePayload,
@@ -8,7 +9,7 @@ import type {
   QuoteData,
 } from '@/types/chat';
 
-const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:3000/ws';
+const WS_URL = api.wsUrl;
 
 interface UseChatWebSocketProps {
   onMessage?: (message: Message) => void;

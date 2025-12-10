@@ -1,11 +1,10 @@
 import axios from 'axios';
 import { authService } from './authService';
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { api } from '@/config';
 
 // Create axios instance
 export const apiClient = axios.create({
-  baseURL: API_URL,
+  baseURL: api.url,
   headers: {
     'Content-Type': 'application/json',
   },

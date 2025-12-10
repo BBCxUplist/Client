@@ -119,8 +119,8 @@ export const useStore = create<Store>()(
             const refreshToken = tokenCookies.getRefreshToken();
 
             if (accessToken && refreshToken) {
-              const API_URL = import.meta.env.VITE_API_URL;
-              await fetch(`${API_URL}/auth/logout`, {
+              const { api } = await import('@/config');
+              await fetch(`${api.url}/auth/logout`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
