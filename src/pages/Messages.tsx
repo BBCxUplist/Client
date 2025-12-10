@@ -6,7 +6,12 @@ import Navbar from '@/components/landing/Navbar';
 import ChatList from '@/components/messages/ChatList';
 import ChatWindow from '@/components/messages/ChatWindow';
 import { useStore } from '@/stores/store';
-import { useConversations, CHAT_QUERY_KEYS } from '@/hooks/useChat';
+import { useChatStore } from '@/stores/chatStore';
+import {
+  useConversations,
+  useMarkAsRead,
+  CHAT_QUERY_KEYS,
+} from '@/hooks/useChat';
 import { useChatWebSocket } from '@/hooks/useChatWebSocket';
 import { useUpdateBooking } from '@/hooks/booking/useUpdateBooking';
 import type { Message, QuoteData } from '@/types/chat';
@@ -17,11 +22,21 @@ const Messages = () => {
   const location = useLocation();
   const queryClient = useQueryClient();
   const { mutate: updateBooking } = useUpdateBooking();
-  const [selectedConversationId, setSelectedConversationId] = useState<
-    string | null
-  >(null);
+  const { mutate: markAsRead } = useMarkAsRead();
+
+  // Chat store
+  const {
+    addMessage,
+    setTypingUser,
+    setConnectionStatus,
+    updateConversation,
+    incrementUnreadCount,
+    selectedConversationId,
+    setSelectedConversation,
+    typingUsers,
+  } = useChatStore();
+
   const [isMobileView, setIsMobileView] = useState(false);
-  const [typingUsers, setTypingUsers] = useState<Record<string, boolean>>({});
 
   // Fetch conversations
   const { data: conversationsData, isLoading } = useConversations();
@@ -36,17 +51,63 @@ const Messages = () => {
     sendQuote,
   } = useChatWebSocket({
     onMessage: (message: Message) => {
-      // Update message history cache
+      // Add message to chat store
+      addMessage(message.conversationId, message);
+
+      // Increment unread count if not the current conversation or not from current user
+      if (
+        message.conversationId !== selectedConversationId &&
+        message.senderId !== user?.id
+      ) {
+        incrementUnreadCount(message.conversationId);
+      }
+
+      // Update conversation's last message
+      updateConversation(message.conversationId, {
+        lastMessage:
+          message.messageType === 'quote'
+            ? `📋 Quote - $${message.quoteData?.proposedPrice || 0}`
+            : message.text || '',
+        lastMessageTime: message.createdAt,
+      });
+
+      // Update message history cache for React Query
       queryClient.setQueryData(
         CHAT_QUERY_KEYS.messageHistory(message.conversationId),
         (oldData: any) => {
-          if (!oldData) return { items: [message], hasMore: false };
+          if (!oldData) {
+            return { items: [message], hasMore: false };
+          }
 
-          // Check if message already exists
-          const exists = oldData.items.some(
+          // Check if message already exists by ID
+          const existsById = oldData.items.some(
             (m: Message) => m.id === message.id
           );
-          if (exists) return oldData;
+          if (existsById) {
+            return oldData;
+          }
+
+          // Check if this is a server response for our optimistic message
+          const optimisticIndex = oldData.items.findIndex((m: Message) => {
+            const isTemp = m.id.startsWith('temp-');
+            const sameSender = m.senderId === message.senderId;
+            const sameText = m.text === message.text;
+            const recentTime =
+              Math.abs(
+                new Date(m.createdAt).getTime() -
+                  new Date(message.createdAt).getTime()
+              ) < 10000;
+            return isTemp && sameSender && sameText && recentTime;
+          });
+
+          if (optimisticIndex !== -1) {
+            const newItems = [...oldData.items];
+            newItems[optimisticIndex] = message;
+            return {
+              ...oldData,
+              items: newItems,
+            };
+          }
 
           return {
             ...oldData,
@@ -60,25 +121,11 @@ const Messages = () => {
         queryKey: CHAT_QUERY_KEYS.conversations(user!.id),
       });
     },
-    onTyping: (conversationId, userId, isTyping) => {
-      setTypingUsers(prev => ({
-        ...prev,
-        [`${conversationId}-${userId}`]: isTyping,
-      }));
-
-      // Clear typing indicator after 3 seconds
-      if (isTyping) {
-        setTimeout(() => {
-          setTypingUsers(prev => ({
-            ...prev,
-            [`${conversationId}-${userId}`]: false,
-          }));
-        }, 3000);
-      }
+    onTyping: (conversationId, visitorId, isTyping) => {
+      setTypingUser(conversationId, visitorId, isTyping);
     },
     onError: (error, code) => {
-      console.error('Chat error:', error, code);
-      // You can show a toast notification here
+      console.error('[Chat] Error:', { error, code });
     },
   });
 
@@ -86,10 +133,16 @@ const Messages = () => {
     conv => conv.id === selectedConversationId
   );
 
+  // Update connection status in store
+  useEffect(() => {
+    setConnectionStatus(isConnected);
+  }, [isConnected, setConnectionStatus]);
+
   // Join conversation when selected
   useEffect(() => {
     if (selectedConversationId && isConnected) {
       joinConversation(selectedConversationId);
+      markAsRead(selectedConversationId);
 
       return () => {
         leaveConversation(selectedConversationId);
@@ -100,15 +153,18 @@ const Messages = () => {
     isConnected,
     joinConversation,
     leaveConversation,
+    markAsRead,
   ]);
 
   const handleChatSelect = (conversationId: string) => {
-    setSelectedConversationId(conversationId);
+    setSelectedConversation(conversationId);
     setIsMobileView(true);
   };
 
   const handleSendMessage = (content: string) => {
-    if (!selectedConversationId || !content.trim() || !user) return;
+    if (!selectedConversationId || !content.trim() || !user) {
+      return;
+    }
 
     // Create optimistic message
     const optimisticMessage: Message = {
@@ -124,7 +180,10 @@ const Messages = () => {
       senderAvatar: user.avatar || '',
     };
 
-    // Immediately add to UI (optimistic update)
+    // Add to chat store
+    addMessage(selectedConversationId, optimisticMessage);
+
+    // Immediately add to React Query cache (optimistic update)
     queryClient.setQueryData(
       CHAT_QUERY_KEYS.messageHistory(selectedConversationId),
       (oldData: any) => {
@@ -138,10 +197,25 @@ const Messages = () => {
 
     // Send to server
     sendMessage(selectedConversationId, content.trim());
+
+    // Update conversation's last message immediately (optimistic)
+    updateConversation(selectedConversationId, {
+      lastMessage: content.trim(),
+      lastMessageTime: new Date().toISOString(),
+    });
+
+    // Refetch conversations to update lastMessage after a short delay
+    setTimeout(() => {
+      queryClient.invalidateQueries({
+        queryKey: CHAT_QUERY_KEYS.conversations(user.id),
+      });
+    }, 500);
   };
 
   const handleSendQuote = (quoteData: QuoteData, text?: string) => {
-    if (!selectedConversationId) return;
+    if (!selectedConversationId) {
+      return;
+    }
 
     // First, update the booking if bookingId is present
     if (quoteData.bookingId) {
@@ -163,8 +237,7 @@ const Messages = () => {
         },
         {
           onError: error => {
-            console.error('Failed to update booking:', error);
-            // Continue with quote sending even if booking update fails
+            console.error('[Chat] Failed to update booking:', error);
           },
         }
       );
@@ -181,7 +254,7 @@ const Messages = () => {
 
   const handleBackToList = () => {
     setIsMobileView(false);
-    setSelectedConversationId(null);
+    setSelectedConversation(null);
   };
 
   // Handle navigation from booking modal or other sources
@@ -192,14 +265,11 @@ const Messages = () => {
     } | null;
 
     if (state?.conversationId && state?.openChat) {
-      // Set the conversation ID to open
-      setSelectedConversationId(state.conversationId);
+      setSelectedConversation(state.conversationId);
       setIsMobileView(true);
-
-      // Clear the state to prevent reopening on refresh
       navigate(location.pathname, { replace: true, state: {} });
     }
-  }, [location.state, location.pathname, navigate]);
+  }, [location.state, location.pathname, navigate, setSelectedConversation]);
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -252,9 +322,9 @@ const Messages = () => {
               onBack={handleBackToList}
               showBackButton={isMobileView}
               isTyping={
-                typingUsers[
-                  `${selectedConversation.id}-${selectedConversation.participantId}`
-                ] || false
+                !!typingUsers[selectedConversation.id]?.[
+                  selectedConversation.participantId
+                ]
               }
               isConnected={isConnected}
             />

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { Search } from 'lucide-react';
 import type { Conversation } from '@/types/chat';
+import { useChatStore } from '@/stores/chatStore';
 
 interface ChatListProps {
   conversations: Conversation[];
@@ -19,43 +20,80 @@ const ChatList = ({
 }: ChatListProps) => {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredConversations = conversations.filter(
-    conv =>
-      conv.participantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      conv.lastMessage?.toLowerCase().includes(searchTerm.toLowerCase())
+  // Get messages from store to show the latest message for each conversation
+  const messagesByConversation = useChatStore(
+    state => state.messagesByConversation
   );
 
-  const formatTime = (timestamp: string) => {
+  // Enhance conversations with real-time data from store
+  const enhancedConversations = useMemo(() => {
+    return (conversations || []).map(conv => {
+      // Get the latest message text for a conversation
+      const storeMessages = messagesByConversation[conv.id];
+      let lastMessage = conv.lastMessage || '';
+      let lastMessageTime = conv.lastMessageTime || null;
+
+      if (storeMessages && storeMessages.length > 0) {
+        const lastMsg = storeMessages[storeMessages.length - 1];
+        if (lastMsg.messageType === 'quote') {
+          lastMessage = `📋 Quote - $${lastMsg.quoteData?.proposedPrice || 0}`;
+        } else {
+          lastMessage = lastMsg.text || '';
+        }
+        lastMessageTime = lastMsg.createdAt;
+      }
+
+      return {
+        ...conv,
+        _lastMessage: lastMessage,
+        _lastMessageTime: lastMessageTime,
+      };
+    });
+  }, [conversations, messagesByConversation]);
+
+  // Filter and sort conversations
+  const filteredConversations = useMemo(() => {
+    return enhancedConversations
+      .filter(conv => {
+        if (!searchTerm) return true;
+        const search = searchTerm.toLowerCase();
+        return (
+          conv.participantName?.toLowerCase().includes(search) ||
+          conv._lastMessage?.toLowerCase().includes(search)
+        );
+      })
+      .sort((a, b) => {
+        const timeA = a._lastMessageTime
+          ? new Date(a._lastMessageTime).getTime()
+          : 0;
+        const timeB = b._lastMessageTime
+          ? new Date(b._lastMessageTime).getTime()
+          : 0;
+        return timeB - timeA;
+      });
+  }, [enhancedConversations, searchTerm]);
+
+  const formatTime = (timestamp: string | null) => {
+    if (!timestamp) return '';
     try {
       return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
     } catch {
-      return 'Just now';
+      return '';
     }
   };
 
   const getMessagePreview = (
-    conv: Conversation
-  ): { text: string; isQuote: boolean } => {
-    if (!conv.lastMessage) {
-      return { text: 'No messages yet', isQuote: false };
+    conv: (typeof enhancedConversations)[0]
+  ): string => {
+    const text = conv._lastMessage;
+    if (!text || text.trim() === '') {
+      return 'Start a conversation';
     }
-
-    // Check if it's a quote message by looking for the quote format indicator
-    if (conv.lastMessage.includes('📋')) {
-      return { text: conv.lastMessage, isQuote: true };
-    }
-
-    // Truncate long regular messages
+    // Truncate long messages
     const maxLength = 50;
-    const truncated =
-      conv.lastMessage.length > maxLength
-        ? `${conv.lastMessage.substring(0, maxLength)}...`
-        : conv.lastMessage;
-    return { text: truncated, isQuote: false };
-  };
-
-  const getMessageTimestamp = (conv: Conversation): string => {
-    return conv.lastMessageTime ? formatTime(conv.lastMessageTime) : 'Just now';
+    return text.length > maxLength
+      ? `${text.substring(0, maxLength)}...`
+      : text;
   };
 
   const totalUnread = conversations.reduce(
@@ -141,7 +179,7 @@ const ChatList = ({
                     </h3>
                     <div className='flex items-center gap-2 flex-shrink-0'>
                       <span className='text-xs text-white/50'>
-                        {getMessageTimestamp(conv)}
+                        {formatTime(conv._lastMessageTime)}
                       </span>
                       {conv.unreadCount && conv.unreadCount > 0 && (
                         <div className='bg-orange-500 text-black text-xs font-bold px-2 py-1 min-w-[20px] h-5 flex items-center justify-center'>
@@ -157,7 +195,7 @@ const ChatList = ({
                         : 'text-white/60'
                     }`}
                   >
-                    {getMessagePreview(conv).text}
+                    {getMessagePreview(conv)}
                   </p>
                 </div>
               </div>

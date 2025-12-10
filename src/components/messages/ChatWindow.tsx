@@ -1,10 +1,11 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { format } from 'date-fns';
 import { ArrowLeft, MoreVertical, Loader2 } from 'lucide-react';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
 import QuoteMessageModal from './QuoteMessageModal';
 import { useMessageHistory } from '@/hooks/useChat';
+import { useChatStore } from '@/stores/chatStore';
 import type { Conversation, Message, QuoteData } from '@/types/chat';
 
 interface ChatWindowProps {
@@ -39,42 +40,75 @@ const ChatWindow = ({
 }: ChatWindowProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(
-    null
-  );
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+
+  // Use ref for typing state to avoid re-renders
+  const isCurrentlyTypingRef = useRef(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const isArtist = currentUser.role === 'artist';
 
-  // Fetch message history
+  // Get messages from store (real-time updates)
+  const storeMessages = useChatStore(
+    state => state.messagesByConversation[conversationId] || []
+  );
+
+  // Fetch message history from API
   const { data: historyData, isLoading } = useMessageHistory(conversationId);
 
-  const messages = useMemo(
-    () => historyData?.items || [],
-    [historyData?.items]
-  );
+  // Combine messages from store and API - store takes priority as it has real-time updates
+  const messages = useMemo(() => {
+    const apiMessages = historyData?.items || [];
+
+    // If store has messages, use them (they include real-time updates)
+    if (storeMessages.length > 0) {
+      return storeMessages;
+    }
+
+    // Fall back to API messages
+    return apiMessages;
+  }, [storeMessages, historyData?.items]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages.length]);
 
-  const handleTypingChange = (isCurrentlyTyping: boolean) => {
-    // Clear existing timeout
-    if (typingTimeout) {
-      clearTimeout(typingTimeout);
-    }
+  // Debounced typing handler
+  const handleTypingChange = useCallback(
+    (isCurrentlyTyping: boolean) => {
+      if (isCurrentlyTypingRef.current === isCurrentlyTyping) {
+        return;
+      }
 
-    onTyping(isCurrentlyTyping);
+      isCurrentlyTypingRef.current = isCurrentlyTyping;
+      onTyping(isCurrentlyTyping);
 
-    if (isCurrentlyTyping) {
-      // Set timeout to stop typing indicator after 3 seconds
-      const timeout = setTimeout(() => {
-        onTyping(false);
-      }, 3000);
-      setTypingTimeout(timeout);
-    }
-  };
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+
+      if (isCurrentlyTyping) {
+        typingTimeoutRef.current = setTimeout(() => {
+          if (isCurrentlyTypingRef.current) {
+            isCurrentlyTypingRef.current = false;
+            onTyping(false);
+          }
+        }, 3000);
+      }
+    },
+    [onTyping]
+  );
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSendQuote = (quoteData: QuoteData, text?: string) => {
     if (onSendQuote) {

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, memo } from 'react';
+import { useState, useRef, useCallback, memo, useEffect } from 'react';
 import { Send, Smile, DollarSign } from 'lucide-react';
 
 interface MessageInputProps {
@@ -8,6 +8,9 @@ interface MessageInputProps {
   isArtist?: boolean;
 }
 
+const TYPING_DEBOUNCE_MS = 500; // Debounce delay before sending typing start
+const TYPING_STOP_DELAY_MS = 2000; // Delay before sending typing stop
+
 const MessageInput = memo(
   ({
     onSendMessage,
@@ -16,8 +19,34 @@ const MessageInput = memo(
     isArtist = false,
   }: MessageInputProps) => {
     const [message, setMessage] = useState('');
-    const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-    const isTypingRef = useRef(false);
+
+    // Refs to track typing state without causing re-renders
+    const isTypingSentRef = useRef(false); // Have we told the server we're typing?
+    const typingStartDebounceRef = useRef<NodeJS.Timeout | null>(null);
+    const typingStopTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const lastTextLengthRef = useRef(0);
+
+    // Cleanup on unmount
+    useEffect(() => {
+      return () => {
+        if (typingStartDebounceRef.current)
+          clearTimeout(typingStartDebounceRef.current);
+        if (typingStopTimeoutRef.current)
+          clearTimeout(typingStopTimeoutRef.current);
+      };
+    }, []);
+
+    // Stable function to send typing indicator
+    const sendTypingIndicator = useCallback(
+      (isTyping: boolean) => {
+        if (!onTypingChange) return;
+        if (isTypingSentRef.current === isTyping) return; // No change needed
+
+        isTypingSentRef.current = isTyping;
+        onTypingChange(isTyping);
+      },
+      [onTypingChange]
+    );
 
     const handleSubmit = useCallback(
       (e: React.FormEvent) => {
@@ -25,20 +54,21 @@ const MessageInput = memo(
         if (message.trim()) {
           onSendMessage(message.trim());
           setMessage('');
+          lastTextLengthRef.current = 0;
 
-          // Stop typing indicator
-          if (onTypingChange && isTypingRef.current) {
-            onTypingChange(false);
-            isTypingRef.current = false;
+          // Clear all timeouts and stop typing
+          if (typingStartDebounceRef.current) {
+            clearTimeout(typingStartDebounceRef.current);
+            typingStartDebounceRef.current = null;
           }
-
-          // Clear timeout
-          if (typingTimeoutRef.current) {
-            clearTimeout(typingTimeoutRef.current);
+          if (typingStopTimeoutRef.current) {
+            clearTimeout(typingStopTimeoutRef.current);
+            typingStopTimeoutRef.current = null;
           }
+          sendTypingIndicator(false);
         }
       },
-      [message, onSendMessage, onTypingChange]
+      [message, onSendMessage, sendTypingIndicator]
     );
 
     const handleKeyPress = useCallback(
@@ -58,34 +88,42 @@ const MessageInput = memo(
 
         if (!onTypingChange) return;
 
-        // Start typing indicator
-        if (value.trim() && !isTypingRef.current) {
-          onTypingChange(true);
-          isTypingRef.current = true;
+        const hasText = value.trim().length > 0;
+        const hadText = lastTextLengthRef.current > 0;
+        lastTextLengthRef.current = value.trim().length;
+
+        // Clear the stop timeout since user is still active
+        if (typingStopTimeoutRef.current) {
+          clearTimeout(typingStopTimeoutRef.current);
+          typingStopTimeoutRef.current = null;
         }
 
-        // Clear existing timeout
-        if (typingTimeoutRef.current) {
-          clearTimeout(typingTimeoutRef.current);
-        }
+        if (hasText) {
+          // User has text - start typing (debounced) if not already sent
+          if (!isTypingSentRef.current && !typingStartDebounceRef.current) {
+            // Debounce the start of typing indicator
+            typingStartDebounceRef.current = setTimeout(() => {
+              typingStartDebounceRef.current = null;
+              sendTypingIndicator(true);
+            }, TYPING_DEBOUNCE_MS);
+          }
 
-        // Set new timeout to stop typing after 2 seconds of inactivity
-        if (value.trim()) {
-          typingTimeoutRef.current = setTimeout(() => {
-            if (onTypingChange && isTypingRef.current) {
-              onTypingChange(false);
-              isTypingRef.current = false;
-            }
-          }, 2000);
+          // Set timeout to stop typing after inactivity
+          typingStopTimeoutRef.current = setTimeout(() => {
+            sendTypingIndicator(false);
+          }, TYPING_STOP_DELAY_MS);
         } else {
-          // Stop typing immediately if input is empty
-          if (isTypingRef.current) {
-            onTypingChange(false);
-            isTypingRef.current = false;
+          // No text - stop typing immediately
+          if (typingStartDebounceRef.current) {
+            clearTimeout(typingStartDebounceRef.current);
+            typingStartDebounceRef.current = null;
+          }
+          if (hadText) {
+            sendTypingIndicator(false);
           }
         }
       },
-      [onTypingChange]
+      [onTypingChange, sendTypingIndicator]
     );
 
     return (

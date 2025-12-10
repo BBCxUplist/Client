@@ -27,42 +27,53 @@ export const useChatWebSocket = ({
 }: UseChatWebSocketProps = {}) => {
   const { user } = useStore();
   const currentConversationId = useRef<string | null>(null);
+  const processedMessageIds = useRef<Set<string>>(new Set());
+
+  // Use refs to store callbacks to prevent useEffect re-runs
+  const onMessageRef = useRef(onMessage);
+  const onTypingRef = useRef(onTyping);
+  const onErrorRef = useRef(onError);
+
+  // Update refs when callbacks change
+  useEffect(() => {
+    onMessageRef.current = onMessage;
+    onTypingRef.current = onTyping;
+    onErrorRef.current = onError;
+  }, [onMessage, onTyping, onError]);
 
   // Construct WebSocket URL with user ID
   const socketUrl = user?.id ? `${WS_URL}?token=${user.id}` : null;
 
-  const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(
-    socketUrl,
-    {
-      shouldReconnect: () => true,
-      reconnectAttempts: 10,
-      reconnectInterval: 3000,
-      share: false,
-      onOpen: () => {
-        console.log('WebSocket connected successfully');
-      },
-      onClose: () => {
-        console.log('WebSocket disconnected');
-      },
-      onError: event => {
-        console.error('WebSocket connection error:', event);
-      },
-    }
-  );
-
-  // Handle incoming messages
-  useEffect(() => {
-    if (lastJsonMessage) {
-      const message = lastJsonMessage as WebSocketMessage;
+  // Message handler - using callback instead of lastJsonMessage for reliability
+  const handleWebSocketMessage = useCallback((event: MessageEvent) => {
+    try {
+      const message = JSON.parse(event.data) as WebSocketMessage;
 
       switch (message.type) {
         case 'connected':
-          console.log('WebSocket connected:', message.userId);
+          console.log('[WebSocket] Connected');
           break;
 
         case 'message':
-          if (message.message && onMessage) {
-            onMessage(message.message);
+          // Prevent processing the same message twice
+          if (
+            message.message?.id &&
+            processedMessageIds.current.has(message.message.id)
+          ) {
+            break;
+          }
+
+          if (message.message && onMessageRef.current) {
+            // Mark as processed before calling callback
+            processedMessageIds.current.add(message.message.id);
+            // Keep only last 100 message IDs to prevent memory leak
+            if (processedMessageIds.current.size > 100) {
+              const firstId = processedMessageIds.current.values().next().value;
+              if (firstId) {
+                processedMessageIds.current.delete(firstId);
+              }
+            }
+            onMessageRef.current(message.message);
           }
           break;
 
@@ -70,9 +81,9 @@ export const useChatWebSocket = ({
           if (
             message.conversationId &&
             message.userId !== undefined &&
-            onTyping
+            onTypingRef.current
           ) {
-            onTyping(
+            onTypingRef.current(
               message.conversationId,
               message.userId,
               message.isTyping || false
@@ -81,26 +92,34 @@ export const useChatWebSocket = ({
           break;
 
         case 'error':
-          if (onError) {
-            onError(message.error || 'Unknown error', message.code);
+          console.error('[WebSocket] Error:', message.error, message.code);
+          if (onErrorRef.current) {
+            onErrorRef.current(message.error || 'Unknown error', message.code);
           }
-          console.error('WebSocket error:', message.error, message.code);
           break;
 
         case 'joined':
-          console.log('Joined conversation:', message.conversationId);
-          break;
-
         case 'left':
-          console.log('Left conversation:', message.conversationId);
-          break;
-
         case 'message_ack':
-          console.log('Message sent:', message.messageId);
+        default:
           break;
       }
+    } catch (e) {
+      console.error('[WebSocket] Failed to parse message:', e);
     }
-  }, [lastJsonMessage, onMessage, onTyping, onError]);
+  }, []); // Empty deps - uses refs for callbacks
+
+  const { sendJsonMessage, readyState } = useWebSocket(socketUrl, {
+    onMessage: handleWebSocketMessage, // Use callback for immediate processing
+    shouldReconnect: closeEvent => {
+      // Always try to reconnect unless it was a clean close with code 1000
+      return closeEvent.code !== 1000;
+    },
+    reconnectAttempts: 10,
+    reconnectInterval: 3000,
+    share: false,
+    retryOnError: true,
+  });
 
   // Join a conversation
   const joinConversation = useCallback(
