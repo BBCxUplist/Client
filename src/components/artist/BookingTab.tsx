@@ -1,13 +1,11 @@
-// components/artist/BookingTab.tsx
-import { useState, forwardRef, useImperativeHandle } from 'react';
+import { useState, forwardRef, useImperativeHandle, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { Form } from '@/components/ui/form';
 import { useCreateBooking } from '@/hooks/booking/useCreateBooking';
+import { useArtistBookingForm } from '@/stores/bookingFormStore';
 import type { BookingTabData } from '../../types/tabs';
-
-// Import booking sub-components
 import BookingMessages from './booking/BookingMessages';
 import BookingStatus from './booking/BookingStatus';
 import BookingEventDetails from './booking/BookingEventDetails';
@@ -44,34 +42,62 @@ interface BookingTabProps {
 
 const BookingTab = forwardRef<BookingTabRef, BookingTabProps>(
   ({ artist, onExternalSubmit }, ref) => {
-    // React Hook Form setup
+    const { bookingData, setBookingData, clearBookingData } =
+      useArtistBookingForm(artist.id);
+
     const form = useForm<BookingFormData>({
       defaultValues: {
-        eventDate: undefined,
-        eventType: '',
-        duration: '',
-        guests: '',
-        budget: '',
-        location: '',
-        message: '',
-        contactName: '',
-        contactEmail: '',
-        contactPhone: '',
+        eventDate: bookingData?.eventDate
+          ? new Date(bookingData.eventDate)
+          : undefined,
+        eventType: bookingData?.eventType || '',
+        duration: bookingData?.duration || '',
+        guests: bookingData?.guests || '',
+        budget: bookingData?.budget || '',
+        location: bookingData?.location || '',
+        message: bookingData?.message || '',
+        contactName: bookingData?.contactName || '',
+        contactEmail: bookingData?.contactEmail || '',
+        contactPhone: bookingData?.contactPhone || '',
       },
       mode: 'onChange',
     });
 
     const { handleSubmit, control, formState, reset, watch, setValue } = form;
     const { isValid, isDirty } = formState;
-
-    // Booking API hook
-    const createBookingMutation = useCreateBooking();
-
-    // Error message state (success now uses toast)
-    const [errorMessage, setErrorMessage] = useState('');
-
-    // Watch form values for validation
     const watchedValues = watch();
+
+    useEffect(() => {
+      if (!isDirty) return;
+      setBookingData({
+        eventDate: watchedValues.eventDate?.toISOString(),
+        eventType: watchedValues.eventType,
+        duration: watchedValues.duration,
+        guests: watchedValues.guests,
+        budget: watchedValues.budget,
+        location: watchedValues.location,
+        message: watchedValues.message,
+        contactName: watchedValues.contactName,
+        contactEmail: watchedValues.contactEmail,
+        contactPhone: watchedValues.contactPhone,
+      });
+    }, [
+      watchedValues.eventDate,
+      watchedValues.eventType,
+      watchedValues.duration,
+      watchedValues.guests,
+      watchedValues.budget,
+      watchedValues.location,
+      watchedValues.message,
+      watchedValues.contactName,
+      watchedValues.contactEmail,
+      watchedValues.contactPhone,
+      isDirty,
+      setBookingData,
+    ]);
+
+    const createBookingMutation = useCreateBooking();
+    const [errorMessage, setErrorMessage] = useState('');
 
     // Expose form state and submit function to parent
     useImperativeHandle(ref, () => ({
@@ -107,12 +133,10 @@ const BookingTab = forwardRef<BookingTabRef, BookingTabProps>(
     }));
 
     const handleBookingSubmit = async (data: Required<BookingFormData>) => {
-      // Clear previous messages
       setErrorMessage('');
 
       try {
-        // Prepare booking data according to API requirements
-        const bookingData = {
+        const bookingPayload = {
           artistId: artist.id,
           eventDate: data.eventDate!.toISOString(),
           eventType: data.eventType,
@@ -126,21 +150,15 @@ const BookingTab = forwardRef<BookingTabRef, BookingTabProps>(
           contactPhone: data.contactPhone,
         };
 
-        console.log('Submitting booking:', bookingData);
-
-        // Call the booking API
-        const result = await createBookingMutation.mutateAsync(bookingData);
+        const result = await createBookingMutation.mutateAsync(bookingPayload);
 
         if (result.success === true || result.success === undefined) {
-          // Show success toast
           toast.success(
             'Booking request submitted successfully! We will get back to you soon.'
           );
-          // Reset form
           reset();
-          if (onExternalSubmit) {
-            onExternalSubmit();
-          }
+          clearBookingData();
+          onExternalSubmit?.();
         } else {
           setErrorMessage(result.message || 'Failed to submit booking request');
         }
