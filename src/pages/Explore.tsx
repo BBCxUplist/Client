@@ -1,6 +1,10 @@
 import Navbar from '@/components/landing/Navbar';
 import Sidebar from '@/components/explore/Sidebar';
-import { useOptimizedArtists } from '@/hooks/generic/useOptimizedArtists';
+import type { FilterState } from '@/components/explore/Sidebar';
+import {
+  useOptimizedArtists,
+  SearchType,
+} from '@/hooks/generic/useOptimizedArtists';
 import { useDebounce } from '@/hooks/useDebounce';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
@@ -12,54 +16,81 @@ enum ActivityTab {
   BOOKABLE = 'bookable',
 }
 
-interface FilterState {
-  activeTab: ActivityTab;
-  genres: string[];
-  locationSearch: string;
-}
-
 const Explore = () => {
   const [searchParams] = useSearchParams();
   const [isHovered, setIsHovered] = useState<number | null>(null);
   const [showImageDirectly, setShowImageDirectly] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [nameSearchTerm, setNameSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<FilterState>({
     activeTab: ActivityTab.ALL,
-    genres: [],
+    searchType: SearchType.NONE,
+    nameSearch: '',
     locationSearch: '',
+    selectedGenre: '',
   });
 
-  // Debounce search term to avoid too many API calls
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  // Debounce name search term to avoid too many API calls
+  const debouncedNameSearch = useDebounce(nameSearchTerm, 500);
 
-  // Determine which hook to use based on current state
-  const isSearching = debouncedSearchTerm.trim().length > 0;
+  // Determine the active search type based on current state
+  const getActiveSearchType = (): SearchType => {
+    // Main search bar (name/username) takes precedence
+    if (debouncedNameSearch.trim()) {
+      return SearchType.NAME;
+    }
+    // Then sidebar filters
+    return filters.searchType;
+  };
+
+  const activeSearchType = getActiveSearchType();
   const isBookableFilter = filters.activeTab === ActivityTab.BOOKABLE;
 
-  // Use optimized hook with caching and prefetching
+  // Use optimized hook with the new search types
   const { artists, isLoading, error, hasMore } = useOptimizedArtists({
-    isSearching,
+    searchType: activeSearchType,
     isBookableFilter,
-    searchQuery: debouncedSearchTerm,
+    searchQuery: debouncedNameSearch,
+    locationQuery: filters.locationSearch,
+    genreQuery: filters.selectedGenre,
     currentPage,
     limit: 12,
-    selectedGenres: filters.genres,
-    locationSearch: filters.locationSearch,
   });
 
   // Initialize search term from URL params
   useEffect(() => {
     const urlSearchTerm = searchParams.get('search') || '';
-    setSearchTerm(urlSearchTerm);
+    setNameSearchTerm(urlSearchTerm);
   }, [searchParams]);
 
   const handleFilterChange = (newFilters: FilterState) => {
+    // If sidebar filter changes (location or genre), clear the main search bar
+    if (
+      newFilters.searchType === SearchType.LOCATION ||
+      newFilters.searchType === SearchType.GENRE
+    ) {
+      setNameSearchTerm('');
+    }
     setFilters(newFilters);
+    setCurrentPage(1); // Reset to page 1 when filters change
   };
 
-  const handleSearchChange = (value: string) => {
-    setSearchTerm(value);
+  const handleNameSearchChange = (value: string) => {
+    setNameSearchTerm(value);
+    // Clear sidebar filters when typing in main search bar
+    if (value.trim()) {
+      setFilters(prev => ({
+        ...prev,
+        searchType: SearchType.NAME,
+        locationSearch: '',
+        selectedGenre: '',
+      }));
+    } else if (!filters.locationSearch && !filters.selectedGenre) {
+      setFilters(prev => ({
+        ...prev,
+        searchType: SearchType.NONE,
+      }));
+    }
   };
 
   const handlePageChange = (page: number) => {
@@ -68,10 +99,33 @@ const Explore = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Reset to page 1 when genre filters change (search and bookable are handled by API)
+  // Reset to page 1 when search/filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [filters.genres, debouncedSearchTerm, filters.activeTab]);
+  }, [
+    debouncedNameSearch,
+    filters.locationSearch,
+    filters.selectedGenre,
+    filters.activeTab,
+  ]);
+
+  // Get display text for current search state
+  const getSearchDisplayText = () => {
+    if (isLoading) return 'Loading artists...';
+
+    const baseText = isBookableFilter ? 'Bookable artists' : 'All artists';
+
+    switch (activeSearchType) {
+      case SearchType.NAME:
+        return `Search results for "${debouncedNameSearch}" - ${artists.length} ${baseText.toLowerCase()}`;
+      case SearchType.LOCATION:
+        return `Location: "${filters.locationSearch}" - ${artists.length} ${baseText.toLowerCase()}`;
+      case SearchType.GENRE:
+        return `Genre: "${filters.selectedGenre}" - ${artists.length} ${baseText.toLowerCase()}`;
+      default:
+        return `${baseText} - ${artists.length} artists`;
+    }
+  };
 
   return (
     <div className='min-h-screen'>
@@ -82,15 +136,18 @@ const Explore = () => {
             Explore
           </h2>
 
-          {/* Search Bar */}
           <div className='w-full md:max-w-2xl'>
             <div className='relative'>
               <input
                 type='text'
-                value={searchTerm}
-                onChange={e => handleSearchChange(e.target.value)}
-                placeholder='Search artists by name, bio, or genres...'
-                className='w-full px-6 py-4 text-lg bg-black/20 border border-white/20 text-white placeholder-white/60 transition-all duration-300 focus:outline-none focus:ring-0 focus:border-orange-500'
+                value={nameSearchTerm}
+                onChange={e => handleNameSearchChange(e.target.value)}
+                placeholder='Search artists by name or username...'
+                className={`w-full px-6 py-4 text-lg bg-black/20 border text-white placeholder-white/60 transition-all duration-300 focus:outline-none focus:ring-0 focus:border-orange-500 ${
+                  activeSearchType === SearchType.NAME
+                    ? 'border-orange-500'
+                    : 'border-white/20'
+                }`}
                 autoFocus
               />
               <img
@@ -99,16 +156,20 @@ const Explore = () => {
                 className='absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 opacity-60'
               />
             </div>
-            {searchTerm && (
+            {nameSearchTerm && (
               <p className='text-white/60 text-sm mt-2'>
                 Searching for: "
-                <span className='text-orange-400'>{searchTerm}</span>"
+                <span className='text-orange-400'>{nameSearchTerm}</span>"
+                {activeSearchType === SearchType.NAME && (
+                  <span className='text-white/40 ml-2'>
+                    (sidebar filters cleared)
+                  </span>
+                )}
               </p>
             )}
           </div>
         </div>
 
-        {/* Mobile/Tablet: Filters on top */}
         <div className='lg:hidden mb-6'>
           <Sidebar
             onFilterChange={handleFilterChange}
@@ -118,7 +179,6 @@ const Explore = () => {
         </div>
 
         <div className='flex flex-col lg:flex-row h-full gap-4'>
-          {/* Desktop: Sidebar on left */}
           <div className='hidden lg:block'>
             <Sidebar
               onFilterChange={handleFilterChange}
@@ -128,21 +188,12 @@ const Explore = () => {
           </div>
 
           <div className='w-full'>
-            {/* Results count and image toggle */}
             <div className='mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2'>
               <div className='text-white text-sm'>
-                {isLoading
-                  ? 'Loading artists...'
-                  : isSearching
-                    ? `Search results for "${debouncedSearchTerm}" - ${artists.length} artists`
-                    : isBookableFilter
-                      ? `Bookable artists - ${artists.length} artists`
-                      : filters.genres.length > 0
-                        ? `Filtered by genres - ${artists.length} artists (Page ${currentPage})`
-                        : `All artists - ${artists.length} artists`}
+                {getSearchDisplayText()}
+                {currentPage > 1 && ` (Page ${currentPage})`}
               </div>
 
-              {/* Image display toggle - only on lg+ screens */}
               <div className='hidden lg:flex items-center gap-3'>
                 <span className='text-white text-xs'>Image Display:</span>
                 <button
@@ -168,14 +219,12 @@ const Explore = () => {
               </div>
             </div>
 
-            {/* Loading state */}
             {isLoading && (
               <div className='text-center py-12'>
                 <p className='text-white text-lg'>Loading artists...</p>
               </div>
             )}
 
-            {/* Error state */}
             {error && (
               <div className='text-center py-12'>
                 <p className='text-red-400 text-lg'>Failed to load artists</p>
@@ -185,7 +234,6 @@ const Explore = () => {
               </div>
             )}
 
-            {/* Artists grid */}
             {!isLoading && !error && (
               <div className='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-4 divide-y divide-dashed divide-white'>
                 {artists.map((artist: Artist, index: number) => (
@@ -196,7 +244,6 @@ const Explore = () => {
                     to={`/artist/${artist.username}`}
                     className=' relative group pb-2'
                   >
-                    {/* Mobile: Image always visible */}
                     <div className='lg:hidden mb-3'>
                       <img
                         src={artist.avatar || '/images/artistNotFound.jpeg'}
@@ -208,7 +255,6 @@ const Explore = () => {
                       />
                     </div>
 
-                    {/* Desktop: Always show image (like mobile style) */}
                     {showImageDirectly && (
                       <div className='hidden lg:block mb-4'>
                         <img
@@ -222,7 +268,6 @@ const Explore = () => {
                       </div>
                     )}
 
-                    {/* Desktop: Hover overlay image (only when not always showing) */}
                     {!showImageDirectly && (
                       <motion.img
                         src={artist.avatar || '/images/artistNotFound.jpeg'}
@@ -244,7 +289,6 @@ const Explore = () => {
                       />
                     )}
 
-                    {/* Content section */}
                     <div
                       className={`flex ${
                         showImageDirectly
@@ -278,7 +322,6 @@ const Explore = () => {
               </div>
             )}
 
-            {/* No results message */}
             {!isLoading && !error && artists.length === 0 && (
               <div className='text-center py-12'>
                 <p className='text-white text-lg'>
@@ -290,7 +333,6 @@ const Explore = () => {
               </div>
             )}
 
-            {/* Pagination Controls */}
             {!isLoading && !error && artists.length > 0 && (
               <div className='flex justify-center items-center gap-4 mt-8'>
                 <button
