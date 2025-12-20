@@ -4,6 +4,7 @@ export { useUpdateArtistProfile } from './useUpdateArtistProfile';
 export {
   useGetStripeConnection,
   useCreateStripeConnection,
+  useUpdateStripeConnection,
   useGetStripeStatus,
   useGetStripeOnboardingStatus,
   useGetStripeAuthLink,
@@ -14,4 +15,5 @@ export type {
   StripeConnectionData,
   StripeOnboardingStatus,
   StripeAccountStatus,
+  StripeAccountStatusData,
 } from './useStripeConnection';
