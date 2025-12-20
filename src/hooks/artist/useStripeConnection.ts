@@ -1,7 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/apiClient';
 
-// Stripe connection status types
+// Stripe connection status types - matching backend AccountStatus
+export type StripeAccountStatus =
+  | 'not_created'
+  | 'onboarding_incomplete'
+  | 'onboarding_complete'
+  | 'restricted'
+  | 'restricted_soon'
+  | 'active';
+
+// Legacy enum for backwards compatibility
 export enum StripeConnectionStatus {
   PENDING_ONBOARDING = 'pending_onboarding',
   ACTIVE = 'active',
@@ -9,32 +18,60 @@ export enum StripeConnectionStatus {
   DISCONNECTED = 'disconnected',
 }
 
-// Stripe connection data interface
+// Stripe connection data interface (from database)
 export interface StripeConnectionData {
   id: string;
-  artistId: string;
+  userId: string;
   accountId: string;
-  status: StripeConnectionStatus;
+  chargesEnabled?: boolean;
+  payoutsEnabled?: boolean;
+  detailsSubmitted?: boolean;
+  accountStatus?: StripeAccountStatus;
+  requirements?: {
+    currentlyDue: string[];
+    eventuallyDue: string[];
+    disabledReason?: string;
+  };
+  lastStatusCheck?: string;
   createdAt: string;
+  updatedAt: string;
 }
 
-// Stripe onboarding status interface
-export interface StripeOnboardingStatus {
-  status: 'onboarding_complete' | 'onboarding_incomplete';
-  chargesEnabled: boolean;
-  payoutsEnabled: boolean;
-}
-
-// Stripe account status interface
-export interface StripeAccountStatus {
-  accountId: string;
+// Stripe account status interface (from getAccountStatus/handleOnboarding)
+export interface StripeAccountStatusData {
+  status: StripeAccountStatus;
   chargesEnabled: boolean;
   payoutsEnabled: boolean;
   detailsSubmitted: boolean;
-  status: string;
+  requirements: {
+    currentlyDue: string[];
+    eventuallyDue: string[];
+    disabledReason?: string;
+  };
+  isReadyForPayments: boolean;
+  isReadyForPayouts: boolean;
+  message: string;
+  onboardingLink?: string | null;
 }
 
-// API Response interfaces
+// Stripe onboarding status interface (from handleOnboarding)
+export interface StripeOnboardingStatus {
+  status: StripeAccountStatus;
+  chargesEnabled: boolean;
+  payoutsEnabled: boolean;
+  detailsSubmitted: boolean;
+  isReadyForPayments: boolean;
+  isReadyForPayouts: boolean;
+  requirements: {
+    currentlyDue: string[];
+    eventuallyDue: string[];
+    disabledReason?: string;
+  };
+  message: string;
+  onboardingLink?: string | null;
+}
+
+// API Response interfaces - matching backend ResponseHandler structure
 interface StripeConnectionResponse {
   success: boolean;
   message: string;
@@ -43,7 +80,7 @@ interface StripeConnectionResponse {
 
 interface StripeRedirectResponse {
   success: boolean;
-  message?: string;
+  message: string;
   data: {
     redirect: string;
     status?: string;
@@ -53,21 +90,23 @@ interface StripeRedirectResponse {
 
 interface StripeOnboardingResponse {
   success: boolean;
+  message: string;
   data: StripeOnboardingStatus;
 }
 
 interface StripeStatusResponse {
   success: boolean;
-  data: StripeAccountStatus;
+  message: string;
+  data: StripeAccountStatusData;
 }
 
-// Step 1: Create Stripe connection (POST /stripe/) - Creates account + returns onboarding link
+// Step 1: Create Stripe connection (POST /connections/stripe) - Creates account + returns onboarding link
 export const useCreateStripeConnection = () => {
   const queryClient = useQueryClient();
 
   return useMutation<StripeRedirectResponse, Error>({
     mutationFn: async () => {
-      const response = await apiClient.post('/connections/stripe/');
+      const response = await apiClient.post('/connections/stripe');
       return response.data;
     },
     onSuccess: () => {
@@ -77,11 +116,14 @@ export const useCreateStripeConnection = () => {
       queryClient.invalidateQueries({
         queryKey: ['stripeOnboardingStatus'],
       });
+      queryClient.invalidateQueries({
+        queryKey: ['stripeConnection'],
+      });
     },
   });
 };
 
-// Step 3: Check onboarding status (GET /stripe/handle_onboarding)
+// Step 3: Check onboarding status (GET /connections/stripe/handle_onboarding)
 export const useGetStripeOnboardingStatus = (enabled: boolean = true) => {
   return useQuery<StripeOnboardingResponse>({
     queryKey: ['stripeOnboardingStatus'],
@@ -97,12 +139,12 @@ export const useGetStripeOnboardingStatus = (enabled: boolean = true) => {
   });
 };
 
-// Step 4 & 5: Get Stripe account status (GET /stripe/status) - Verify account is ready for payments/payouts
+// Step 4 & 5: Get Stripe account status (GET /connections/stripe/status) - Verify account is ready for payments/payouts
 export const useGetStripeStatus = (enabled: boolean = true) => {
   return useQuery<StripeStatusResponse>({
     queryKey: ['stripeStatus'],
     queryFn: async () => {
-      const response = await apiClient.get('/connections/stripe/');
+      const response = await apiClient.get('/connections/stripe/status');
       return response.data;
     },
     enabled,
@@ -111,7 +153,7 @@ export const useGetStripeStatus = (enabled: boolean = true) => {
   });
 };
 
-// Step 6: Get Stripe manage link (GET /stripe/manage) - Access Stripe Express Dashboard
+// Step 6: Get Stripe manage link (GET /connections/stripe/manage) - Access Stripe Express Dashboard
 export const useGetStripeManageLink = () => {
   return useMutation<StripeRedirectResponse, Error>({
     mutationFn: async () => {
@@ -121,12 +163,12 @@ export const useGetStripeManageLink = () => {
   });
 };
 
-// Legacy: Get Stripe connection (keeping for backwards compatibility)
+// Get Stripe connection (GET /connections/stripe) - Get connection data from database
 export const useGetStripeConnection = () => {
   return useQuery<StripeConnectionResponse>({
     queryKey: ['stripeConnection'],
     queryFn: async () => {
-      const response = await apiClient.get('/connections/stripe/');
+      const response = await apiClient.get('/connections/stripe');
       return response.data;
     },
     staleTime: 5 * 60 * 1000,
@@ -134,12 +176,32 @@ export const useGetStripeConnection = () => {
   });
 };
 
-// Get Stripe re-authentication link (for incomplete onboarding)
+// Get Stripe re-authentication link (GET /connections/stripe/authenticate) - For incomplete onboarding
 export const useGetStripeAuthLink = () => {
   return useMutation<StripeRedirectResponse, Error>({
     mutationFn: async () => {
       const response = await apiClient.get('/connections/stripe/authenticate');
       return response.data;
+    },
+  });
+};
+
+// Update Stripe connection (PUT /connections/stripe) - Update connection data
+export const useUpdateStripeConnection = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<StripeConnectionResponse, Error, Record<string, any>>({
+    mutationFn: async updateData => {
+      const response = await apiClient.put('/connections/stripe', updateData);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['stripeConnection'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['stripeStatus'],
+      });
     },
   });
 };

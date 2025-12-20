@@ -102,8 +102,16 @@ const SettingsTab = ({
   };
 
   // Handle Stripe re-authenticate button click (for incomplete onboarding)
+  // First try to use onboardingLink from status, otherwise call authenticate endpoint
   const handleReauthenticateStripe = async () => {
     try {
+      // Check if status already has an onboardingLink
+      if (stripeStatus?.data?.onboardingLink) {
+        window.location.href = stripeStatus.data.onboardingLink;
+        return;
+      }
+
+      // Fallback to authenticate endpoint if no link in status
       const result = await getAuthLink.mutateAsync();
       if (result.data?.redirect) {
         window.location.href = result.data.redirect;
@@ -114,11 +122,12 @@ const SettingsTab = ({
   };
 
   // Determine Stripe connection state based on status endpoint
-  const hasStripeAccount = !!stripeStatus?.data?.accountId;
-  const isPayoutsEnabled = stripeStatus?.data?.payoutsEnabled;
-  const isChargesEnabled = stripeStatus?.data?.chargesEnabled;
+  // Status endpoint returns: status, chargesEnabled, payoutsEnabled, isReadyForPayments, isReadyForPayouts, etc.
+  const hasStripeAccount = stripeStatus?.data?.status !== 'not_created';
   const isStripeActive =
-    hasStripeAccount && isPayoutsEnabled && isChargesEnabled;
+    hasStripeAccount &&
+    stripeStatus?.data?.isReadyForPayments &&
+    stripeStatus?.data?.isReadyForPayouts;
 
   return (
     <motion.div
@@ -265,6 +274,11 @@ const SettingsTab = ({
                   Complete Setup
                 </span>
               </button>
+              {stripeStatus?.data?.onboardingLink && (
+                <p className='text-white/40 text-xs text-center'>
+                  Click to continue Stripe onboarding
+                </p>
+              )}
             </div>
           ) : (
             // No connection - show connect button
