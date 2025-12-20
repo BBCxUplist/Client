@@ -5,6 +5,13 @@ import Toggle from '@/components/ui/Toggle';
 import ChangePasswordModal from '@/components/ui/ChangePasswordModal';
 import DeleteAccountModal from '@/components/ui/DeleteAccountModal';
 import { useDeleteArtistAccount } from '@/hooks/artist/useDeleteArtistAccount';
+import {
+  useCreateStripeConnection,
+  useGetStripeStatus,
+  useGetStripeManageLink,
+  useGetStripeAuthLink,
+} from '@/hooks/artist/useStripeConnection';
+import { Loader2, CheckCircle, AlertCircle, ExternalLink } from 'lucide-react';
 
 interface SettingsTabProps {
   profileVisibility: boolean;
@@ -55,9 +62,72 @@ const SettingsTab = ({
   // Delete account mutation
   const deleteAccountMutation = useDeleteArtistAccount();
 
+  // Stripe connection hooks - following the flow:
+  // Step 4 & 5: Check account status (GET /stripe/status)
+  const { data: stripeStatus, isLoading: isStripeLoading } =
+    useGetStripeStatus();
+  // Step 1: Create connection (POST /stripe/)
+  const createStripeConnection = useCreateStripeConnection();
+  // Step 6: Get manage link (GET /stripe/manage)
+  const getManageLink = useGetStripeManageLink();
+  // For re-authentication if needed
+  const getAuthLink = useGetStripeAuthLink();
+
   const handleDeleteAccount = () => {
     deleteAccountMutation.mutate();
   };
+
+  // Step 1 & 2: Handle Stripe connect button click - creates account and redirects to onboarding
+  const handleConnectStripe = async () => {
+    try {
+      const result = await createStripeConnection.mutateAsync();
+      if (result.data?.redirect) {
+        window.location.href = result.data.redirect;
+      }
+    } catch (error) {
+      console.error('Failed to create Stripe connection:', error);
+    }
+  };
+
+  // Step 6: Handle Stripe manage button click - opens Stripe Express Dashboard
+  const handleManageStripe = async () => {
+    try {
+      const result = await getManageLink.mutateAsync();
+      if (result.data?.redirect) {
+        window.open(result.data.redirect, '_blank');
+      }
+    } catch (error) {
+      console.error('Failed to get Stripe manage link:', error);
+    }
+  };
+
+  // Handle Stripe re-authenticate button click (for incomplete onboarding)
+  // First try to use onboardingLink from status, otherwise call authenticate endpoint
+  const handleReauthenticateStripe = async () => {
+    try {
+      // Check if status already has an onboardingLink
+      if (stripeStatus?.data?.onboardingLink) {
+        window.location.href = stripeStatus.data.onboardingLink;
+        return;
+      }
+
+      // Fallback to authenticate endpoint if no link in status
+      const result = await getAuthLink.mutateAsync();
+      if (result.data?.redirect) {
+        window.location.href = result.data.redirect;
+      }
+    } catch (error) {
+      console.error('Failed to get Stripe auth link:', error);
+    }
+  };
+
+  // Determine Stripe connection state based on status endpoint
+  // Status endpoint returns: status, chargesEnabled, payoutsEnabled, isReadyForPayments, isReadyForPayouts, etc.
+  const hasStripeAccount = stripeStatus?.data?.status !== 'not_created';
+  const isStripeActive =
+    hasStripeAccount &&
+    stripeStatus?.data?.isReadyForPayments &&
+    stripeStatus?.data?.isReadyForPayouts;
 
   return (
     <motion.div
@@ -137,6 +207,113 @@ const SettingsTab = ({
               label='Booking Reminders'
             />
           </div>
+        </div>
+
+        {/* Bank Account / Stripe Connection */}
+        <div className='bg-white/5 border border-white/10 p-6'>
+          <h4 className='text-xl font-semibold text-white mb-4 font-mondwest'>
+            Bank Account
+          </h4>
+          <p className='text-white/60 text-sm mb-4'>
+            Connect your bank account via Stripe to receive payouts from
+            bookings.
+          </p>
+
+          {isStripeLoading ? (
+            <div className='flex items-center gap-2 text-white/60'>
+              <Loader2 className='w-4 h-4 animate-spin' />
+              <span className='text-sm'>Checking connection status...</span>
+            </div>
+          ) : isStripeActive ? (
+            // Connected and active
+            <div className='space-y-4'>
+              <div className='flex items-center gap-2 text-green-400'>
+                <CheckCircle className='w-5 h-5' />
+                <span className='font-semibold'>Bank Account Connected</span>
+              </div>
+              <p className='text-white/60 text-xs'>
+                Your Stripe account is set up and ready to receive payouts.
+              </p>
+              <button
+                onClick={handleManageStripe}
+                disabled={getManageLink.isPending}
+                className='w-full flex items-center justify-center gap-2 p-3 bg-white/10 hover:bg-white/20 transition-colors border border-white/20 disabled:opacity-50'
+              >
+                {getManageLink.isPending ? (
+                  <Loader2 className='w-4 h-4 animate-spin' />
+                ) : (
+                  <ExternalLink className='w-4 h-4' />
+                )}
+                <span className='text-white text-sm font-semibold'>
+                  Manage Stripe Account
+                </span>
+              </button>
+            </div>
+          ) : hasStripeAccount && !isStripeActive ? (
+            // Connection exists but onboarding incomplete or payouts not enabled
+            <div className='space-y-4'>
+              <div className='flex items-center gap-2 text-yellow-400'>
+                <AlertCircle className='w-5 h-5' />
+                <span className='font-semibold'>Setup Incomplete</span>
+              </div>
+              <p className='text-white/60 text-xs'>
+                Your Stripe account setup is incomplete. Please complete the
+                onboarding process to receive payouts.
+              </p>
+              <button
+                onClick={handleReauthenticateStripe}
+                disabled={getAuthLink.isPending}
+                className='w-full flex items-center justify-center gap-2 p-3 bg-yellow-500 hover:bg-yellow-600 transition-colors disabled:opacity-50'
+              >
+                {getAuthLink.isPending ? (
+                  <Loader2 className='w-4 h-4 animate-spin' />
+                ) : (
+                  <ExternalLink className='w-4 h-4' />
+                )}
+                <span className='text-black text-sm font-semibold'>
+                  Complete Setup
+                </span>
+              </button>
+              {stripeStatus?.data?.onboardingLink && (
+                <p className='text-white/40 text-xs text-center'>
+                  Click to continue Stripe onboarding
+                </p>
+              )}
+            </div>
+          ) : (
+            // No connection - show connect button
+            <div className='space-y-4'>
+              <div className='flex items-center gap-2 text-white/60'>
+                <AlertCircle className='w-5 h-5' />
+                <span className='text-sm'>No bank account connected</span>
+              </div>
+              <button
+                onClick={handleConnectStripe}
+                disabled={createStripeConnection.isPending}
+                className='w-full flex items-center justify-center gap-2 p-3 bg-orange-500 hover:bg-orange-600 transition-colors disabled:opacity-50'
+              >
+                {createStripeConnection.isPending ? (
+                  <Loader2 className='w-4 h-4 animate-spin' />
+                ) : (
+                  <svg
+                    className='w-5 h-5'
+                    viewBox='0 0 24 24'
+                    fill='currentColor'
+                  >
+                    <path d='M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z' />
+                  </svg>
+                )}
+                <span className='text-black text-sm font-semibold'>
+                  {createStripeConnection.isPending
+                    ? 'Connecting...'
+                    : 'Connect Bank Account'}
+                </span>
+              </button>
+              <p className='text-white/40 text-xs text-center'>
+                Powered by Stripe - Secure payment processing
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Account Management */}
