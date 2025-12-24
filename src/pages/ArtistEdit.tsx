@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '@/stores/store';
+import { useArtistEditStore } from '@/stores/artistEditStore';
 import { useUpdateArtistProfile } from '@/hooks/artist/useUpdateArtistProfile';
 import { useGetArtistProfile } from '@/hooks/artist/useGetArtistProfile';
 import {
@@ -14,6 +15,10 @@ import {
   useUpdateRider,
   useDeleteRider,
 } from '@/hooks/artist/useRider';
+import {
+  useAddGalleryPhotos,
+  useDeleteGalleryPhoto,
+} from '@/hooks/artist/useGalleryOperations';
 import Navbar from '@/components/landing/Navbar';
 import ProfileTab from '@/components/artistEdit/ProfileTab';
 import MusicTab from '@/components/artistEdit/MusicTab';
@@ -35,9 +40,11 @@ enum ArtistEditTab {
 const ArtistEdit = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useStore();
+  const { draft, hasDraft, saveDraft, clearDraft } = useArtistEditStore();
   const [activeTab, setActiveTab] = useState<ArtistEditTab>(
     ArtistEditTab.PROFILE
   );
+  const [showDraftNotification, setShowDraftNotification] = useState(false);
 
   // Redirect if not authenticated or not an artist
   useEffect(() => {
@@ -192,6 +199,10 @@ const ArtistEdit = () => {
     },
   });
 
+  // Gallery mutations
+  const addGalleryPhotosMutation = useAddGalleryPhotos();
+  const deleteGalleryPhotoMutation = useDeleteGalleryPhoto();
+
   // Message states
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -229,10 +240,27 @@ const ArtistEdit = () => {
         playlists: (artist as any).playlists || [],
       };
 
-      setFormData(initialData);
+      // Check if there's a draft saved
+      if (hasDraft && draft) {
+        setFormData({
+          ...draft,
+          rider: (artist as any).rider || [],
+          playlists: (artist as any).playlists || [],
+        });
+        setShowDraftNotification(true);
+      } else {
+        setFormData(initialData);
+      }
       setOriginalData(initialData);
     }
-  }, [artist?.id, artist?.username, artist?.displayName, artist]); // Include artist to satisfy ESLint
+  }, [
+    artist?.id,
+    artist?.username,
+    artist?.displayName,
+    artist,
+    hasDraft,
+    draft,
+  ]); // Include artist to satisfy ESLint
 
   const handleInputChange = (
     field: string,
@@ -373,6 +401,14 @@ const ArtistEdit = () => {
     }
   };
 
+  // Helper function to check if photos changed
+  const hasPhotosChanged = () => {
+    return (
+      JSON.stringify(formData.photos.sort()) !==
+      JSON.stringify(originalData.photos.sort())
+    );
+  };
+
   // Function to get only changed fields (excluding gallery photos)
   const getChangedFields = () => {
     const changes: any = {};
@@ -428,8 +464,7 @@ const ArtistEdit = () => {
       changes.embeds = formData.embeds;
     }
 
-    // Note: photos are now handled separately via gallery API
-    // We don't include photos in profile updates anymore
+    // Note: Photos are handled separately via gallery API, not included in profile updates
 
     return changes;
   };
@@ -440,31 +475,81 @@ const ArtistEdit = () => {
     setErrorMessage('');
 
     try {
-      // Get only changed fields
+      // Get only changed fields (excluding photos)
       const changedFields = getChangedFields();
+      const photosChanged = hasPhotosChanged();
 
       // Check if there are any changes
-      if (Object.keys(changedFields).length === 0) {
+      if (Object.keys(changedFields).length === 0 && !photosChanged) {
         setSuccessMessage('No changes detected. Profile is up to date.');
         return;
       }
 
-      // Call the API with only changed fields
-      const result = await updateProfileMutation.mutateAsync(changedFields);
+      // Call the profile update API if there are profile changes
+      if (Object.keys(changedFields).length > 0) {
+        const result = await updateProfileMutation.mutateAsync(changedFields);
 
-      if (result.success) {
-        setSuccessMessage('Profile updated successfully!');
-        // Update original data to reflect the changes
-        setOriginalData(formData);
-        // Navigate back to dashboard after a short delay
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 2000);
-      } else {
-        setErrorMessage(
-          result.message || 'Failed to update profile. Please try again.'
-        );
+        if (!result.success) {
+          setErrorMessage(
+            result.message || 'Failed to update profile. Please try again.'
+          );
+          return;
+        }
       }
+
+      // Handle gallery changes separately using gallery API
+      if (photosChanged) {
+        try {
+          const addedPhotos = formData.photos.filter(
+            photo => !originalData.photos.includes(photo)
+          );
+          const removedPhotos = originalData.photos.filter(
+            photo => !formData.photos.includes(photo)
+          );
+
+          // Add new photos via gallery API
+          if (addedPhotos.length > 0) {
+            const addResult = await addGalleryPhotosMutation.mutateAsync({
+              photoUrls: addedPhotos,
+            });
+            if (!addResult.success) {
+              throw new Error(addResult.message || 'Failed to add photos');
+            }
+          }
+
+          // Remove deleted photos via gallery API
+          for (const removedPhoto of removedPhotos) {
+            const indexInOriginal = originalData.photos.indexOf(removedPhoto);
+            if (indexInOriginal !== -1) {
+              const deleteResult =
+                await deleteGalleryPhotoMutation.mutateAsync(indexInOriginal);
+              if (!deleteResult.success) {
+                throw new Error(
+                  deleteResult.message || 'Failed to remove photo'
+                );
+              }
+            }
+          }
+        } catch (galleryError: any) {
+          console.error('Error updating gallery:', galleryError);
+          setErrorMessage(
+            galleryError.message ||
+              'Failed to update gallery. Please try again.'
+          );
+          return;
+        }
+      }
+
+      // Success - clear draft and update state
+      setSuccessMessage('Profile updated successfully!');
+      clearDraft();
+      setShowDraftNotification(false);
+      setOriginalData(formData);
+
+      // Navigate back to dashboard after a short delay
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 2000);
     } catch (error: any) {
       console.error('Error updating profile:', error);
       setErrorMessage(
@@ -472,6 +557,62 @@ const ArtistEdit = () => {
           'An error occurred while updating your profile. Please try again.'
       );
     }
+  };
+
+  const handleSaveAsDraft = () => {
+    saveDraft({
+      bio: formData.bio,
+      displayName: formData.displayName,
+      username: formData.username,
+      avatar: formData.avatar,
+      phone: formData.phone,
+      location: formData.location,
+      socials: formData.socials,
+      genres: formData.genres,
+      price: formData.price,
+      embeds: formData.embeds,
+      photos: formData.photos,
+    });
+    setSuccessMessage('Draft saved successfully!');
+    setShowDraftNotification(true);
+    setTimeout(() => setSuccessMessage(''), 3000);
+  };
+
+  const handleDiscardDraft = () => {
+    clearDraft();
+    setShowDraftNotification(false);
+    // Reload original data
+    if (artist && artist.id) {
+      const initialData = {
+        bio: artist.bio || '',
+        displayName: artist.displayName || '',
+        username: artist.username || '',
+        avatar: artist.avatar || '',
+        phone: artist.phone || '',
+        location: artist.location || '',
+        socials: artist.socials || {
+          twitter: '',
+          instagram: '',
+          spotify: '',
+          soundcloud: '',
+          youtube: '',
+        },
+        genres: (artist as any).genres || [],
+        price: (artist as any).basePrice || 0,
+        embeds: {
+          youtube: (artist as any).embeds?.youtube || [],
+          soundcloud: (artist as any).embeds?.soundcloud || [],
+          spotify: (artist as any).embeds?.spotify || [],
+          custom: (artist as any).embeds?.custom || [],
+        },
+        photos: (artist as any).photos || [],
+        rider: (artist as any).rider || [],
+        playlists: (artist as any).playlists || [],
+      };
+      setFormData(initialData);
+    }
+    setSuccessMessage('Draft discarded successfully!');
+    setTimeout(() => setSuccessMessage(''), 3000);
   };
 
   const handleCancel = () => {
@@ -573,6 +714,12 @@ const ArtistEdit = () => {
               CANCEL
             </button>
             <button
+              onClick={handleSaveAsDraft}
+              className='bg-blue-500/20 border border-blue-500/50 text-blue-400 px-4 py-2 font-semibold hover:bg-blue-500/30 transition-colors'
+            >
+              SAVE AS DRAFT
+            </button>
+            <button
               onClick={handleSave}
               disabled={updateProfileMutation.isPending}
               className='bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
@@ -581,6 +728,29 @@ const ArtistEdit = () => {
             </button>
           </div>
         </div>
+
+        {/* Draft Notification */}
+        {showDraftNotification && hasDraft && draft?.lastSaved && (
+          <div className='bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-6'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-3'>
+                <div className='text-blue-400 text-xl'>💾</div>
+                <div>
+                  <p className='text-blue-400 font-semibold'>Draft loaded</p>
+                  <p className='text-blue-300 text-xs'>
+                    Last saved: {new Date(draft.lastSaved).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleDiscardDraft}
+                className='text-blue-400 hover:text-blue-300 text-sm underline'
+              >
+                Discard Draft
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Success/Error Messages */}
         {successMessage && (

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useImageUpload } from '@/hooks/useImageUpload';
 
 // Playlist CRUD operations component
 
@@ -85,6 +86,8 @@ const PlaylistTab = ({
   isUpdating,
   isDeleting,
 }: PlaylistTabProps) => {
+  const { uploading, uploadedUrl, error, handleFileUpload, reset } =
+    useImageUpload();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newPlaylistTitle, setNewPlaylistTitle] = useState('');
   const [newPlaylistDescription, setNewPlaylistDescription] = useState('');
@@ -176,7 +179,7 @@ const PlaylistTab = ({
     const playlistData = {
       title: newPlaylistTitle.trim(),
       description: newPlaylistDescription.trim(),
-      thumbnailUrl: newPlaylistThumbnail.trim(),
+      thumbnailUrl: (uploadedUrl || newPlaylistThumbnail).trim(),
       embeds,
     };
 
@@ -189,6 +192,7 @@ const PlaylistTab = ({
       setNewPlaylistThumbnail('');
       setSelectedSongs([]);
       setShowCreateModal(false);
+      reset();
     } catch (error) {
       console.error('Error creating playlist:', error);
     }
@@ -264,7 +268,7 @@ const PlaylistTab = ({
     const playlistData = {
       title: newPlaylistTitle.trim(),
       description: newPlaylistDescription.trim(),
-      thumbnailUrl: newPlaylistThumbnail.trim(),
+      thumbnailUrl: (uploadedUrl || newPlaylistThumbnail).trim(),
       embeds,
     };
 
@@ -278,6 +282,7 @@ const PlaylistTab = ({
       setSelectedSongs([]);
       setEditingPlaylist(null);
       setShowCreateModal(false);
+      reset();
     } catch (error) {
       console.error('Error updating playlist:', error);
     }
@@ -326,6 +331,7 @@ const PlaylistTab = ({
     setNewPlaylistThumbnail('');
     setSelectedSongs([]);
     setActivePlatformTab('youtube');
+    reset();
   };
 
   return (
@@ -588,27 +594,88 @@ const PlaylistTab = ({
               {/* Playlist Thumbnail */}
               <div>
                 <label className='block text-white/70 text-sm mb-2'>
-                  Thumbnail URL
+                  Thumbnail
                 </label>
-                <input
-                  type='url'
-                  value={newPlaylistThumbnail}
-                  onChange={e => setNewPlaylistThumbnail(e.target.value)}
-                  className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
-                  placeholder='https://example.com/thumbnail.jpg'
-                />
-                {newPlaylistThumbnail && (
-                  <div className='mt-2'>
-                    <img
-                      src={newPlaylistThumbnail}
-                      alt='Thumbnail preview'
-                      className='w-20 h-20 object-cover rounded border border-white/20'
-                      onError={e => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
+                <div className='flex items-start gap-3'>
+                  {/* Preview */}
+                  <div className='relative flex-shrink-0'>
+                    {uploadedUrl || newPlaylistThumbnail ? (
+                      <>
+                        <div className='w-16 h-16 rounded border border-white/20 overflow-hidden'>
+                          <img
+                            src={uploadedUrl || newPlaylistThumbnail}
+                            alt='Thumbnail'
+                            className='w-full h-full object-cover'
+                            onError={e => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        </div>
+                        <button
+                          type='button'
+                          onClick={() => {
+                            reset();
+                            setNewPlaylistThumbnail('');
+                          }}
+                          className='absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-red-600 transition-colors'
+                          title='Remove'
+                        >
+                          ×
+                        </button>
+                      </>
+                    ) : (
+                      <div className='w-16 h-16 rounded border border-dashed border-white/20 flex items-center justify-center bg-white/5'>
+                        <svg
+                          className='w-6 h-6 text-white/30'
+                          fill='none'
+                          stroke='currentColor'
+                          viewBox='0 0 24 24'
+                        >
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth={1.5}
+                            d='M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z'
+                          />
+                        </svg>
+                      </div>
+                    )}
                   </div>
-                )}
+
+                  {/* Upload */}
+                  <div className='flex-1 flex flex-col justify-center'>
+                    <input
+                      type='file'
+                      id='thumbnail-upload'
+                      accept='image/*'
+                      onChange={async e => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+
+                        const result = await handleFileUpload(file, 'artist');
+                        if (result.success && result.url) {
+                          setNewPlaylistThumbnail(result.url);
+                        }
+                      }}
+                      disabled={uploading}
+                      className='hidden'
+                    />
+                    <label
+                      htmlFor='thumbnail-upload'
+                      className={`inline-flex items-center justify-center bg-white/10 border border-white/20 hover:bg-white/[0.15] px-3 py-1.5 text-xs text-white cursor-pointer transition-colors rounded ${
+                        uploading ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      {uploading ? 'Uploading...' : 'Upload Image'}
+                    </label>
+                    <p className='text-white/40 text-xs mt-1.5'>
+                      Square image recommended
+                    </p>
+                    {error && (
+                      <p className='text-red-400 text-xs mt-1'>{error}</p>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* Platform Tabs */}

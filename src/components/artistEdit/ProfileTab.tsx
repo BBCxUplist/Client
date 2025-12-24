@@ -46,39 +46,41 @@ const ProfileTab = ({
         </h3>
 
         <div className='space-y-4'>
-          <div>
-            <label className='block text-white/70 text-sm mb-2'>
-              Username *
-            </label>
-            <input
-              type='text'
-              value={formData.username}
-              onChange={e => {
-                const value = e.target.value
-                  .toLowerCase()
-                  .replace(/[^a-z0-9._]/g, '');
-                handleInputChange('username', value);
-              }}
-              className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
-              placeholder='Enter username (e.g., artistname)'
-            />
-            <p className='text-white/50 text-xs mt-1'>
-              Username must be lowercase, no spaces, only letters, numbers, dots
-              (.) and underscores (_)
-            </p>
-          </div>
+          <div className='grid gap-4 grid-cols-1 md:grid-cols-2'>
+            <div className='flex-1'>
+              <label className='block text-white/70 text-sm mb-2'>
+                Username *
+              </label>
+              <input
+                type='text'
+                value={formData.username}
+                onChange={e => {
+                  const value = e.target.value
+                    .toLowerCase()
+                    .replace(/[^a-z0-9._]/g, '');
+                  handleInputChange('username', value);
+                }}
+                className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
+                placeholder='Enter username (e.g., artistname)'
+              />
+              <p className='text-white/50 text-xs mt-1'>
+                Username must be lowercase, no spaces, only letters, numbers,
+                dots (.) and underscores (_)
+              </p>
+            </div>
 
-          <div>
-            <label className='block text-white/70 text-sm mb-2'>
-              Display Name
-            </label>
-            <input
-              type='text'
-              value={formData.displayName}
-              onChange={e => handleInputChange('displayName', e.target.value)}
-              className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
-              placeholder='Enter display name'
-            />
+            <div className='flex-1'>
+              <label className='block text-white/70 text-sm mb-2'>
+                Display Name
+              </label>
+              <input
+                type='text'
+                value={formData.displayName}
+                onChange={e => handleInputChange('displayName', e.target.value)}
+                className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
+                placeholder='Enter display name'
+              />
+            </div>
           </div>
 
           <div>
@@ -143,7 +145,7 @@ const ProfileTab = ({
               </div>
 
               {/* Upload Section */}
-              <div className='flex-1 space-y-3'>
+              <div className='w-full'>
                 <div className='relative'>
                   <input
                     type='file'
@@ -163,7 +165,7 @@ const ProfileTab = ({
                   />
                   <label
                     htmlFor='profile-upload'
-                    className={`block w-full bg-white/10 border-2 border-dashed border-white/30 hover:border-orange-500/50 p-8 text-center cursor-pointer transition-all hover:bg-white/[0.12] group ${
+                    className={`block w-full bg-white/10 border-2 border-dashed border-white/30 hover:border-orange-500/50 p-2 text-center cursor-pointer transition-all hover:bg-white/[0.12] group ${
                       uploading ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >
@@ -245,44 +247,48 @@ const ProfileTab = ({
             </div>
           </div>
 
-          <div>
-            <label className='block text-white/70 text-sm mb-2'>
-              Phone Number
-            </label>
-            <input
-              type='tel'
-              value={formData.phone}
-              onChange={e => handleInputChange('phone', e.target.value)}
-              className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
-              placeholder='+1234567890'
-            />
-          </div>
+          <div className='grid gap-4 grid-cols-1 md:grid-cols-2'>
+            <div>
+              <label className='block text-white/70 text-sm mb-2'>
+                Phone Number
+              </label>
+              <input
+                type='tel'
+                value={formData.phone}
+                onChange={e => handleInputChange('phone', e.target.value)}
+                className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
+                placeholder='+1234567890'
+              />
+            </div>
 
-          <div>
-            <label className='block text-white/70 text-sm mb-2'>Location</label>
-            <input
-              type='text'
-              value={formData.location}
-              onChange={e => handleInputChange('location', e.target.value)}
-              className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
-              placeholder='City, Country'
-            />
-          </div>
+            <div>
+              <label className='block text-white/70 text-sm mb-2'>
+                Location
+              </label>
+              <input
+                type='text'
+                value={formData.location}
+                onChange={e => handleInputChange('location', e.target.value)}
+                className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
+                placeholder='City, Country'
+              />
+            </div>
 
-          <div>
-            <label className='block text-white/70 text-sm mb-2'>
-              Booking Price (£)
-            </label>
-            <input
-              type='text'
-              value={formData.price || ''}
-              onChange={e => {
-                const value = e.target.value.replace(/[^0-9]/g, '');
-                handleInputChange('price', parseInt(value) || 0);
-              }}
-              className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
-              placeholder='Enter booking price'
-            />
+            <div>
+              <label className='block text-white/70 text-sm mb-2'>
+                Booking Price (£)
+              </label>
+              <input
+                type='text'
+                value={formData.price || ''}
+                onChange={e => {
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  handleInputChange('price', parseInt(value) || 0);
+                }}
+                className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
+                placeholder='Enter booking price'
+              />
+            </div>
           </div>
         </div>
       </div>

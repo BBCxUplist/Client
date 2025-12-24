@@ -151,7 +151,7 @@ const AddMusicSection = ({
                 <SelectItem
                   key={platform.value}
                   value={platform.value}
-                  className='text-white hover:bg-white/10 focus:bg-white/10'
+                  className='text-white '
                 >
                   <div className='flex items-center gap-2'>
                     {platform.icon && (

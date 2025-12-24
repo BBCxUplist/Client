@@ -99,6 +99,39 @@ const RiderTab = ({
 
   return (
     <div className='space-y-8'>
+      {/* Info Section */}
+      <div className='bg-white/10 border border-white/30 rounded-lg p-4'>
+        <div className='flex items-start gap-3'>
+          <div className='flex-shrink-0 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center'>
+            <svg
+              className='w-4 h-4 text-white'
+              fill='none'
+              stroke='currentColor'
+              viewBox='0 0 24 24'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+              />
+            </svg>
+          </div>
+          <div className='flex-1'>
+            <h4 className='text-white font-semibold mb-1'>
+              About Equipment Rider
+            </h4>
+            <p className='text-white/70 text-sm leading-relaxed'>
+              List the equipment and technical requirements for your
+              performances. Mark items as <strong>"Included"</strong> if you'll
+              bring them yourself, or <strong>"To be provided"</strong> if you
+              need the venue/booker to supply them. This helps bookers
+              understand your technical needs upfront.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Add New Item Section */}
       <div className='bg-white/5 border border-white/10 p-6 hover:bg-white/[0.07] transition-colors'>
         <h3 className='text-xl font-semibold text-white mb-6 font-mondwest'>
