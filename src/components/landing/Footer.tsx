@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 const Footer = () => {
   return (
     <div className='w-full border-t border-dashed border-white'>
@@ -33,8 +35,20 @@ const Footer = () => {
 
             <div className='flex items-center gap-2'>
               <p className='text-white/70 text-xs md:text-sm'>© UPLIST 2025</p>
-              |<p className='text-white/70 text-xs md:text-sm'>TERMS</p>|
-              <p className='text-white/70 text-xs md:text-sm'>PRIVACY</p>
+              |
+              <Link
+                to='/terms'
+                className='text-white/70 hover:text-white text-xs md:text-sm'
+              >
+                TERMS
+              </Link>
+              |
+              <Link
+                to='/privacy'
+                className='text-white/70 hover:text-white text-xs md:text-sm'
+              >
+                PRIVACY
+              </Link>
             </div>
           </div>
         </div>
