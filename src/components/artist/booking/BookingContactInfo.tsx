@@ -1,6 +1,6 @@
 // components/artist/booking/BookingContactInfo.tsx
 import { useEffect } from 'react';
-import type { Control } from 'react-hook-form';
+import type { Control, UseFormSetValue } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { useStore } from '@/stores/store';
 import {
@@ -26,7 +26,7 @@ interface BookingFormData {
 
 interface BookingContactInfoProps {
   control: Control<BookingFormData>;
-  setValue: (name: keyof BookingFormData, value: any) => void;
+  setValue: UseFormSetValue<BookingFormData>;
 }
 
 const BookingContactInfo = ({ control, setValue }: BookingContactInfoProps) => {
@@ -36,15 +36,15 @@ const BookingContactInfo = ({ control, setValue }: BookingContactInfoProps) => {
     if (user) {
       const contactName = user.displayName || user.name || '';
       if (contactName) {
-        setValue('contactName', contactName);
+        setValue('contactName', contactName, { shouldValidate: false });
       }
 
       if (user.email) {
-        setValue('contactEmail', user.email);
+        setValue('contactEmail', user.email, { shouldValidate: false });
       }
 
       if (user.phone) {
-        setValue('contactPhone', user.phone);
+        setValue('contactPhone', user.phone, { shouldValidate: false });
       }
     }
   }, [user, setValue]);
@@ -114,8 +114,8 @@ const BookingContactInfo = ({ control, setValue }: BookingContactInfoProps) => {
         rules={{
           required: 'Phone number is required',
           pattern: {
-            value: /^[0-9]{10,15}$/,
-            message: 'Phone number must be between 10-15 digits',
+            value: /^[0-9]{10,12}$/,
+            message: 'Phone number must be between 10-12 digits',
           },
         }}
         render={({ field }) => (
@@ -131,6 +131,7 @@ const BookingContactInfo = ({ control, setValue }: BookingContactInfoProps) => {
                 {...field}
               />
             </FormControl>
+            <p className='text-white/50 text-xs mt-1'>10-12 digits</p>
             <FormMessage className='text-red-400 text-xs mt-1' />
           </FormItem>
         )}

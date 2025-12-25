@@ -60,28 +60,12 @@ const BookingTab = forwardRef<BookingTabRef, BookingTabProps>(
         contactEmail: bookingData?.contactEmail || '',
         contactPhone: bookingData?.contactPhone || '',
       },
-      mode: 'onChange',
+      mode: 'onTouched',
     });
 
-    const {
-      handleSubmit,
-      control,
-      formState,
-      reset,
-      watch,
-      setValue,
-      trigger,
-    } = form;
+    const { handleSubmit, control, formState, reset, watch, setValue } = form;
     const { isValid } = formState;
     const watchedValues = watch();
-
-    // Trigger validation on mount if form has pre-populated data from store
-    useEffect(() => {
-      if (bookingData) {
-        trigger();
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     useEffect(() => {
       setBookingData({
