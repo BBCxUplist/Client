@@ -40,11 +40,11 @@ export const adminNavItems = [
     label: 'Reports',
     icon: '/icons/report.png',
   },
-  {
-    id: AdminTab.RECENT_ACTIVITY,
-    label: 'Recent Activity',
-    icon: '/icons/overview.png',
-  },
+  // {
+  //   id: AdminTab.RECENT_ACTIVITY,
+  //   label: 'Recent Activity',
+  //   icon: '/icons/overview.png',
+  // },
   {
     id: AdminTab.SETTINGS,
     label: 'Settings',
@@ -83,11 +83,11 @@ export const mobileAdminNavItems = [
     label: 'Reports',
     icon: '/icons/tick.svg',
   },
-  {
-    id: AdminTab.RECENT_ACTIVITY,
-    label: 'Recent Activity',
-    icon: '/icons/overview.png',
-  },
+  // {
+  //   id: AdminTab.RECENT_ACTIVITY,
+  //   label: 'Recent Activity',
+  //   icon: '/icons/overview.png',
+  // },
   {
     id: AdminTab.SETTINGS,
     label: 'Settings',
@@ -102,6 +102,6 @@ export const adminTabDisplayMap = [
   { id: AdminTab.APPROVED, label: 'Approved' },
   { id: AdminTab.USERS, label: 'Users' },
   { id: AdminTab.REPORTS, label: 'Reports' },
-  { id: AdminTab.RECENT_ACTIVITY, label: 'Recent Activity' },
+  // { id: AdminTab.RECENT_ACTIVITY, label: 'Recent Activity' },
   { id: AdminTab.SETTINGS, label: 'Settings' },
 ];

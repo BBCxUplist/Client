@@ -33,6 +33,15 @@ interface CreateArtistData {
 }
 
 const CreateArtistTab = ({ onCreateArtist }: CreateArtistTabProps) => {
+  // Social media URL bases
+  const socialUrlBases = {
+    twitter: 'https://twitter.com/',
+    instagram: 'https://instagram.com/',
+    spotify: 'https://open.spotify.com/artist/',
+    soundcloud: 'https://soundcloud.com/',
+    youtube: 'https://youtube.com/@',
+  };
+
   const [formData, setFormData] = useState<CreateArtistData>({
     email: '',
     displayName: '',
@@ -96,7 +105,29 @@ const CreateArtistTab = ({ onCreateArtist }: CreateArtistTabProps) => {
     setIsSubmitting(true);
 
     try {
-      await onCreateArtist(formData);
+      // Construct full URLs from usernames
+      const socialsWithUrls = {
+        twitter: formData.socials.twitter
+          ? `${socialUrlBases.twitter}${formData.socials.twitter}`
+          : '',
+        instagram: formData.socials.instagram
+          ? `${socialUrlBases.instagram}${formData.socials.instagram}`
+          : '',
+        spotify: formData.socials.spotify
+          ? `${socialUrlBases.spotify}${formData.socials.spotify}`
+          : '',
+        soundcloud: formData.socials.soundcloud
+          ? `${socialUrlBases.soundcloud}${formData.socials.soundcloud}`
+          : '',
+        youtube: formData.socials.youtube
+          ? `${socialUrlBases.youtube}${formData.socials.youtube}`
+          : '',
+      };
+
+      await onCreateArtist({
+        ...formData,
+        socials: socialsWithUrls,
+      });
       // Reset form
       setFormData({
         email: '',
@@ -419,69 +450,102 @@ const CreateArtistTab = ({ onCreateArtist }: CreateArtistTabProps) => {
             className='space-y-6'
           >
             <div className='bg-white/5 border border-white/10 p-6 rounded-lg'>
-              <h3 className='text-xl font-semibold text-white mb-6 font-mondwest'>
+              <h3 className='text-xl font-semibold text-white mb-2 font-mondwest'>
                 Social Links
               </h3>
+              <p className='text-white/50 text-sm mb-6'>
+                Enter only the username/handle - URLs will be generated
+                automatically
+              </p>
 
               <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                 <div>
                   <label className='block text-white/70 text-sm mb-2'>
                     Twitter
                   </label>
-                  <input
-                    type='url'
-                    value={formData.socials.twitter}
-                    onChange={e =>
-                      handleSocialChange('twitter', e.target.value)
-                    }
-                    className='w-full bg-white/5 border border-white/20 text-white p-3 rounded focus:border-orange-500 focus:outline-none'
-                    placeholder='https://twitter.com/username'
-                  />
+                  <div className='flex'>
+                    <span className='bg-white/10 border border-white/20 border-r-0 text-white/50 px-3 py-3 rounded-l text-sm'>
+                      twitter.com/
+                    </span>
+                    <input
+                      type='text'
+                      value={formData.socials.twitter}
+                      onChange={e =>
+                        handleSocialChange(
+                          'twitter',
+                          e.target.value.replace(/^@/, '')
+                        )
+                      }
+                      className='w-full bg-white/5 border border-white/20 text-white p-3 rounded-r focus:border-orange-500 focus:outline-none'
+                      placeholder='username'
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className='block text-white/70 text-sm mb-2'>
                     Instagram
                   </label>
-                  <input
-                    type='url'
-                    value={formData.socials.instagram}
-                    onChange={e =>
-                      handleSocialChange('instagram', e.target.value)
-                    }
-                    className='w-full bg-white/5 border border-white/20 text-white p-3 rounded focus:border-orange-500 focus:outline-none'
-                    placeholder='https://instagram.com/username'
-                  />
+                  <div className='flex'>
+                    <span className='bg-white/10 border border-white/20 border-r-0 text-white/50 px-3 py-3 rounded-l text-sm'>
+                      instagram.com/
+                    </span>
+                    <input
+                      type='text'
+                      value={formData.socials.instagram}
+                      onChange={e =>
+                        handleSocialChange(
+                          'instagram',
+                          e.target.value.replace(/^@/, '')
+                        )
+                      }
+                      className='w-full bg-white/5 border border-white/20 text-white p-3 rounded-r focus:border-orange-500 focus:outline-none'
+                      placeholder='username'
+                    />
+                  </div>
                 </div>
               </div>
 
               <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mt-6'>
                 <div>
                   <label className='block text-white/70 text-sm mb-2'>
-                    Spotify
+                    Spotify Artist ID
                   </label>
-                  <input
-                    type='url'
-                    value={formData.socials.spotify}
-                    onChange={e =>
-                      handleSocialChange('spotify', e.target.value)
-                    }
-                    className='w-full bg-white/5 border border-white/20 text-white p-3 rounded focus:border-orange-500 focus:outline-none'
-                    placeholder='https://open.spotify.com/artist/...'
-                  />
+                  <div className='flex'>
+                    <span className='bg-white/10 border border-white/20 border-r-0 text-white/50 px-3 py-3 rounded-l text-sm whitespace-nowrap'>
+                      open.spotify.com/artist/
+                    </span>
+                    <input
+                      type='text'
+                      value={formData.socials.spotify}
+                      onChange={e =>
+                        handleSocialChange('spotify', e.target.value)
+                      }
+                      className='w-full bg-white/5 border border-white/20 text-white p-3 rounded-r focus:border-orange-500 focus:outline-none'
+                      placeholder='artist_id'
+                    />
+                  </div>
+                  <p className='text-white/40 text-xs mt-1'>
+                    Find this in the Spotify artist URL
+                  </p>
                 </div>
                 <div>
                   <label className='block text-white/70 text-sm mb-2'>
                     SoundCloud
                   </label>
-                  <input
-                    type='url'
-                    value={formData.socials.soundcloud}
-                    onChange={e =>
-                      handleSocialChange('soundcloud', e.target.value)
-                    }
-                    className='w-full bg-white/5 border border-white/20 text-white p-3 rounded focus:border-orange-500 focus:outline-none'
-                    placeholder='https://soundcloud.com/username'
-                  />
+                  <div className='flex'>
+                    <span className='bg-white/10 border border-white/20 border-r-0 text-white/50 px-3 py-3 rounded-l text-sm'>
+                      soundcloud.com/
+                    </span>
+                    <input
+                      type='text'
+                      value={formData.socials.soundcloud}
+                      onChange={e =>
+                        handleSocialChange('soundcloud', e.target.value)
+                      }
+                      className='w-full bg-white/5 border border-white/20 text-white p-3 rounded-r focus:border-orange-500 focus:outline-none'
+                      placeholder='username'
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -489,13 +553,23 @@ const CreateArtistTab = ({ onCreateArtist }: CreateArtistTabProps) => {
                 <label className='block text-white/70 text-sm mb-2'>
                   YouTube
                 </label>
-                <input
-                  type='url'
-                  value={formData.socials.youtube}
-                  onChange={e => handleSocialChange('youtube', e.target.value)}
-                  className='w-full bg-white/5 border border-white/20 text-white p-3 rounded focus:border-orange-500 focus:outline-none'
-                  placeholder='https://youtube.com/@username'
-                />
+                <div className='flex'>
+                  <span className='bg-white/10 border border-white/20 border-r-0 text-white/50 px-3 py-3 rounded-l text-sm'>
+                    youtube.com/@
+                  </span>
+                  <input
+                    type='text'
+                    value={formData.socials.youtube}
+                    onChange={e =>
+                      handleSocialChange(
+                        'youtube',
+                        e.target.value.replace(/^@/, '')
+                      )
+                    }
+                    className='w-full bg-white/5 border border-white/20 text-white p-3 rounded-r focus:border-orange-500 focus:outline-none'
+                    placeholder='channel_handle'
+                  />
+                </div>
               </div>
             </div>
           </motion.div>

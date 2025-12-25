@@ -6,7 +6,7 @@ import CreateArtistTab from '@/components/admin/CreateArtistTab';
 import ApprovedTab from '@/components/admin/ApprovedTab';
 import UsersTab from '@/components/admin/UsersTab';
 import ReportsTab from '@/components/admin/ReportsTab';
-import RecentActivityTab from '@/components/admin/RecentActivityTab';
+// import RecentActivityTab from '@/components/admin/RecentActivityTab';
 import SettingsTab from '@/components/admin/SettingsTab';
 import { formatPrice } from '@/helper';
 import { useGetAllUsers, useHealthCheck } from '@/hooks/admin';
@@ -415,7 +415,7 @@ const AdminDashboard = () => {
           {activeTab === AdminTab.REPORTS && <ReportsTab dummyReports={[]} />}
 
           {/* Recent Activity Tab */}
-          {activeTab === AdminTab.RECENT_ACTIVITY && <RecentActivityTab />}
+          {/* {activeTab === AdminTab.RECENT_ACTIVITY && <RecentActivityTab />} */}
 
           {/* Settings Tab */}
           {activeTab === AdminTab.SETTINGS && <SettingsTab />}

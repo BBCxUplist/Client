@@ -367,14 +367,14 @@ const ProfileTab = ({
 
       {/* Social Media - Grid Layout */}
       <div className='bg-white/5 border border-white/10 p-6 hover:bg-white/[0.07] transition-colors'>
-        <h3 className='text-xl font-semibold text-white mb-6 font-mondwest'>
+        <h3 className='text-xl font-semibold text-white mb-2 font-mondwest'>
           Social Media
         </h3>
-        <p className='text-white/60 text-sm mb-6'>
-          Add only your usernames (without @ symbol or full URLs)
+        <p className='text-white/50 text-sm mb-6'>
+          Enter only the username/handle - URLs will be generated automatically
         </p>
 
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
           <div>
             <label className='flex items-center gap-2 text-white/70 text-sm mb-2'>
               <img
@@ -384,13 +384,23 @@ const ProfileTab = ({
               />
               Twitter
             </label>
-            <input
-              type='text'
-              value={formData.socials.twitter}
-              onChange={e => handleSocialChange?.('twitter', e.target.value)}
-              className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
-              placeholder='username'
-            />
+            <div className='flex'>
+              <span className='bg-white/10 border border-white/20 border-r-0 text-white/50 px-3 py-3 text-sm flex items-center'>
+                twitter.com/
+              </span>
+              <input
+                type='text'
+                value={formData.socials.twitter}
+                onChange={e =>
+                  handleSocialChange?.(
+                    'twitter',
+                    e.target.value.replace(/^@/, '')
+                  )
+                }
+                className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
+                placeholder='username'
+              />
+            </div>
           </div>
 
           <div>
@@ -402,13 +412,23 @@ const ProfileTab = ({
               />
               Instagram
             </label>
-            <input
-              type='text'
-              value={formData.socials.instagram}
-              onChange={e => handleSocialChange?.('instagram', e.target.value)}
-              className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
-              placeholder='username'
-            />
+            <div className='flex'>
+              <span className='bg-white/10 border border-white/20 border-r-0 text-white/50 px-3 py-3 text-sm flex items-center'>
+                instagram.com/
+              </span>
+              <input
+                type='text'
+                value={formData.socials.instagram}
+                onChange={e =>
+                  handleSocialChange?.(
+                    'instagram',
+                    e.target.value.replace(/^@/, '')
+                  )
+                }
+                className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
+                placeholder='username'
+              />
+            </div>
           </div>
 
           <div>
@@ -418,15 +438,23 @@ const ProfileTab = ({
                 alt='Spotify'
                 className='w-4 h-4'
               />
-              Spotify
+              Spotify Artist ID
             </label>
-            <input
-              type='text'
-              value={formData.socials.spotify}
-              onChange={e => handleSocialChange?.('spotify', e.target.value)}
-              className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
-              placeholder='username'
-            />
+            <div className='flex'>
+              <span className='bg-white/10 border border-white/20 border-r-0 text-white/50 px-3 py-3 text-sm flex items-center whitespace-nowrap'>
+                open.spotify.com/artist/
+              </span>
+              <input
+                type='text'
+                value={formData.socials.spotify}
+                onChange={e => handleSocialChange?.('spotify', e.target.value)}
+                className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
+                placeholder='artist_id'
+              />
+            </div>
+            <p className='text-white/40 text-xs mt-1'>
+              Find this in the Spotify artist URL
+            </p>
           </div>
 
           <div>
@@ -438,13 +466,20 @@ const ProfileTab = ({
               />
               SoundCloud
             </label>
-            <input
-              type='text'
-              value={formData.socials.soundcloud}
-              onChange={e => handleSocialChange?.('soundcloud', e.target.value)}
-              className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
-              placeholder='username'
-            />
+            <div className='flex'>
+              <span className='bg-white/10 border border-white/20 border-r-0 text-white/50 px-3 py-3 text-sm flex items-center'>
+                soundcloud.com/
+              </span>
+              <input
+                type='text'
+                value={formData.socials.soundcloud}
+                onChange={e =>
+                  handleSocialChange?.('soundcloud', e.target.value)
+                }
+                className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
+                placeholder='username'
+              />
+            </div>
           </div>
 
           <div className='md:col-span-2'>
@@ -456,13 +491,23 @@ const ProfileTab = ({
               />
               YouTube
             </label>
-            <input
-              type='text'
-              value={formData.socials.youtube}
-              onChange={e => handleSocialChange?.('youtube', e.target.value)}
-              className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
-              placeholder='username'
-            />
+            <div className='flex'>
+              <span className='bg-white/10 border border-white/20 border-r-0 text-white/50 px-3 py-3 text-sm flex items-center'>
+                youtube.com/@
+              </span>
+              <input
+                type='text'
+                value={formData.socials.youtube}
+                onChange={e =>
+                  handleSocialChange?.(
+                    'youtube',
+                    e.target.value.replace(/^@/, '')
+                  )
+                }
+                className='w-full bg-white/10 border border-white/20 text-white p-3 focus:outline-none focus:border-orange-500 transition-colors hover:bg-white/[0.12]'
+                placeholder='channel_handle'
+              />
+            </div>
           </div>
         </div>
       </div>

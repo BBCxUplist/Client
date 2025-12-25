@@ -31,7 +31,10 @@ const UsersTab = ({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
     null
   );
-  const [showPromoteModal, setShowPromoteModal] = useState<string | null>(null);
+  const [actionInProgress, setActionInProgress] = useState<{
+    type: 'ban' | 'delete' | 'promote' | null;
+    userId: string | null;
+  }>({ type: null, userId: null });
 
   // Admin action hooks
   const banUser = useBanUser();
@@ -39,17 +42,25 @@ const UsersTab = ({
   const promoteUser = usePromoteUser();
 
   const handleBan = (userId: string) => {
-    banUser.mutate(userId);
+    setActionInProgress({ type: 'ban', userId });
+    banUser.mutate(userId, {
+      onSettled: () => setActionInProgress({ type: null, userId: null }),
+    });
   };
 
   const handleUnban = (userId: string) => {
-    // Approving will remove the ban flag
-    banUser.mutate(userId);
+    setActionInProgress({ type: 'ban', userId });
+    banUser.mutate(userId, {
+      onSettled: () => setActionInProgress({ type: null, userId: null }),
+    });
   };
 
   const handleDelete = (userId: string) => {
     if (showDeleteConfirm === userId) {
-      deleteUser.mutate(userId);
+      setActionInProgress({ type: 'delete', userId });
+      deleteUser.mutate(userId, {
+        onSettled: () => setActionInProgress({ type: null, userId: null }),
+      });
       setShowDeleteConfirm(null);
     } else {
       setShowDeleteConfirm(userId);
@@ -59,24 +70,19 @@ const UsersTab = ({
   };
 
   const handlePromoteToArtist = (userId: string) => {
-    promoteUser.mutate({
-      userId,
-      data: {
-        role: 'artist',
-        artistType: 'none', // Default, can be changed later
+    setActionInProgress({ type: 'promote', userId });
+    promoteUser.mutate(
+      {
+        userId,
+        data: {
+          role: 'artist',
+          artistType: 'none', // Default, can be changed later
+        },
       },
-    });
-    setShowPromoteModal(null);
-  };
-
-  const handlePromoteToAdmin = (userId: string) => {
-    promoteUser.mutate({
-      userId,
-      data: {
-        role: 'admin',
-      },
-    });
-    setShowPromoteModal(null);
+      {
+        onSettled: () => setActionInProgress({ type: null, userId: null }),
+      }
+    );
   };
 
   const getStatusColor = (status: string) => {
@@ -184,7 +190,7 @@ const UsersTab = ({
       </div>
 
       {/* Users Count */}
-      <div className='flex items-center justify-between'>
+      {/* <div className='flex items-center justify-between'>
         <p className='text-white/70'>Showing {filteredUsers.length} users</p>
         <div className='flex gap-2'>
           <button className='bg-green-500/20 border border-green-500/40 text-green-400 px-3 py-1 rounded text-sm hover:bg-green-500/30 transition-colors'>
@@ -194,7 +200,7 @@ const UsersTab = ({
             Export Users
           </button>
         </div>
-      </div>
+      </div> */}
 
       {/* Users List */}
       <div className='space-y-4'>
@@ -255,59 +261,55 @@ const UsersTab = ({
                 {user.status === 'banned' ? (
                   <button
                     onClick={() => handleUnban(user.id)}
-                    disabled={banUser.isPending}
+                    disabled={
+                      actionInProgress.type === 'ban' &&
+                      actionInProgress.userId === user.id
+                    }
                     className='bg-green-500/20 border border-green-500/40 text-green-400 px-3 py-1 rounded hover:bg-green-500/30 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed'
                   >
-                    {banUser.isPending ? 'Unbanning...' : 'Unban'}
+                    {actionInProgress.type === 'ban' &&
+                    actionInProgress.userId === user.id
+                      ? 'Unbanning...'
+                      : 'Unban'}
                   </button>
                 ) : (
                   <button
                     onClick={() => handleBan(user.id)}
-                    disabled={banUser.isPending}
+                    disabled={
+                      actionInProgress.type === 'ban' &&
+                      actionInProgress.userId === user.id
+                    }
                     className='bg-red-500/20 border border-red-500/40 text-red-400 px-3 py-1 rounded hover:bg-red-500/30 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed'
                   >
-                    {banUser.isPending ? 'Banning...' : 'Ban'}
+                    {actionInProgress.type === 'ban' &&
+                    actionInProgress.userId === user.id
+                      ? 'Banning...'
+                      : 'Ban'}
                   </button>
                 )}
 
-                {/* Promote actions */}
-                {showPromoteModal === user.id ? (
-                  <div className='flex gap-1'>
-                    <button
-                      onClick={() => handlePromoteToArtist(user.id)}
-                      disabled={promoteUser.isPending}
-                      className='bg-blue-500/20 border border-blue-500/40 text-blue-400 px-2 py-1 rounded hover:bg-blue-500/30 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed'
-                    >
-                      To Artist
-                    </button>
-                    <button
-                      onClick={() => handlePromoteToAdmin(user.id)}
-                      disabled={promoteUser.isPending}
-                      className='bg-purple-500/20 border border-purple-500/40 text-purple-400 px-2 py-1 rounded hover:bg-purple-500/30 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed'
-                    >
-                      To Admin
-                    </button>
-                    <button
-                      onClick={() => setShowPromoteModal(null)}
-                      className='bg-white/10 border border-white/20 text-white px-2 py-1 rounded hover:bg-white/20 transition-colors text-xs'
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setShowPromoteModal(user.id)}
-                    className='bg-blue-500/20 border border-blue-500/40 text-blue-400 px-3 py-1 rounded hover:bg-blue-500/30 transition-colors text-sm'
-                    title='Promote user'
-                  >
-                    Promote
-                  </button>
-                )}
+                {/* Promote to Artist action */}
+                <button
+                  onClick={() => handlePromoteToArtist(user.id)}
+                  disabled={
+                    actionInProgress.type === 'promote' &&
+                    actionInProgress.userId === user.id
+                  }
+                  className='bg-blue-500/20 border border-blue-500/40 text-blue-400 px-3 py-1 rounded hover:bg-blue-500/30 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed'
+                >
+                  {actionInProgress.type === 'promote' &&
+                  actionInProgress.userId === user.id
+                    ? 'Promoting...'
+                    : 'Promote to Artist'}
+                </button>
 
                 {/* Delete action with confirmation */}
                 <button
                   onClick={() => handleDelete(user.id)}
-                  disabled={deleteUser.isPending}
+                  disabled={
+                    actionInProgress.type === 'delete' &&
+                    actionInProgress.userId === user.id
+                  }
                   className={`border px-3 py-1 rounded transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
                     showDeleteConfirm === user.id
                       ? 'bg-red-500/40 border-red-500/60 text-white'
@@ -319,7 +321,8 @@ const UsersTab = ({
                       : 'Delete user account'
                   }
                 >
-                  {deleteUser.isPending
+                  {actionInProgress.type === 'delete' &&
+                  actionInProgress.userId === user.id
                     ? 'Deleting...'
                     : showDeleteConfirm === user.id
                       ? 'Confirm Delete?'
