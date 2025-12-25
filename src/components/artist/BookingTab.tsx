@@ -63,12 +63,27 @@ const BookingTab = forwardRef<BookingTabRef, BookingTabProps>(
       mode: 'onChange',
     });
 
-    const { handleSubmit, control, formState, reset, watch, setValue } = form;
-    const { isValid, isDirty } = formState;
+    const {
+      handleSubmit,
+      control,
+      formState,
+      reset,
+      watch,
+      setValue,
+      trigger,
+    } = form;
+    const { isValid } = formState;
     const watchedValues = watch();
 
+    // Trigger validation on mount if form has pre-populated data from store
     useEffect(() => {
-      if (!isDirty) return;
+      if (bookingData) {
+        trigger();
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
       setBookingData({
         eventDate: watchedValues.eventDate?.toISOString(),
         eventType: watchedValues.eventType,
@@ -92,7 +107,6 @@ const BookingTab = forwardRef<BookingTabRef, BookingTabProps>(
       watchedValues.contactName,
       watchedValues.contactEmail,
       watchedValues.contactPhone,
-      isDirty,
       setBookingData,
     ]);
 
@@ -112,7 +126,7 @@ const BookingTab = forwardRef<BookingTabRef, BookingTabProps>(
             watchedValues.contactEmail &&
             watchedValues.contactPhone
         );
-        return isValid && isDirty && allRequiredFieldsFilled;
+        return isValid && allRequiredFieldsFilled;
       },
       submitForm: async () => {
         const allRequiredFieldsFilled = Boolean(
