@@ -24,7 +24,7 @@ const BookingTab = ({ formData, handleInputChange }: BookingTabProps) => {
         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
           <div>
             <label className='block text-white/70 text-sm mb-2'>
-              Base Price (₹)
+              Base Price (£)
             </label>
             <input
               type='number'
@@ -39,7 +39,7 @@ const BookingTab = ({ formData, handleInputChange }: BookingTabProps) => {
 
           <div>
             <label className='block text-white/70 text-sm mb-2'>
-              Price per Additional Hour (₹)
+              Price per Additional Hour (£)
             </label>
             <input
               type='number'
@@ -50,7 +50,7 @@ const BookingTab = ({ formData, handleInputChange }: BookingTabProps) => {
 
           <div>
             <label className='block text-white/70 text-sm mb-2'>
-              Travel Fee (₹)
+              Travel Fee (£)
             </label>
             <input
               type='number'
@@ -61,7 +61,7 @@ const BookingTab = ({ formData, handleInputChange }: BookingTabProps) => {
 
           <div>
             <label className='block text-white/70 text-sm mb-2'>
-              Equipment Fee (₹)
+              Equipment Fee (£)
             </label>
             <input
               type='number'

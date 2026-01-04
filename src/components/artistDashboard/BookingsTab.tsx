@@ -65,6 +65,13 @@ const BookingsTab = ({
       });
     }
 
+    // Sort by date - most recent first
+    bookings.sort((a: any, b: any) => {
+      const dateA = new Date(a.eventDate).getTime();
+      const dateB = new Date(b.eventDate).getTime();
+      return dateB - dateA;
+    });
+
     return bookings;
   }, [allBookings, statusFilter, timeFilter]);
 

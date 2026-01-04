@@ -186,12 +186,12 @@ const ArtistProfile = () => {
                   }}
                 />
                 {/* Availability Status */}
-                {artist?.isAvailable && (
+                {artist?.isApproved && (
                   <div className='absolute bottom-4 left-4 bg-orange-500 text-black px-3 py-2 text-sm font-semibold'>
                     AVAILABLE
                   </div>
                 )}
-                {!artist?.isAvailable && (
+                {!artist?.isApproved && (
                   <div className='absolute bottom-4 left-4 bg-gray-500 text-white px-3 py-2 text-sm font-semibold'>
                     NOT AVAILABLE
                   </div>

@@ -3,7 +3,7 @@ import { formatPrice } from '@/helper';
 
 interface BookingStatusProps {
   artist: {
-    isBookable: boolean;
+    isApproved: boolean;
     basePrice: number;
   };
 }
@@ -16,10 +16,10 @@ const BookingStatus = ({ artist }: BookingStatusProps) => {
           <p className='text-white/70 text-sm'>Booking Status</p>
           <p
             className={`text-lg font-semibold ${
-              artist.isBookable ? 'text-orange-500' : 'text-red-400'
+              artist.isApproved ? 'text-orange-500' : 'text-red-400'
             }`}
           >
-            {artist.isBookable ? 'AVAILABLE' : 'UNAVAILABLE'}
+            {artist.isApproved ? 'AVAILABLE' : 'UNAVAILABLE'}
           </p>
         </div>
         <div className='text-right'>

@@ -189,12 +189,12 @@ const BookingTab = forwardRef<BookingTabRef, BookingTabProps>(
         {/* Booking Status */}
         <BookingStatus
           artist={{
-            isBookable: artist.isBookable || false,
+            isApproved: artist.isApproved || false,
             basePrice: artist.basePrice || 0,
           }}
         />
 
-        {artist.isBookable && artist.isAvailable && artist.isApproved && (
+        {artist.isApproved && artist.isAvailable && artist.isApproved && (
           <Form {...form}>
             <form
               onSubmit={handleSubmit(onSubmit)}

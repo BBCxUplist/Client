@@ -171,7 +171,7 @@ const MusicTab = ({ artist }: MusicTabProps) => {
 
       {/* All Tracks as Embedded Players */}
       <div
-        className={`grid grid-cols-1 gap-4 ${selectedPlatform === 'playlist' ? 'md:grid-cols-1' : 'md:grid-cols-2'}`}
+        className={`${availablePlatforms.length > 0 ? 'grid' : ''} grid-cols-1 gap-4 ${selectedPlatform === 'playlist' ? 'md:grid-cols-1' : 'md:grid-cols-2'}`}
       >
         {selectedPlatform === 'playlist' ? (
           // Playlist Display

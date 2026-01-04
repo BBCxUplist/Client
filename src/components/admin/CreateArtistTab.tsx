@@ -362,7 +362,7 @@ const CreateArtistTab = ({ onCreateArtist }: CreateArtistTabProps) => {
               <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                 <div>
                   <label className='block text-white/70 text-sm mb-2'>
-                    Base Price (₹)
+                    Base Price (£)
                   </label>
                   <input
                     type='number'
