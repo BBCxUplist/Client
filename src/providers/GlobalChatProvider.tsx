@@ -3,8 +3,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useStore } from '@/stores/store';
 import { useChatStore } from '@/stores/chatStore';
 import { useChatWebSocket } from '@/hooks/useChatWebSocket';
-import { useConversations, CHAT_QUERY_KEYS } from '@/hooks/useChat';
-import type { Message, Conversation } from '@/types/chat';
+import { CHAT_QUERY_KEYS } from '@/hooks/useChat';
+import type { Message } from '@/types/chat';
 
 interface GlobalChatProviderProps {
   children: React.ReactNode;
@@ -31,8 +31,6 @@ const GlobalChatProvider = ({ children }: GlobalChatProviderProps) => {
     selectedConversationId,
     getTotalUnreadCount,
     addJoinedConversation,
-    removeJoinedConversation,
-    isConversationJoined,
   } = useChatStore();
 
   // Keep track of current conversation for message handling
@@ -51,7 +49,7 @@ const GlobalChatProvider = ({ children }: GlobalChatProviderProps) => {
   }, [getTotalUnreadCount]);
 
   // Fetch conversations to get initial unread counts
-  const { data: conversationsData } = useConversations();
+  // const { data: conversationsData } = useConversations();
 
   // Handle incoming messages
   const handleMessage = useCallback(
@@ -183,12 +181,10 @@ const GlobalChatProvider = ({ children }: GlobalChatProviderProps) => {
   );
 
   // Handle left confirmation from server
-  const handleLeft = useCallback(
-    (conversationId: string) => {
-      removeJoinedConversation(conversationId);
-    },
-    [removeJoinedConversation]
-  );
+  const handleLeft = useCallback((conversationId: string) => {
+    joinedConversationsRef.current.delete(conversationId);
+    useChatStore.getState().removeJoinedConversation(conversationId);
+  }, []);
 
   // WebSocket connection - only connect if authenticated
   const { isConnected, joinConversation } = useChatWebSocket(
@@ -204,27 +200,38 @@ const GlobalChatProvider = ({ children }: GlobalChatProviderProps) => {
       : {}
   );
 
-  // Join all conversations when connected
+  // Join only the selected conversation when connected
+  // Backend only allows being in ONE conversation at a time
   useEffect(() => {
-    if (!isConnected || !conversationsData?.conversations) return;
+    if (!isConnected || !selectedConversationId) {
+      return;
+    }
 
-    // Join any new conversations that we haven't joined yet
-    conversationsData.conversations.forEach((conv: Conversation) => {
-      if (
-        !isConversationJoined(conv.id) &&
-        !joinedConversationsRef.current.has(conv.id)
-      ) {
-        joinConversation(conv.id);
-        // Optimistically mark as joined immediately (server may not send confirmation)
-        addJoinedConversation(conv.id);
-        joinedConversationsRef.current.add(conv.id);
+    // Check if we need to join this conversation
+    const alreadyJoined = joinedConversationsRef.current.has(
+      selectedConversationId
+    );
+    if (alreadyJoined) {
+      return;
+    }
+
+    // Clear old join states first since backend only allows one conversation at a time
+    joinedConversationsRef.current.forEach(convId => {
+      if (convId !== selectedConversationId) {
+        joinedConversationsRef.current.delete(convId);
       }
     });
+    // Clear store state without triggering re-renders for each one
+    useChatStore.getState().clearJoinedConversations();
+
+    joinConversation(selectedConversationId);
+    // Optimistically mark as joined immediately (server will confirm)
+    addJoinedConversation(selectedConversationId);
+    joinedConversationsRef.current.add(selectedConversationId);
   }, [
     isConnected,
-    conversationsData?.conversations,
+    selectedConversationId,
     joinConversation,
-    isConversationJoined,
     addJoinedConversation,
   ]);
 

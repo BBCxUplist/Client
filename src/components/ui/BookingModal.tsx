@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { formatPrice } from '@/helper';
 import { useStartConversation } from '@/hooks/useChat';
+import { useChatWebSocket } from '@/hooks/useChatWebSocket';
 import { useStore } from '@/stores/store';
 import toast from 'react-hot-toast';
+import type { QuoteData } from '@/types/chat';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -29,6 +32,74 @@ const BookingModal = ({ isOpen, onClose, booking }: BookingModalProps) => {
   const navigate = useNavigate();
   const { user } = useStore();
   const startConversationMutation = useStartConversation();
+  const { sendQuote, isConnected } = useChatWebSocket();
+  const [isAccepting, setIsAccepting] = useState(false);
+
+  const handleAcceptAndSendQuote = async () => {
+    if (!booking.clientId) {
+      toast.error('Client information not available');
+      return;
+    }
+
+    if (!user) {
+      toast.error('Please log in to accept booking');
+      navigate('/auth');
+      return;
+    }
+
+    setIsAccepting(true);
+
+    try {
+      // Start or find existing conversation with the client
+      const response = await startConversationMutation.mutateAsync(
+        booking.clientId
+      );
+
+      const conversationId = response.conversation.id;
+
+      // Prepare quote data from booking
+      const quoteData: QuoteData = {
+        eventType: booking.eventType,
+        eventDate: booking.date,
+        eventLocation: booking.location,
+        duration: booking.duration ? parseInt(booking.duration) : undefined,
+        expectedGuests: booking.guests ? parseInt(booking.guests) : undefined,
+        proposedPrice: booking.amount,
+        notes: booking.message,
+        bookingId: booking.id,
+      };
+
+      // Send the quote message
+      if (isConnected) {
+        sendQuote(
+          conversationId,
+          quoteData,
+          `I'm happy to accept your booking request! Here are the details for your ${booking.eventType} event.`
+        );
+        toast.success('Booking accepted and quote sent!');
+      } else {
+        toast.error('Chat connection not available. Please try again.');
+        setIsAccepting(false);
+        return;
+      }
+
+      // Navigate to messages page with the conversation ID
+      navigate('/messages', {
+        state: {
+          conversationId: conversationId,
+          openChat: true,
+        },
+      });
+
+      // Close the modal
+      onClose();
+    } catch (error: any) {
+      console.error('Error accepting booking:', error);
+      toast.error(error.response?.data?.message || 'Failed to accept booking');
+    } finally {
+      setIsAccepting(false);
+    }
+  };
 
   const handleChatWithClient = async () => {
     if (!booking.clientId) {
@@ -206,12 +277,23 @@ const BookingModal = ({ isOpen, onClose, booking }: BookingModalProps) => {
           </button>
           <button
             onClick={handleChatWithClient}
-            disabled={startConversationMutation.isPending || !booking.clientId}
-            className='flex-1 bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+            disabled={
+              startConversationMutation.isPending ||
+              !booking.clientId ||
+              isAccepting
+            }
+            className='flex-1 bg-white/10 border border-white/30 text-white px-4 py-2 font-semibold hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
           >
-            {startConversationMutation.isPending
+            {startConversationMutation.isPending && !isAccepting
               ? 'Opening Chat...'
               : 'Chat with Client'}
+          </button>
+          <button
+            onClick={handleAcceptAndSendQuote}
+            disabled={isAccepting || !booking.clientId || !isConnected}
+            className='flex-1 bg-orange-500 text-black px-4 py-2 font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+          >
+            {isAccepting ? 'Accepting...' : 'Accept & Send Quote'}
           </button>
         </div>
       </motion.div>

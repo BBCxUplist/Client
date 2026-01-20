@@ -135,7 +135,6 @@ const Messages = () => {
 
     // Only send if we're joined to this conversation
     if (!isConversationJoined(selectedConversationId)) {
-      console.warn('[Messages] Cannot send quote - not joined yet');
       return;
     }
 
@@ -173,7 +172,6 @@ const Messages = () => {
     if (!selectedConversationId) return;
     // Only send typing if we're joined to this conversation
     if (!isConversationJoined(selectedConversationId)) {
-      console.log('[Messages] Skipping typing indicator - not joined yet');
       return;
     }
     sendTypingIndicator(selectedConversationId, isTyping);
@@ -183,7 +181,6 @@ const Messages = () => {
     if (!selectedConversationId || messageIds.length === 0) return;
     // Only send if we're joined to this conversation
     if (!isConversationJoined(selectedConversationId)) {
-      console.log('[Messages] Skipping mark as read - not joined yet');
       return;
     }
     sendMarkAsRead(selectedConversationId, messageIds);

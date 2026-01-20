@@ -89,6 +89,8 @@ const QuoteMessageModal = ({
       const duration = parseInt(formData.duration);
       if (duration < 1) {
         newErrors.duration = 'Duration must be at least 1 hour';
+      } else if (duration > 1000) {
+        newErrors.duration = 'Duration cannot exceed 1000 hours';
       }
     }
 

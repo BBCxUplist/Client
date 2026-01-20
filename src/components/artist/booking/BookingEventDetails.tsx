@@ -149,6 +149,10 @@ const BookingEventDetails = ({ control }: BookingEventDetailsProps) => {
               value: 1,
               message: 'Duration must be at least 1 hour',
             },
+            max: {
+              value: 1000,
+              message: 'Duration cannot exceed 1000 hours',
+            },
           }}
           render={({ field }) => (
             <FormItem>
