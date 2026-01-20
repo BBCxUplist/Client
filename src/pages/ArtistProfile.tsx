@@ -84,9 +84,7 @@ const ArtistProfile = () => {
     if (!artist.displayName) missing.push('Display Name');
     if (!artist.avatar) missing.push('Profile Picture');
     if (!artist.bio) missing.push('Bio');
-    if (!artist.phone) missing.push('Phone Number');
     if (!artist.location) missing.push('Location');
-    if (!artist.socials) missing.push('Social Media Links');
     return missing;
   };
 

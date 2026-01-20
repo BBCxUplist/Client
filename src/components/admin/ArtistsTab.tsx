@@ -171,9 +171,9 @@ const ArtistsTab = ({
   // };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
+    return new Intl.NumberFormat('en-GB', {
       style: 'currency',
-      currency: 'INR',
+      currency: 'GBP',
       maximumFractionDigits: 0,
     }).format(amount);
   };

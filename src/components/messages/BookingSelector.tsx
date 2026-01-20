@@ -39,18 +39,39 @@ const BookingSelector = ({
   isDisabled = false,
 }: BookingSelectorProps) => {
   const { data: bookingsResponse, isLoading, error } = useGetBookings();
+  const hasAutoSelected = React.useRef(false);
 
   // Filter bookings: pending status and matching with recipient user
+  // Sort by createdAt or eventDate descending to get latest first
   const filteredBookings: Booking[] = React.useMemo(() => {
     if (!bookingsResponse?.data) return [];
 
-    return bookingsResponse.data.filter(
-      booking =>
-        booking.status === 'pending' &&
-        ((booking.userId === recipientUserId && booking.artistId) ||
-          (booking.artistId === recipientUserId && booking.userId))
-    );
+    return bookingsResponse.data
+      .filter(
+        booking =>
+          booking.status === 'pending' &&
+          ((booking.userId === recipientUserId && booking.artistId) ||
+            (booking.artistId === recipientUserId && booking.userId))
+      )
+      .sort((a, b) => {
+        // Sort by eventDate descending (most recent first)
+        return (
+          new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
+        );
+      });
   }, [bookingsResponse?.data, recipientUserId]);
+
+  // Auto-select the latest booking when bookings are loaded
+  React.useEffect(() => {
+    if (
+      filteredBookings.length > 0 &&
+      !selectedBookingId &&
+      !hasAutoSelected.current
+    ) {
+      hasAutoSelected.current = true;
+      onBookingSelect(filteredBookings[0]);
+    }
+  }, [filteredBookings, selectedBookingId, onBookingSelect]);
 
   const selectedBooking = filteredBookings.find(
     b => b.id === selectedBookingId

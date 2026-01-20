@@ -87,8 +87,8 @@ const QuoteMessageModal = ({
     // Duration validation
     if (formData.duration) {
       const duration = parseInt(formData.duration);
-      if (duration < 1 || duration > 24) {
-        newErrors.duration = 'Duration must be between 1 and 24 hours';
+      if (duration < 1) {
+        newErrors.duration = 'Duration must be at least 1 hour';
       }
     }
 
@@ -268,7 +268,6 @@ const QuoteMessageModal = ({
               <input
                 type='number'
                 min='1'
-                max='24'
                 value={formData.duration}
                 onChange={e =>
                   setFormData({ ...formData, duration: e.target.value })
