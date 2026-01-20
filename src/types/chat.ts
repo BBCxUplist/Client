@@ -54,10 +54,12 @@ export interface WebSocketMessage {
     | 'message'
     | 'message_ack'
     | 'typing'
+    | 'messages_read'
     | 'error';
   userId?: string;
   conversationId?: string;
   messageId?: string;
+  messageIds?: string[];
   message?: Message;
   isTyping?: boolean;
   error?: string;
@@ -65,10 +67,11 @@ export interface WebSocketMessage {
 }
 
 export interface SendMessagePayload {
-  type: 'join' | 'leave' | 'message' | 'typing' | 'quote';
+  type: 'join' | 'leave' | 'message' | 'typing' | 'quote' | 'mark_read';
   conversationId: string;
   text?: string;
   metadata?: Record<string, any>;
   isTyping?: boolean;
   quoteData?: QuoteData;
+  messageIds?: string[];
 }

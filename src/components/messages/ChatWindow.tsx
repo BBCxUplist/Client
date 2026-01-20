@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { format } from 'date-fns';
 import { ArrowLeft, MoreVertical, Loader2 } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
 import QuoteMessageModal from './QuoteMessageModal';
@@ -20,6 +21,7 @@ interface ChatWindowProps {
   onSendMessage: (content: string) => void;
   onSendQuote?: (quoteData: QuoteData, text?: string) => void;
   onTyping: (isTyping: boolean) => void;
+  onMarkAsRead?: (messageIds: string[]) => void;
   onBack: () => void;
   showBackButton: boolean;
   isTyping?: boolean;
@@ -33,6 +35,7 @@ const ChatWindow = ({
   onSendMessage,
   onSendQuote,
   onTyping,
+  onMarkAsRead,
   onBack,
   showBackButton,
   isTyping = false,
@@ -45,12 +48,13 @@ const ChatWindow = ({
   // Use ref for typing state to avoid re-renders
   const isCurrentlyTypingRef = useRef(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const markedAsReadRef = useRef<Set<string>>(new Set());
 
   const isArtist = currentUser.role === 'artist';
 
-  // Get messages from store (real-time updates)
+  // Get messages from store (real-time updates) - use shallow comparison to avoid infinite loops
   const storeMessages = useChatStore(
-    state => state.messagesByConversation[conversationId] || []
+    useShallow(state => state.messagesByConversation[conversationId] || [])
   );
 
   // Fetch message history from API
@@ -73,6 +77,27 @@ const ChatWindow = ({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
+
+  // Mark unread messages as read when conversation is viewed
+  useEffect(() => {
+    if (!onMarkAsRead || messages.length === 0) return;
+
+    // Find messages sent to me that are not yet read and haven't been marked yet
+    const unreadMessageIds = messages
+      .filter(
+        m =>
+          !m.isRead &&
+          m.receiverId === currentUser.id &&
+          !markedAsReadRef.current.has(m.id)
+      )
+      .map(m => m.id);
+
+    if (unreadMessageIds.length > 0) {
+      // Track that we've sent mark-as-read for these messages
+      unreadMessageIds.forEach(id => markedAsReadRef.current.add(id));
+      onMarkAsRead(unreadMessageIds);
+    }
+  }, [messages, currentUser.id, onMarkAsRead]);
 
   // Debounced typing handler
   const handleTypingChange = useCallback(

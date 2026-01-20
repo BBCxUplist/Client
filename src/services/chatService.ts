@@ -19,6 +19,15 @@ interface ConversationsResponse {
   conversations: Conversation[];
 }
 
+interface MarkAsReadResponse {
+  markedCount: number;
+}
+
+interface UnreadCountsResponse {
+  counts: Record<string, number>;
+  total: number;
+}
+
 export const chatService = {
   // Start a new conversation
   startConversation: async (meId: string, peerId: string) => {
@@ -75,25 +84,6 @@ export const chatService = {
     }
   },
 
-  // Get messages by conversation (alternative endpoint)
-  getMessagesByConversation: async (
-    conversationId: string,
-    limit: number = 50
-  ) => {
-    try {
-      const response = await apiClient.get(
-        `/chats/${conversationId}/messages?limit=${limit}`
-      );
-      return response.data;
-    } catch (error) {
-      console.error(
-        '[ChatService] Failed to fetch messages by conversation:',
-        error
-      );
-      throw error;
-    }
-  },
-
   // Mark messages as read in a conversation
   markAsRead: async (meId: string, conversationId: string) => {
     try {
@@ -103,6 +93,39 @@ export const chatService = {
       return response.data;
     } catch {
       // Don't throw error if endpoint doesn't exist - it's optional
+      return null;
+    }
+  },
+
+  // Mark specific messages as read (batch)
+  markMessagesAsRead: async (
+    meId: string,
+    conversationId: string,
+    messageIds: string[]
+  ): Promise<MarkAsReadResponse | null> => {
+    try {
+      const response = await apiClient.patch<MarkAsReadResponse>(
+        `/messages/mark-read?meId=${meId}`,
+        { conversationId, messageIds }
+      );
+      return response.data;
+    } catch {
+      // Don't throw error if endpoint doesn't exist
+      return null;
+    }
+  },
+
+  // Get unread counts for all conversations
+  getUnreadCounts: async (
+    meId: string
+  ): Promise<UnreadCountsResponse | null> => {
+    try {
+      const response = await apiClient.get<UnreadCountsResponse>(
+        `/messages/unread-counts?meId=${meId}`
+      );
+      return response.data;
+    } catch {
+      // Don't throw error if endpoint doesn't exist
       return null;
     }
   },

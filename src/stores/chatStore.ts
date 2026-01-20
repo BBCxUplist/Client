@@ -17,6 +17,9 @@ interface ChatState {
   // Connection status
   isConnected: boolean;
 
+  // Server-confirmed joined conversations
+  joinedConversations: Set<string>;
+
   // Typing indicators by conversation ID -> user ID -> isTyping
   typingUsers: Record<string, Record<string, boolean>>;
 
@@ -59,6 +62,12 @@ interface ChatActions {
   // Connection actions
   setConnectionStatus: (isConnected: boolean) => void;
 
+  // Joined conversations actions
+  addJoinedConversation: (conversationId: string) => void;
+  removeJoinedConversation: (conversationId: string) => void;
+  clearJoinedConversations: () => void;
+  isConversationJoined: (conversationId: string) => boolean;
+
   // Typing actions
   setTypingUser: (
     conversationId: string,
@@ -75,6 +84,7 @@ interface ChatActions {
 
   // Mark messages as read
   markConversationAsRead: (conversationId: string) => void;
+  markMessagesAsRead: (conversationId: string, messageIds: string[]) => void;
 
   // Cache management
   setLastConversationsFetch: (timestamp: number) => void;
@@ -102,6 +112,7 @@ export const useChatStore = create<ChatStore>()(
         messagesByConversation: {},
         selectedConversationId: null,
         isConnected: false,
+        joinedConversations: new Set<string>(),
         typingUsers: {},
         unreadCounts: {},
         lastConversationsFetch: null,
@@ -312,6 +323,35 @@ export const useChatStore = create<ChatStore>()(
             return;
           }
           set({ isConnected });
+          // Clear joined conversations when disconnected
+          if (!isConnected) {
+            set({ joinedConversations: new Set<string>() });
+          }
+        },
+
+        // Joined conversations actions
+        addJoinedConversation: conversationId => {
+          set(state => {
+            const newSet = new Set(state.joinedConversations);
+            newSet.add(conversationId);
+            return { joinedConversations: newSet };
+          });
+        },
+
+        removeJoinedConversation: conversationId => {
+          set(state => {
+            const newSet = new Set(state.joinedConversations);
+            newSet.delete(conversationId);
+            return { joinedConversations: newSet };
+          });
+        },
+
+        clearJoinedConversations: () => {
+          set({ joinedConversations: new Set<string>() });
+        },
+
+        isConversationJoined: conversationId => {
+          return get().joinedConversations.has(conversationId);
         },
 
         // Typing actions
@@ -412,6 +452,28 @@ export const useChatStore = create<ChatStore>()(
               unreadCounts: {
                 ...state.unreadCounts,
                 [conversationId]: 0,
+              },
+            };
+          });
+        },
+
+        // Mark specific messages as read (updates isRead status on messages)
+        markMessagesAsRead: (conversationId, messageIds) => {
+          if (messageIds.length === 0) return;
+
+          set(state => {
+            const messages = state.messagesByConversation[conversationId];
+            if (!messages) return state;
+
+            const messageIdSet = new Set(messageIds);
+            const updatedMessages = messages.map(msg =>
+              messageIdSet.has(msg.id) ? { ...msg, isRead: true } : msg
+            );
+
+            return {
+              messagesByConversation: {
+                ...state.messagesByConversation,
+                [conversationId]: updatedMessages,
               },
             };
           });

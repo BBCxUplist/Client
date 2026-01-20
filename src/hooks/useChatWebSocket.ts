@@ -18,12 +18,22 @@ interface UseChatWebSocketProps {
     userId: string,
     isTyping: boolean
   ) => void;
+  onMessagesRead?: (
+    conversationId: string,
+    messageIds: string[],
+    userId: string
+  ) => void;
+  onJoined?: (conversationId: string) => void;
+  onLeft?: (conversationId: string) => void;
   onError?: (error: string, code?: string) => void;
 }
 
 export const useChatWebSocket = ({
   onMessage,
   onTyping,
+  onMessagesRead,
+  onJoined,
+  onLeft,
   onError,
 }: UseChatWebSocketProps = {}) => {
   const { user } = useStore();
@@ -33,14 +43,20 @@ export const useChatWebSocket = ({
   // Use refs to store callbacks to prevent useEffect re-runs
   const onMessageRef = useRef(onMessage);
   const onTypingRef = useRef(onTyping);
+  const onMessagesReadRef = useRef(onMessagesRead);
+  const onJoinedRef = useRef(onJoined);
+  const onLeftRef = useRef(onLeft);
   const onErrorRef = useRef(onError);
 
   // Update refs when callbacks change
   useEffect(() => {
     onMessageRef.current = onMessage;
     onTypingRef.current = onTyping;
+    onMessagesReadRef.current = onMessagesRead;
+    onJoinedRef.current = onJoined;
+    onLeftRef.current = onLeft;
     onErrorRef.current = onError;
-  }, [onMessage, onTyping, onError]);
+  }, [onMessage, onTyping, onMessagesRead, onJoined, onLeft, onError]);
 
   // Construct WebSocket URL with user ID
   const socketUrl = user?.id ? `${WS_URL}?token=${user.id}` : null;
@@ -92,6 +108,21 @@ export const useChatWebSocket = ({
           }
           break;
 
+        case 'messages_read':
+          if (
+            message.conversationId &&
+            message.messageIds &&
+            message.userId &&
+            onMessagesReadRef.current
+          ) {
+            onMessagesReadRef.current(
+              message.conversationId,
+              message.messageIds,
+              message.userId
+            );
+          }
+          break;
+
         case 'error':
           console.error('[WebSocket] Error:', message.error, message.code);
           if (onErrorRef.current) {
@@ -100,7 +131,17 @@ export const useChatWebSocket = ({
           break;
 
         case 'joined':
+          if (message.conversationId && onJoinedRef.current) {
+            onJoinedRef.current(message.conversationId);
+          }
+          break;
+
         case 'left':
+          if (message.conversationId && onLeftRef.current) {
+            onLeftRef.current(message.conversationId);
+          }
+          break;
+
         case 'message_ack':
         default:
           break;
@@ -118,7 +159,7 @@ export const useChatWebSocket = ({
     },
     reconnectAttempts: 10,
     reconnectInterval: 3000,
-    share: false,
+    share: true, // Share WebSocket connection across all hook instances
     retryOnError: true,
   });
 
@@ -204,6 +245,20 @@ export const useChatWebSocket = ({
     [readyState, sendJsonMessage]
   );
 
+  // Mark messages as read
+  const sendMarkAsRead = useCallback(
+    (conversationId: string, messageIds: string[]) => {
+      if (readyState === ReadyState.OPEN && messageIds.length > 0) {
+        sendJsonMessage({
+          type: 'mark_read',
+          conversationId,
+          messageIds,
+        });
+      }
+    },
+    [readyState, sendJsonMessage]
+  );
+
   const connectionStatus = {
     [ReadyState.CONNECTING]: 'Connecting',
     [ReadyState.OPEN]: 'Connected',
@@ -221,5 +276,6 @@ export const useChatWebSocket = ({
     sendMessage,
     sendTypingIndicator,
     sendQuote,
+    sendMarkAsRead,
   };
 };

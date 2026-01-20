@@ -27,13 +27,12 @@ const Messages = () => {
   // Chat store
   const {
     addMessage,
-    setTypingUser,
-    setConnectionStatus,
     updateConversation,
-    incrementUnreadCount,
     selectedConversationId,
     setSelectedConversation,
     typingUsers,
+    isConnected,
+    isConversationJoined,
   } = useChatStore();
 
   const [isMobileView, setIsMobileView] = useState(false);
@@ -41,119 +40,30 @@ const Messages = () => {
   // Fetch conversations
   const { data: conversationsData, isLoading } = useConversations();
 
-  // WebSocket connection
+  // WebSocket connection - for sending messages
+  // Global message handling and joining conversations is done in GlobalChatProvider
   const {
-    isConnected,
-    joinConversation,
-    leaveConversation,
+    isConnected: wsConnected,
     sendMessage,
     sendTypingIndicator,
     sendQuote,
-  } = useChatWebSocket({
-    onMessage: (message: Message) => {
-      // Add message to chat store
-      addMessage(message.conversationId, message);
-
-      // Increment unread count if not the current conversation or not from current user
-      if (
-        message.conversationId !== selectedConversationId &&
-        message.senderId !== user?.id
-      ) {
-        incrementUnreadCount(message.conversationId);
-      }
-
-      // Update conversation's last message
-      updateConversation(message.conversationId, {
-        lastMessage:
-          message.messageType === 'quote'
-            ? `📋 Quote - $${message.quoteData?.proposedPrice || 0}`
-            : message.text || '',
-        lastMessageTime: message.createdAt,
-      });
-
-      // Update message history cache for React Query
-      queryClient.setQueryData(
-        CHAT_QUERY_KEYS.messageHistory(message.conversationId),
-        (oldData: any) => {
-          if (!oldData) {
-            return { items: [message], hasMore: false };
-          }
-
-          // Check if message already exists by ID
-          const existsById = oldData.items.some(
-            (m: Message) => m.id === message.id
-          );
-          if (existsById) {
-            return oldData;
-          }
-
-          // Check if this is a server response for our optimistic message
-          const optimisticIndex = oldData.items.findIndex((m: Message) => {
-            const isTemp = m.id.startsWith('temp-');
-            const sameSender = m.senderId === message.senderId;
-            const sameText = m.text === message.text;
-            const recentTime =
-              Math.abs(
-                new Date(m.createdAt).getTime() -
-                  new Date(message.createdAt).getTime()
-              ) < 10000;
-            return isTemp && sameSender && sameText && recentTime;
-          });
-
-          if (optimisticIndex !== -1) {
-            const newItems = [...oldData.items];
-            newItems[optimisticIndex] = message;
-            return {
-              ...oldData,
-              items: newItems,
-            };
-          }
-
-          return {
-            ...oldData,
-            items: [...oldData.items, message],
-          };
-        }
-      );
-
-      // Update conversations list
-      queryClient.invalidateQueries({
-        queryKey: CHAT_QUERY_KEYS.conversations(user!.id),
-      });
-    },
-    onTyping: (conversationId, visitorId, isTyping) => {
-      setTypingUser(conversationId, visitorId, isTyping);
-    },
-    onError: (error, code) => {
-      console.error('[Chat] Error:', { error, code });
-    },
-  });
+    sendMarkAsRead,
+  } = useChatWebSocket();
 
   const selectedConversation = conversationsData?.conversations.find(
     conv => conv.id === selectedConversationId
   );
 
-  // Update connection status in store
+  // Mark conversation as read when selected
   useEffect(() => {
-    setConnectionStatus(isConnected);
-  }, [isConnected, setConnectionStatus]);
-
-  // Join conversation when selected
-  useEffect(() => {
-    if (selectedConversationId && isConnected) {
-      joinConversation(selectedConversationId);
+    if (selectedConversationId && wsConnected) {
       markAsRead(selectedConversationId);
-
-      return () => {
-        leaveConversation(selectedConversationId);
-      };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     selectedConversationId,
-    isConnected,
-    joinConversation,
-    leaveConversation,
-    markAsRead,
+    wsConnected,
+    // markAsRead is intentionally excluded - it's a stable mutation function
   ]);
 
   const handleChatSelect = (conversationId: string) => {
@@ -163,6 +73,12 @@ const Messages = () => {
 
   const handleSendMessage = (content: string) => {
     if (!selectedConversationId || !content.trim() || !user) {
+      return;
+    }
+
+    // Only send if we're joined to this conversation
+    if (!isConversationJoined(selectedConversationId)) {
+      console.warn('[Messages] Cannot send message - not joined yet');
       return;
     }
 
@@ -217,6 +133,12 @@ const Messages = () => {
       return;
     }
 
+    // Only send if we're joined to this conversation
+    if (!isConversationJoined(selectedConversationId)) {
+      console.warn('[Messages] Cannot send quote - not joined yet');
+      return;
+    }
+
     // First, update the booking if bookingId is present
     if (quoteData.bookingId) {
       // Prepare booking update data from quote
@@ -249,7 +171,22 @@ const Messages = () => {
 
   const handleTyping = (isTyping: boolean) => {
     if (!selectedConversationId) return;
+    // Only send typing if we're joined to this conversation
+    if (!isConversationJoined(selectedConversationId)) {
+      console.log('[Messages] Skipping typing indicator - not joined yet');
+      return;
+    }
     sendTypingIndicator(selectedConversationId, isTyping);
+  };
+
+  const handleMarkAsRead = (messageIds: string[]) => {
+    if (!selectedConversationId || messageIds.length === 0) return;
+    // Only send if we're joined to this conversation
+    if (!isConversationJoined(selectedConversationId)) {
+      console.log('[Messages] Skipping mark as read - not joined yet');
+      return;
+    }
+    sendMarkAsRead(selectedConversationId, messageIds);
   };
 
   const handleBackToList = () => {
@@ -319,6 +256,7 @@ const Messages = () => {
               onSendMessage={handleSendMessage}
               onSendQuote={handleSendQuote}
               onTyping={handleTyping}
+              onMarkAsRead={handleMarkAsRead}
               onBack={handleBackToList}
               showBackButton={isMobileView}
               isTyping={
