@@ -227,7 +227,7 @@ export const handleMailchimpError = (error: any): string => {
       return "This artist hasn't set up their newsletter yet. Check back later!";
     case 'Mailchimp not connected for this artist':
     case 'Mailchimp not connected':
-      return 'Newsletter signup unavailable';
+      return "This artist hasn't connected their newsletter service yet. Please check back later!";
     case 'NO_DEFAULT_LIST':
       return 'Newsletter configuration incomplete';
     case 'Invalid email address':
