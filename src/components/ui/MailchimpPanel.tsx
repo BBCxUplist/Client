@@ -207,9 +207,7 @@ const MailchimpPanel = () => {
                   <ExternalLink className='w-4 h-4' />
                   Go to Mailchimp
                 </button>
-                \n{' '}
               </div>
-              \n{' '}
             </div>
 
             {/* Actions */}
