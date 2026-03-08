@@ -134,13 +134,16 @@ const BookingTab = forwardRef<BookingTabRef, BookingTabProps>(
       setErrorMessage('');
 
       try {
+        // Ensure budget is at least 3 characters for backend validation
+        const formattedBudget = data.budget.padStart(3, '0');
+
         const bookingPayload = {
           artistId: artist.id,
           eventDate: data.eventDate!.toISOString(),
           eventType: data.eventType,
           duration: parseInt(data.duration) || 0,
           expectedGuests: parseInt(data.guests) || 0,
-          budgetRange: data.budget,
+          budgetRange: formattedBudget,
           eventLocation: data.location,
           specialRequirements: data.message,
           contactName: data.contactName,

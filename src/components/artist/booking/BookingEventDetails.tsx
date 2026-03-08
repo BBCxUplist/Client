@@ -206,13 +206,9 @@ const BookingEventDetails = ({ control }: BookingEventDetailsProps) => {
               value: /^\d+$/,
               message: 'Budget must be a number only',
             },
-            minLength: {
-              value: 3,
-              message: 'Budget must be at least 3 digits',
-            },
             min: {
-              value: 100,
-              message: 'Budget must be at least £100',
+              value: 15,
+              message: 'Budget must be at least £15',
             },
           }}
           render={({ field }) => (
@@ -224,7 +220,7 @@ const BookingEventDetails = ({ control }: BookingEventDetailsProps) => {
                 <Input
                   type='number'
                   placeholder='500'
-                  min='100'
+                  min='15'
                   step='1'
                   className='bg-white/5 border-white/20 text-white placeholder:text-white/50'
                   {...field}
