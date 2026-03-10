@@ -1,4 +1,4 @@
-import type { Message } from '@/types/chat';
+import type { Message, QuoteData } from '@/types/chat';
 import QuoteCard from './QuoteCard';
 
 interface MessageBubbleProps {
@@ -7,6 +7,7 @@ interface MessageBubbleProps {
   showAvatar: boolean;
   showTime: boolean;
   timestamp: string;
+  quoteDetails?: QuoteData | null;
 }
 
 const MessageBubble = ({
@@ -15,9 +16,22 @@ const MessageBubble = ({
   showAvatar,
   showTime,
   timestamp,
+  quoteDetails,
 }: MessageBubbleProps) => {
   // Handle quote messages
   if (message.messageType === 'quote' && message.quoteData) {
+    // Merge booking status from conversation's quoteDetails if bookingId matches
+    const mergedQuoteData: QuoteData = {
+      ...message.quoteData,
+      // If quoteDetails from conversation matches this quote's bookingId, use its status
+      ...(quoteDetails && quoteDetails.bookingId === message.quoteData.bookingId
+        ? {
+            bookingStatus: quoteDetails.bookingStatus,
+            isPaid: quoteDetails.isPaid,
+          }
+        : {}),
+    };
+
     return (
       <div
         className={`flex gap-3 ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
@@ -58,7 +72,7 @@ const MessageBubble = ({
 
           {/* Quote Card */}
           <QuoteCard
-            quoteData={message.quoteData}
+            quoteData={mergedQuoteData}
             isCurrentUser={isCurrentUser}
             text={message.text}
           />
