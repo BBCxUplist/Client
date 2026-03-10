@@ -1,6 +1,14 @@
 // Chat Types
 export type MessageType = 'regular' | 'quote';
 
+export type BookingStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'cancelled'
+  | 'paid_escrow'
+  | 'paid_artist'
+  | 'refunded';
+
 export interface QuoteData {
   eventType?: string;
   eventDate?: string; // ISO date string
@@ -18,6 +26,8 @@ export interface QuoteData {
   notes?: string;
   validUntil?: string; // ISO date string
   bookingId?: string;
+  bookingStatus?: BookingStatus;
+  isPaid?: boolean;
 }
 
 export interface Message {
@@ -44,6 +54,7 @@ export interface Conversation {
   lastMessage: string;
   lastMessageTime: string;
   unreadCount?: number;
+  quoteDetails?: QuoteData | null;
 }
 
 export interface WebSocketMessage {
