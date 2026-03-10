@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import {
   Calendar,
   MapPin,
@@ -19,16 +19,18 @@ interface QuoteCardProps {
   text?: string | null;
 }
 
-interface BookingStatus {
-  isApproved: boolean;
-  isPaid: boolean;
-}
-
 const QuoteCard = ({ quoteData, isCurrentUser, text }: QuoteCardProps) => {
-  const [bookingStatus, setBookingStatus] = useState<BookingStatus>({
-    isApproved: false,
-    isPaid: false,
-  });
+  console.log(
+    'QuoteCard rendered with quoteData:',
+    quoteData,
+    'isCurrentUser:',
+    isCurrentUser
+  );
+
+  // Derive approval and payment status from API data
+  const isApproved =
+    quoteData.bookingStatus && quoteData.bookingStatus !== 'pending';
+  const isPaid = quoteData.isPaid ?? false;
 
   const { mutate: approveBooking, isPending: isApproving } =
     useApproveBooking();
@@ -62,8 +64,6 @@ const QuoteCard = ({ quoteData, isCurrentUser, text }: QuoteCardProps) => {
       return;
     }
     approveBooking(quoteData.bookingId, {
-      onSuccess: () =>
-        setBookingStatus(prev => ({ ...prev, isApproved: true })),
       onError: error => console.error('Failed to approve booking:', error),
     });
   };
@@ -83,8 +83,8 @@ const QuoteCard = ({ quoteData, isCurrentUser, text }: QuoteCardProps) => {
     );
   };
 
-  const showApprove = !bookingStatus.isApproved;
-  const showPay = bookingStatus.isApproved && !bookingStatus.isPaid;
+  const showApprove = !isApproved;
+  const showPay = isApproved && !isPaid;
 
   return (
     <div
@@ -292,6 +292,44 @@ const QuoteCard = ({ quoteData, isCurrentUser, text }: QuoteCardProps) => {
             ) : (
               <div className='flex-1 bg-green-500/20 text-green-400 py-2.5 px-4 font-semibold border border-green-500/50 flex items-center justify-center'>
                 ✓ Booking Confirmed & Paid
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Status Display for Artist (current user who sent the quote) */}
+        {isCurrentUser && (
+          <div className='mt-4'>
+            {(!quoteData.bookingStatus ||
+              quoteData.bookingStatus === 'pending') && (
+              <div className='flex-1 bg-yellow-500/20 text-yellow-400 py-2.5 px-4 font-semibold border border-yellow-500/50 flex items-center justify-center'>
+                ⏳ Awaiting user response
+              </div>
+            )}
+            {quoteData.bookingStatus === 'confirmed' && !isPaid && (
+              <div className='flex-1 bg-blue-500/20 text-blue-400 py-2.5 px-4 font-semibold border border-blue-500/50 flex items-center justify-center'>
+                ✓ User has confirmed the booking
+              </div>
+            )}
+            {(quoteData.bookingStatus === 'paid_escrow' ||
+              (quoteData.bookingStatus === 'confirmed' && isPaid)) && (
+              <div className='flex-1 bg-green-500/20 text-green-400 py-2.5 px-4 font-semibold border border-green-500/50 flex items-center justify-center'>
+                💰 User has completed the payment
+              </div>
+            )}
+            {quoteData.bookingStatus === 'paid_artist' && (
+              <div className='flex-1 bg-green-500/20 text-green-400 py-2.5 px-4 font-semibold border border-green-500/50 flex items-center justify-center'>
+                ✓ You have received the payment
+              </div>
+            )}
+            {quoteData.bookingStatus === 'cancelled' && (
+              <div className='flex-1 bg-red-500/20 text-red-400 py-2.5 px-4 font-semibold border border-red-500/50 flex items-center justify-center'>
+                ✗ Booking cancelled
+              </div>
+            )}
+            {quoteData.bookingStatus === 'refunded' && (
+              <div className='flex-1 bg-orange-500/20 text-orange-400 py-2.5 px-4 font-semibold border border-orange-500/50 flex items-center justify-center'>
+                ↩ Payment refunded
               </div>
             )}
           </div>
