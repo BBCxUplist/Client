@@ -5,7 +5,7 @@ import {
   MapPin,
   Clock,
   Users,
-  DollarSign,
+  PoundSterling,
   FileText,
   Loader2,
 } from 'lucide-react';
@@ -254,7 +254,7 @@ const QuoteCard = ({ quoteData, isCurrentUser, text }: QuoteCardProps) => {
           }`}
         >
           <div className='flex items-center gap-2'>
-            <DollarSign className='w-5 h-5 text-orange-500' />
+            <PoundSterling className='w-5 h-5 text-orange-500' />
             <span className='text-white/60 font-semibold'>Total Price</span>
           </div>
           <span className='text-2xl font-bold text-orange-500'>
