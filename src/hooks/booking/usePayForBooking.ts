@@ -51,14 +51,66 @@ interface StripeCheckoutResponse {
   checkoutUrl: string;
 }
 
+export interface PaymentError extends Error {
+  accountStatus?: 'restricted' | 'pending' | 'not_connected';
+  isStripeAccountError?: boolean;
+}
+
 export const usePayForBooking = () => {
-  return useMutation<StripeCheckoutResponse, Error, PayForBookingPayload>({
+  return useMutation<
+    StripeCheckoutResponse,
+    PaymentError,
+    PayForBookingPayload
+  >({
     mutationFn: async ({ bookingId }) => {
       if (!bookingId) throw new Error('Booking ID is required');
-      const { data } = await apiClient.post(`/bookings/${bookingId}/pay`, {});
-      if (!data?.data?.checkoutUrl)
-        throw new Error('Stripe checkout URL not returned');
-      return data.data;
+
+      try {
+        const { data } = await apiClient.post(`/bookings/${bookingId}/pay`, {});
+
+        // Handle explicit failure response from API
+        if (data?.success === false) {
+          const error = new Error(
+            data.message || 'Payment failed'
+          ) as PaymentError;
+          if (data.data?.accountStatus) {
+            error.accountStatus = data.data.accountStatus;
+            error.isStripeAccountError = true;
+          }
+          throw error;
+        }
+
+        if (!data?.data?.checkoutUrl) {
+          throw new Error('Stripe checkout URL not returned');
+        }
+        return data.data;
+      } catch (err: unknown) {
+        // Handle axios error responses
+        if (err && typeof err === 'object' && 'response' in err) {
+          const axiosError = err as {
+            response?: {
+              data?: {
+                success?: boolean;
+                message?: string;
+                data?: { accountStatus?: string };
+              };
+            };
+          };
+          const responseData = axiosError.response?.data;
+          if (responseData?.success === false) {
+            const error = new Error(
+              responseData.message || 'Payment failed'
+            ) as PaymentError;
+            if (responseData.data?.accountStatus) {
+              error.accountStatus = responseData.data
+                .accountStatus as PaymentError['accountStatus'];
+              error.isStripeAccountError = true;
+            }
+            throw error;
+          }
+        }
+        throw err;
+      }
     },
     onSuccess: ({ checkoutUrl }) => {
       // Redirect user to Stripe's hosted checkout page

@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Calendar,
   MapPin,
@@ -11,12 +11,20 @@ import {
 } from 'lucide-react';
 import type { QuoteData } from '@/types/chat';
 import { useApproveBooking } from '@/hooks/booking/useApproveBooking';
-import { usePayForBooking } from '@/hooks/booking/usePayForBooking';
+import {
+  usePayForBooking,
+  type PaymentError,
+} from '@/hooks/booking/usePayForBooking';
 
 interface QuoteCardProps {
   quoteData: QuoteData;
   isCurrentUser: boolean;
   text?: string | null;
+}
+
+interface PaymentErrorState {
+  message: string;
+  isStripeAccountError: boolean;
 }
 
 const QuoteCard = ({ quoteData, isCurrentUser, text }: QuoteCardProps) => {
@@ -37,6 +45,10 @@ const QuoteCard = ({ quoteData, isCurrentUser, text }: QuoteCardProps) => {
   // This hook *creates* a Stripe Checkout Session and redirects on success.
   const { mutate: startCheckout, isPending: isStartingCheckout } =
     usePayForBooking();
+
+  const [paymentError, setPaymentError] = useState<PaymentErrorState | null>(
+    null
+  );
 
   const isExpired = useMemo(() => {
     return quoteData.validUntil
@@ -73,11 +85,24 @@ const QuoteCard = ({ quoteData, isCurrentUser, text }: QuoteCardProps) => {
       console.error('Booking ID is required');
       return;
     }
+    setPaymentError(null);
     startCheckout(
       { bookingId: quoteData.bookingId },
       {
-        onError: error => {
+        onError: (error: PaymentError) => {
           console.error('Failed to start checkout:', error);
+          if (error.isStripeAccountError) {
+            setPaymentError({
+              message:
+                "The artist hasn't completed their payment setup yet. Please contact them to complete their Stripe account setup before you can pay.",
+              isStripeAccountError: true,
+            });
+          } else {
+            setPaymentError({
+              message: error.message || 'Payment failed. Please try again.',
+              isStripeAccountError: false,
+            });
+          }
         },
       }
     );
@@ -278,17 +303,31 @@ const QuoteCard = ({ quoteData, isCurrentUser, text }: QuoteCardProps) => {
                 {isApproving ? 'Approving...' : 'Accept Quote'}
               </button>
             ) : showPay ? (
-              <button
-                onClick={handlePayForBooking}
-                disabled={isStartingCheckout}
-                className='flex-1 bg-green-600 text-white py-2.5 px-4 font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2'
-                title='You’ll be securely redirected to Stripe'
-              >
-                {isStartingCheckout && (
-                  <Loader2 className='w-4 h-4 animate-spin' />
+              <div className='flex-1 flex flex-col gap-2'>
+                <button
+                  onClick={handlePayForBooking}
+                  disabled={isStartingCheckout}
+                  className='w-full bg-green-600 text-white py-2.5 px-4 font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2'
+                  title="You'll be securely redirected to Stripe"
+                >
+                  {isStartingCheckout && (
+                    <Loader2 className='w-4 h-4 animate-spin' />
+                  )}
+                  {isStartingCheckout ? 'Redirecting…' : 'Pay Now'}
+                </button>
+                {paymentError && (
+                  <div className='p-3 bg-red-500/10 border border-red-500/30'>
+                    <p className='text-sm text-red-400'>
+                      {paymentError.isStripeAccountError && (
+                        <span className='font-semibold block mb-1'>
+                          ⚠️ Payment Setup Incomplete
+                        </span>
+                      )}
+                      {paymentError.message}
+                    </p>
+                  </div>
                 )}
-                {isStartingCheckout ? 'Redirecting…' : 'Pay Now'}
-              </button>
+              </div>
             ) : (
               <div className='flex-1 bg-green-500/20 text-green-400 py-2.5 px-4 font-semibold border border-green-500/50 flex items-center justify-center'>
                 ✓ Booking Confirmed & Paid
