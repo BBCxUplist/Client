@@ -164,6 +164,7 @@ const BookingEventDetails = ({ control }: BookingEventDetailsProps) => {
                   type='number'
                   placeholder='2'
                   className='bg-white/5 border-white/20 text-white placeholder:text-white/50'
+                  onWheel={e => (e.target as HTMLInputElement).blur()}
                   {...field}
                 />
               </FormControl>
@@ -190,6 +191,7 @@ const BookingEventDetails = ({ control }: BookingEventDetailsProps) => {
                   type='number'
                   placeholder='50'
                   className='bg-white/5 border-white/20 text-white placeholder:text-white/50'
+                  onWheel={e => (e.target as HTMLInputElement).blur()}
                   {...field}
                 />
               </FormControl>
@@ -223,6 +225,7 @@ const BookingEventDetails = ({ control }: BookingEventDetailsProps) => {
                   min='15'
                   step='1'
                   className='bg-white/5 border-white/20 text-white placeholder:text-white/50'
+                  onWheel={e => (e.target as HTMLInputElement).blur()}
                   {...field}
                   onChange={e => {
                     // Only allow numbers
