@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/landing/Navbar';
-import { resetPassword } from '@/lib/supabase';
 import { useRegisterWithValidation } from '@/hooks/login/useRegister';
 import { useLogin, useGoogleLogin } from '@/hooks/login/useLogin';
 import { useRegisterAPI } from '@/hooks/login/useRegisterAPI';
@@ -37,6 +36,9 @@ const Auth = () => {
   >('user');
   const [verificationDisplayName, setVerificationDisplayName] = useState('');
   const [showArtistSelection, setShowArtistSelection] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showResetPasswordOTP, setShowResetPasswordOTP] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   const [pendingUserData, setPendingUserData] = useState<{
     user: any;
     accessToken: string;
@@ -398,24 +400,28 @@ const Auth = () => {
     }
   };
 
-  const onForgotPassword = async () => {
-    const email = prompt('Enter your email address to reset your password:');
-    if (!email) return;
-
+  const onForgotPassword = () => {
+    setShowForgotPassword(true);
     setError('');
     setSuccessMessage('');
+  };
 
-    try {
-      await resetPassword(email);
-      setSuccessMessage('Password reset email sent! Please check your inbox.');
-    } catch (error: unknown) {
-      console.error('Password reset error:', error);
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : 'An error occurred while sending the reset email';
-      setError(errorMessage);
-    }
+  const handleForgotPasswordSuccess = (email: string) => {
+    setForgotPasswordEmail(email);
+    setShowForgotPassword(false);
+    setShowResetPasswordOTP(true);
+  };
+
+  const handleForgotPasswordBack = () => {
+    setShowForgotPassword(false);
+    setForgotPasswordEmail('');
+    setError('');
+    setSuccessMessage('');
+  };
+
+  const handleResetOTPBack = () => {
+    setShowResetPasswordOTP(false);
+    setShowForgotPassword(true);
   };
 
   const handleArtistSelection = async (isArtist: boolean) => {
@@ -489,6 +495,9 @@ const Auth = () => {
           verificationEmail={verificationEmail}
           verificationUserRole={verificationUserRole}
           verificationDisplayName={verificationDisplayName}
+          showForgotPassword={showForgotPassword}
+          showResetPasswordOTP={showResetPasswordOTP}
+          forgotPasswordEmail={forgotPasswordEmail}
           onModeChange={switchMode}
           onInputChange={handleInputChange}
           onPasswordToggle={() => setShowPassword(!showPassword)}
@@ -498,6 +507,9 @@ const Auth = () => {
           onSubmit={handleSubmit}
           onGoogleLogin={onGoogleLogin}
           onForgotPassword={onForgotPassword}
+          onForgotPasswordSuccess={handleForgotPasswordSuccess}
+          onForgotPasswordBack={handleForgotPasswordBack}
+          onResetOTPBack={handleResetOTPBack}
           onOTPVerificationSuccess={handleOTPVerificationSuccess}
           onOTPVerificationBack={handleOTPVerificationBack}
         />
@@ -516,6 +528,9 @@ const Auth = () => {
           verificationEmail={verificationEmail}
           verificationUserRole={verificationUserRole}
           verificationDisplayName={verificationDisplayName}
+          showForgotPassword={showForgotPassword}
+          showResetPasswordOTP={showResetPasswordOTP}
+          forgotPasswordEmail={forgotPasswordEmail}
           onModeChange={switchMode}
           onInputChange={handleInputChange}
           onPasswordToggle={() => setShowPassword(!showPassword)}
@@ -525,6 +540,9 @@ const Auth = () => {
           onSubmit={handleSubmit}
           onGoogleLogin={onGoogleLogin}
           onForgotPassword={onForgotPassword}
+          onForgotPasswordSuccess={handleForgotPasswordSuccess}
+          onForgotPasswordBack={handleForgotPasswordBack}
+          onResetOTPBack={handleResetOTPBack}
           onOTPVerificationSuccess={handleOTPVerificationSuccess}
           onOTPVerificationBack={handleOTPVerificationBack}
         />

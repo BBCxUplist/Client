@@ -14,6 +14,7 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentCancel from './pages/PaymentCancel';
 import PaymentExpire from './pages/PaymentExpire';
 import PaymentFailed from './pages/PaymentFailed';
+import ResetPassword from './pages/ResetPassword';
 import WebSocketTest from './pages/WebSocketTest';
 import { QueryProvider } from './providers/QueryProvider';
 import GlobalChatProvider from './providers/GlobalChatProvider';
@@ -110,6 +111,7 @@ function App() {
               <Route path='/payment/cancel' element={<PaymentCancel />} />
               <Route path='/payment/expire' element={<PaymentExpire />} />
               <Route path='/payment/failed' element={<PaymentFailed />} />
+              <Route path='/reset-password' element={<ResetPassword />} />
               <Route path='/ws-test' element={<WebSocketTest />} />
             </Routes>
           </div>

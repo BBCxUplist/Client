@@ -1,6 +1,8 @@
 import AuthContent from '@/components/auth/AuthContent';
 import DesktopBranding from '@/components/auth/DesktopBranding';
 import OTPVerification from '@/components/auth/OTPVerification';
+import ForgotPasswordView from '@/components/auth/ForgotPasswordView';
+import ResetPasswordOTP from '@/components/auth/ResetPasswordOTP';
 import type { FormData, AuthMode } from '@/components/auth/types';
 
 interface DesktopAuthLayoutProps {
@@ -16,6 +18,9 @@ interface DesktopAuthLayoutProps {
   verificationEmail: string;
   verificationUserRole: 'artist' | 'user';
   verificationDisplayName: string;
+  showForgotPassword: boolean;
+  showResetPasswordOTP: boolean;
+  forgotPasswordEmail: string;
   onModeChange: (mode: 'signin' | 'register') => void;
   onInputChange: (field: keyof FormData, value: string | boolean) => void;
   onPasswordToggle: () => void;
@@ -23,6 +28,9 @@ interface DesktopAuthLayoutProps {
   onSubmit: (e: React.FormEvent) => void;
   onGoogleLogin: () => void;
   onForgotPassword: () => void;
+  onForgotPasswordSuccess: (email: string) => void;
+  onForgotPasswordBack: () => void;
+  onResetOTPBack: () => void;
   onOTPVerificationSuccess: (
     userData?: any,
     accessToken?: string,
@@ -44,6 +52,9 @@ const DesktopAuthLayout = ({
   verificationEmail,
   verificationUserRole,
   verificationDisplayName,
+  showForgotPassword,
+  showResetPasswordOTP,
+  forgotPasswordEmail,
   onModeChange,
   onInputChange,
   onPasswordToggle,
@@ -51,6 +62,9 @@ const DesktopAuthLayout = ({
   onSubmit,
   onGoogleLogin,
   onForgotPassword,
+  onForgotPasswordSuccess,
+  onForgotPasswordBack,
+  onResetOTPBack,
   onOTPVerificationSuccess,
   onOTPVerificationBack,
 }: DesktopAuthLayoutProps) => {
@@ -70,6 +84,16 @@ const DesktopAuthLayout = ({
                 displayName={verificationDisplayName}
                 onVerificationSuccess={onOTPVerificationSuccess}
                 onBack={onOTPVerificationBack}
+              />
+            ) : showForgotPassword ? (
+              <ForgotPasswordView
+                onBack={onForgotPasswordBack}
+                onSuccess={onForgotPasswordSuccess}
+              />
+            ) : showResetPasswordOTP ? (
+              <ResetPasswordOTP
+                email={forgotPasswordEmail}
+                onBack={onResetOTPBack}
               />
             ) : (
               <AuthContent
