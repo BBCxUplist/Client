@@ -3,6 +3,7 @@ import { Mail, X, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 import {
   useSubscribeToArtist,
   handleMailchimpError,
+  isMailchimpUnavailableError,
 } from '@/hooks/useMailchimp';
 import type { SubscriptionStatus } from '@/types/mailchimp';
 import { useStore } from '@/stores/store';
@@ -13,6 +14,7 @@ interface NewsletterModalProps {
   onClose: () => void;
   artistId: string;
   artistName: string;
+  onUnavailable?: () => void;
 }
 
 const NewsletterModal = ({
@@ -20,6 +22,7 @@ const NewsletterModal = ({
   onClose,
   artistId,
   artistName,
+  onUnavailable,
 }: NewsletterModalProps) => {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<SubscriptionStatus>('idle');
@@ -72,11 +75,15 @@ const NewsletterModal = ({
         }, 2000);
       } else {
         setStatus('error');
-        toast.error(handleMailchimpError(response));
+        const msg = handleMailchimpError(response);
+        toast.error(msg);
+        if (isMailchimpUnavailableError(response)) onUnavailable?.();
       }
     } catch (error: any) {
       setStatus('error');
-      toast.error(handleMailchimpError(error));
+      const msg = handleMailchimpError(error);
+      toast.error(msg);
+      if (isMailchimpUnavailableError(error)) onUnavailable?.();
     }
   };
 

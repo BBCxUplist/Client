@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/landing/Navbar';
 import DashboardHeader from '@/components/userDashboard/DashboardHeader';
@@ -169,9 +170,10 @@ const UserDashboard = () => {
   const handleProfileUpdate = async () => {
     try {
       await updateProfileMutation.mutateAsync(profileForm);
-      // Success feedback could be added here
-    } catch (error) {
+      toast.success('Account updated successfully!');
+    } catch (error: any) {
       console.error('Failed to update profile:', error);
+      toast.error(error?.message || 'Failed to update account');
     }
   };
 

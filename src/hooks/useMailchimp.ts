@@ -219,6 +219,15 @@ export const handleMailchimpError = (error: any): string => {
     return 'Connection failed. Please try again later.';
   }
 
+  // Raw Mailchimp API key / datacenter error (artist not connected)
+  if (
+    error?.data?.status === 401 ||
+    error?.data?.title === 'API Key Invalid' ||
+    error?.response?.data?.data?.status === 401
+  ) {
+    return "This artist hasn't connected their newsletter service yet. Please check back later!";
+  }
+
   const errorMessage = error?.response?.data?.message || error.message;
 
   switch (errorMessage) {
@@ -237,4 +246,21 @@ export const handleMailchimpError = (error: any): string => {
     default:
       return 'Something went wrong. Please try again.';
   }
+};
+
+// Check if an error indicates the artist has no Mailchimp connected
+export const isMailchimpUnavailableError = (error: any): boolean => {
+  if (
+    error?.data?.status === 401 ||
+    error?.data?.title === 'API Key Invalid' ||
+    error?.response?.data?.data?.status === 401
+  ) return true;
+  const msg = error?.response?.data?.message || error?.message || '';
+  return (
+    msg === 'Mailchimp not connected for this artist' ||
+    msg === 'Mailchimp not connected' ||
+    msg === 'Artist has no default Mailchimp audience configured.' ||
+    msg === 'Artist has no default audience configured' ||
+    msg === 'NO_DEFAULT_LIST'
+  );
 };

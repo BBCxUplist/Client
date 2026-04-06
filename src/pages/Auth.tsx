@@ -183,70 +183,11 @@ const Auth = () => {
           // Check if email verification is needed
           const emailVerified = result.user.user_metadata?.email_verified;
 
-          // Check if this is a duplicate registration (email_verified not present)
-          if (
-            emailVerified === undefined &&
-            result.user.identities?.length === 0
-          ) {
-            // This is likely a duplicate registration - call register API to get proper error
-
-            if (result.session?.access_token) {
-              try {
-                const registerResult = await registerAPIMutation.mutateAsync({
-                  data: {
-                    useremail: formData.email,
-                    role: formData.isArtist ? 'artist' : 'user',
-                    displayName: formData.name,
-                  },
-                  token: result.session.access_token,
-                });
-
-                // Check if the API response indicates user already exists
-                if (
-                  registerResult.success === false &&
-                  registerResult.message?.includes('User already exists')
-                ) {
-                  setError(
-                    'An account with this email already exists. Please try signing in instead.'
-                  );
-                } else if (registerResult.success === true) {
-                  // Auto-login and redirect user after successful duplicate registration resolution
-                  const userData = {
-                    id: result.user.id,
-                    email: result.user.email,
-                    name: formData.name,
-                    role: (formData.isArtist ? 'artist' : 'user') as Role,
-                    created_at: result.user.created_at,
-                    updated_at: result.user.updated_at,
-                  };
-
-                  setAuth(
-                    userData,
-                    result.session.access_token,
-                    result.session.refresh_token
-                  );
-                  setSuccessMessage(
-                    'Welcome to UPLIST! Registration completed successfully.'
-                  );
-
-                  // Navigate to explore page after successful registration
-                  setTimeout(() => {
-                    navigate('/explore');
-                  }, 1000);
-                } else {
-                  setError(
-                    registerResult.message ||
-                      'Registration failed. Please try again.'
-                  );
-                }
-              } catch (apiError: any) {
-                setError(
-                  apiError.message || 'Registration failed. Please try again.'
-                );
-              }
-            } else {
-              setError('Registration failed. Please try again.');
-            }
+          // Supabase returns identities: [] for duplicate email registrations
+          if (result.user.identities?.length === 0) {
+            setError(
+              'An account with this email already exists. Please try signing in instead.'
+            );
           } else if (emailVerified === false) {
             // Email not verified - show OTP verification
             // Register API will be called after OTP verification

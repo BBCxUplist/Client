@@ -10,6 +10,9 @@ import {
   Power,
   RefreshCw,
   Loader2,
+  ChevronLeft,
+  ChevronRight,
+  X,
 } from 'lucide-react';
 import {
   useMailchimpConnection,
@@ -22,9 +25,37 @@ import {
 import type { MailchimpList } from '@/types/mailchimp';
 import toast from 'react-hot-toast';
 
+const PAGE_SIZE = 10;
+
+type StatusFilter = 'all' | 'subscribed' | 'pending' | 'unsubscribed';
+
+const STATUS_FILTERS: { label: string; value: StatusFilter }[] = [
+  { label: 'All', value: 'all' },
+  { label: 'Subscribed', value: 'subscribed' },
+  { label: 'Pending', value: 'pending' },
+  { label: 'Unsubscribed', value: 'unsubscribed' },
+];
+
+function getInitials(fname?: string, lname?: string, email?: string): string {
+  if (fname && lname) return `${fname[0]}${lname[0]}`.toUpperCase();
+  if (fname) return fname[0].toUpperCase();
+  if (email) return email[0].toUpperCase();
+  return '?';
+}
+
+function formatDate(iso?: string): string {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 const MailchimpPanel = () => {
   // const [selectedListId, setSelectedListId] = useState<string>('');
   const [showSubscribers, setShowSubscribers] = useState(false);
+  const [page, setPage] = useState(0);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+
+  const offset = page * PAGE_SIZE;
 
   // Queries and mutations
   const {
@@ -33,11 +64,11 @@ const MailchimpPanel = () => {
     refetch: refetchConnection,
   } = useMailchimpConnection();
   const { data: lists, refetch: fetchLists } = useMailchimpLists();
-  const { data: subscribersData, refetch: fetchSubscribers } =
+  const { data: subscribersData, refetch: fetchSubscribers, isFetching: subscribersFetching } =
     useMailchimpSubscribers({
-      status: 'subscribed',
-      count: 50,
-      offset: 0,
+      status: statusFilter === 'all' ? undefined : statusFilter,
+      count: PAGE_SIZE,
+      offset,
     });
 
   const connectMutation = useConnectMailchimp();
@@ -66,6 +97,13 @@ const MailchimpPanel = () => {
       fetchLists();
     }
   }, [connection?.isConnected, fetchLists]);
+
+  // Refetch subscribers when page or status filter changes
+  useEffect(() => {
+    if (showSubscribers) {
+      fetchSubscribers();
+    }
+  }, [page, statusFilter, showSubscribers, fetchSubscribers]);
 
   // Set selected list when connection data loads
   // useEffect(() => {
@@ -134,9 +172,9 @@ const MailchimpPanel = () => {
 
   const handleViewSubscribers = () => {
     if (!connection?.isConnected) return;
-
+    setPage(0);
+    setStatusFilter('all');
     setShowSubscribers(true);
-    fetchSubscribers();
   };
 
   if (connectionLoading) {
@@ -321,62 +359,132 @@ const MailchimpPanel = () => {
         </div>
       )}
 
-      {/* Subscribers Modal/Panel - Simple implementation */}
+      {/* Subscribers Panel */}
       {showSubscribers && (
-        <div className='bg-white/5 border border-white/10 rounded-lg p-6'>
-          <div className='flex items-center justify-between mb-4'>
-            <h3 className='text-lg font-semibold text-white'>
-              Recent Subscribers
-            </h3>
+        <div className='bg-white/5 border border-white/10 rounded-lg overflow-hidden'>
+          {/* Header */}
+          <div className='flex items-center justify-between px-6 py-4 border-b border-white/10'>
+            <div>
+              <h3 className='text-base font-semibold text-white'>Subscribers</h3>
+              {subscribersData && (
+                <p className='text-white/50 text-xs mt-0.5'>
+                  {subscribersData.total_items.toLocaleString()} total
+                </p>
+              )}
+            </div>
             <button
               onClick={() => setShowSubscribers(false)}
-              className='text-white/60 hover:text-white'
+              className='text-white/40 hover:text-white transition-colors p-1 rounded-md hover:bg-white/10'
             >
-              ×
+              <X className='w-4 h-4' />
             </button>
           </div>
 
-          {subscribersData ? (
-            <div className='space-y-2'>
-              {subscribersData.members?.slice(0, 10).map(subscriber => (
-                <div
-                  key={subscriber.id}
-                  className='flex items-center justify-between py-2 border-b border-white/10'
-                >
-                  <div>
-                    <p className='text-white font-medium'>
-                      {subscriber.email_address}
-                    </p>
-                    <p className='text-white/60 text-sm'>
-                      {subscriber.merge_fields.FNAME}{' '}
-                      {subscriber.merge_fields.LNAME}
-                    </p>
-                  </div>
+          {/* Status filter tabs */}
+          <div className='flex gap-1 px-6 py-3 border-b border-white/10'>
+            {STATUS_FILTERS.map(f => (
+              <button
+                key={f.value}
+                onClick={() => { setStatusFilter(f.value); setPage(0); }}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  statusFilter === f.value
+                    ? 'bg-orange-500 text-black'
+                    : 'text-white/60 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Subscriber rows */}
+          <div className='divide-y divide-white/5'>
+            {subscribersFetching ? (
+              <div className='flex items-center justify-center py-12'>
+                <Loader2 className='w-5 h-5 animate-spin text-orange-500' />
+                <span className='ml-2 text-white/50 text-sm'>Loading...</span>
+              </div>
+            ) : subscribersData?.members?.length ? (
+              subscribersData.members.map(subscriber => {
+                const name = [subscriber.merge_fields.FNAME, subscriber.merge_fields.LNAME]
+                  .filter(Boolean).join(' ') || null;
+                const initials = getInitials(
+                  subscriber.merge_fields.FNAME,
+                  subscriber.merge_fields.LNAME,
+                  subscriber.email_address
+                );
+                const statusColors: Record<string, string> = {
+                  subscribed: 'bg-green-500/20 text-green-400',
+                  pending: 'bg-yellow-500/20 text-yellow-400',
+                  unsubscribed: 'bg-red-500/20 text-red-400',
+                  cleaned: 'bg-gray-500/20 text-gray-400',
+                };
+                return (
                   <div
-                    className={`px-2 py-1 rounded text-xs font-medium ${
-                      subscriber.status === 'subscribed'
-                        ? 'bg-green-500/20 text-green-400'
-                        : subscriber.status === 'pending'
-                          ? 'bg-yellow-500/20 text-yellow-400'
-                          : 'bg-red-500/20 text-red-400'
-                    }`}
+                    key={subscriber.id}
+                    className='flex items-center gap-4 px-6 py-3 hover:bg-white/5 transition-colors'
                   >
-                    {subscriber.status}
+                    {/* Avatar */}
+                    <div className='w-8 h-8 rounded-full bg-orange-500/20 border border-orange-500/30 flex items-center justify-center flex-shrink-0'>
+                      <span className='text-orange-400 text-xs font-bold'>{initials}</span>
+                    </div>
+
+                    {/* Name + email */}
+                    <div className='flex-1 min-w-0'>
+                      {name && (
+                        <p className='text-white text-sm font-medium truncate'>{name}</p>
+                      )}
+                      <p className={`text-sm truncate ${name ? 'text-white/50' : 'text-white'}`}>
+                        {subscriber.email_address}
+                      </p>
+                    </div>
+
+                    {/* Joined date */}
+                    <p className='text-white/40 text-xs flex-shrink-0 hidden sm:block'>
+                      {formatDate(subscriber.timestamp_opt)}
+                    </p>
+
+                    {/* Status */}
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 capitalize ${statusColors[subscriber.status] ?? 'bg-white/10 text-white/60'}`}>
+                      {subscriber.status}
+                    </span>
                   </div>
-                </div>
-              ))}
-              <p className='text-white/60 text-sm text-center pt-2'>
-                Showing 10 of{' '}
-                {subscribersData.total_items
-                  ? subscribersData.total_items.toLocaleString()
-                  : '0'}{' '}
-                subscribers
+                );
+              })
+            ) : (
+              <div className='text-center py-12'>
+                <Users className='w-8 h-8 text-white/20 mx-auto mb-2' />
+                <p className='text-white/40 text-sm'>No subscribers found</p>
+              </div>
+            )}
+          </div>
+
+          {/* Pagination footer */}
+          {subscribersData && subscribersData.total_items > PAGE_SIZE && (
+            <div className='flex items-center justify-between px-6 py-3 border-t border-white/10'>
+              <p className='text-white/40 text-xs'>
+                {offset + 1}–{Math.min(offset + PAGE_SIZE, subscribersData.total_items)} of{' '}
+                {subscribersData.total_items.toLocaleString()}
               </p>
-            </div>
-          ) : (
-            <div className='text-center py-4'>
-              <Loader2 className='w-6 h-6 animate-spin text-orange-500 mx-auto' />
-              <p className='text-white/70 mt-2'>Loading subscribers...</p>
+              <div className='flex items-center gap-2'>
+                <button
+                  onClick={() => setPage(p => Math.max(0, p - 1))}
+                  disabled={page === 0 || subscribersFetching}
+                  className='p-1.5 rounded-md text-white/60 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors'
+                >
+                  <ChevronLeft className='w-4 h-4' />
+                </button>
+                <span className='text-white/60 text-xs px-1'>
+                  Page {page + 1} of {Math.ceil(subscribersData.total_items / PAGE_SIZE)}
+                </span>
+                <button
+                  onClick={() => setPage(p => p + 1)}
+                  disabled={offset + PAGE_SIZE >= subscribersData.total_items || subscribersFetching}
+                  className='p-1.5 rounded-md text-white/60 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors'
+                >
+                  <ChevronRight className='w-4 h-4' />
+                </button>
+              </div>
             </div>
           )}
         </div>

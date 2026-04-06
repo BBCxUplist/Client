@@ -29,6 +29,7 @@ const ArtistProfile = () => {
   const { username } = useParams();
   const [activeTab, setActiveTab] = useState<ArtistTab>(ArtistTab.MUSIC);
   const [isNewsletterModalOpen, setIsNewsletterModalOpen] = useState(false);
+  const [isNewsletterUnavailable, setIsNewsletterUnavailable] = useState(false);
   const { user, isSubscribedToNewsletter } = useStore();
   const bookingTabRef = useRef<BookingTabRef>(null);
 
@@ -334,19 +335,29 @@ const ArtistProfile = () => {
 
               {/* Subscribe Button */}
               {artist?.id && (
-                <button
-                  onClick={() => setIsNewsletterModalOpen(true)}
-                  className={`ml-auto flex items-center gap-2 px-4 py-2 text-sm md:text-base font-semibold transition-all duration-300 border ${
-                    isSubscribedToNewsletter(artist.id)
-                      ? 'bg-green-500/20 text-green-400 border-green-500/40 hover:bg-green-500/30'
-                      : 'bg-white/20 text-white border-white/40 hover:bg-white/30 '
-                  }`}
-                >
-                  <Mail className='w-4 h-4' />
-                  {isSubscribedToNewsletter(artist.id)
-                    ? 'SUBSCRIBED'
-                    : 'SUBSCRIBE'}
-                </button>
+                <div className='ml-auto relative group'>
+                  <button
+                    onClick={() => !isNewsletterUnavailable && setIsNewsletterModalOpen(true)}
+                    disabled={isNewsletterUnavailable}
+                    className={`flex items-center gap-2 px-4 py-2 text-sm md:text-base font-semibold transition-all duration-300 border ${
+                      isNewsletterUnavailable
+                        ? 'bg-white/5 text-white/30 border-white/10 cursor-not-allowed'
+                        : isSubscribedToNewsletter(artist.id)
+                          ? 'bg-green-500/20 text-green-400 border-green-500/40 hover:bg-green-500/30'
+                          : 'bg-white/20 text-white border-white/40 hover:bg-white/30'
+                    }`}
+                  >
+                    <Mail className='w-4 h-4' />
+                    {isSubscribedToNewsletter(artist.id)
+                      ? 'SUBSCRIBED'
+                      : 'SUBSCRIBE'}
+                  </button>
+                  {isNewsletterUnavailable && (
+                    <div className='absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-neutral-800 border border-white/10 rounded text-xs text-white/70 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none'>
+                      Newsletter not available for this artist
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 
@@ -452,6 +463,7 @@ const ArtistProfile = () => {
           onClose={() => setIsNewsletterModalOpen(false)}
           artistId={artist.id}
           artistName={artist.displayName || artist.username}
+          onUnavailable={() => { setIsNewsletterUnavailable(true); setIsNewsletterModalOpen(false); }}
         />
       )}
     </div>
