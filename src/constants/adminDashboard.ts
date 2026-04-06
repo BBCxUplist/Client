@@ -71,7 +71,7 @@ export const mobileAdminNavItems = [
   {
     id: AdminTab.APPROVED,
     label: 'Approved',
-    icon: '/icons/check.png',
+    icon: '/icons/tick.svg',
   },
   {
     id: AdminTab.USERS,
@@ -81,7 +81,7 @@ export const mobileAdminNavItems = [
   {
     id: AdminTab.REPORTS,
     label: 'Reports',
-    icon: '/icons/tick.svg',
+    icon: '/icons/report.png',
   },
   // {
   //   id: AdminTab.RECENT_ACTIVITY,

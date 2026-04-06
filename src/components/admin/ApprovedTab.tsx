@@ -22,10 +22,11 @@ interface ApprovedTabProps {
 }
 
 const ApprovedTab = ({ artists, onStatusChange }: ApprovedTabProps) => {
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
-    null
-  );
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [approvingId, setApprovingId] = useState<string | null>(null);
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Admin action hooks
   const approveUser = useApproveUser();
@@ -51,18 +52,27 @@ const ApprovedTab = ({ artists, onStatusChange }: ApprovedTabProps) => {
   }, [searchTerm, pendingArtists]);
 
   const handleApprove = (artistId: string) => {
-    approveUser.mutate(artistId);
+    setApprovingId(artistId);
+    approveUser.mutate(artistId, {
+      onSettled: () => setApprovingId(null),
+    });
     onStatusChange(artistId, 'approved');
   };
 
   const handleReject = (artistId: string) => {
-    rejectUser.mutate(artistId);
+    setRejectingId(artistId);
+    rejectUser.mutate(artistId, {
+      onSettled: () => setRejectingId(null),
+    });
     onStatusChange(artistId, 'rejected');
   };
 
   const handleDelete = (artistId: string) => {
     if (showDeleteConfirm === artistId) {
-      deleteUser.mutate(artistId);
+      setDeletingId(artistId);
+      deleteUser.mutate(artistId, {
+        onSettled: () => setDeletingId(null),
+      });
       setShowDeleteConfirm(null);
     } else {
       setShowDeleteConfirm(artistId);
@@ -216,17 +226,17 @@ const ApprovedTab = ({ artists, onStatusChange }: ApprovedTabProps) => {
                 <div className='flex items-center gap-3 flex-wrap'>
                   <button
                     onClick={() => handleApprove(artist.id)}
-                    disabled={approveUser.isPending}
+                    disabled={approvingId === artist.id}
                     className='bg-green-500/20 border border-green-500/40 text-green-400 px-4 py-2 rounded hover:bg-green-500/30 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed'
                   >
-                    {approveUser.isPending ? 'Approving...' : 'Approve'}
+                    {approvingId === artist.id ? 'Approving...' : 'Approve'}
                   </button>
                   <button
                     onClick={() => handleReject(artist.id)}
-                    disabled={rejectUser.isPending}
+                    disabled={rejectingId === artist.id}
                     className='bg-red-500/20 border border-red-500/40 text-red-400 px-4 py-2 rounded hover:bg-red-500/30 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed'
                   >
-                    {rejectUser.isPending ? 'Rejecting...' : 'Reject'}
+                    {rejectingId === artist.id ? 'Rejecting...' : 'Reject'}
                   </button>
                   <a
                     href={`/artist/${artist.slug}`}
@@ -238,7 +248,7 @@ const ApprovedTab = ({ artists, onStatusChange }: ApprovedTabProps) => {
                   </a>
                   <button
                     onClick={() => handleDelete(artist.id)}
-                    disabled={deleteUser.isPending}
+                    disabled={deletingId === artist.id}
                     className={`border px-4 py-2 rounded transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
                       showDeleteConfirm === artist.id
                         ? 'bg-red-500/40 border-red-500/60 text-white'
@@ -250,7 +260,7 @@ const ApprovedTab = ({ artists, onStatusChange }: ApprovedTabProps) => {
                         : 'Delete artist account'
                     }
                   >
-                    {deleteUser.isPending
+                    {deletingId === artist.id
                       ? 'Deleting...'
                       : showDeleteConfirm === artist.id
                         ? 'Confirm Delete'
