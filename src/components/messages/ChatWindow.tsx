@@ -303,7 +303,6 @@ const ChatWindow = ({
                       showAvatar={showAvatar}
                       showTime={showTime}
                       timestamp={formatTime(message.createdAt)}
-                      quoteDetails={conversation.quoteDetails}
                     />
                   );
                 })}
