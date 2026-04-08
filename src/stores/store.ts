@@ -293,17 +293,26 @@ export const useStore = create<Store>()(
                 const hasAccessToken = tokenCookies.getAccessToken();
                 const hasRefreshToken = tokenCookies.getRefreshToken();
 
-                // Only restore authentication state if we have tokens
-                if (hasAccessToken && hasRefreshToken) {
+                // Restore auth state if we have at least a refresh token
+                // useAuthInit will proactively refresh the access token on startup
+                if (hasRefreshToken) {
                   return {
                     ...parsed,
                     state: {
                       ...parsed.state,
-                      isAuthenticated: true, // Set authenticated if we have both user and tokens
+                      isAuthenticated: true,
+                    },
+                  };
+                } else if (hasAccessToken) {
+                  return {
+                    ...parsed,
+                    state: {
+                      ...parsed.state,
+                      isAuthenticated: true,
                     },
                   };
                 } else {
-                  // Clear persisted user data if no tokens
+                  // No tokens at all — clear persisted user data
                   return {
                     ...parsed,
                     state: {

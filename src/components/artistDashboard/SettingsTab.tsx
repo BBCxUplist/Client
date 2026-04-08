@@ -12,6 +12,7 @@ import {
   useGetStripeAuthLink,
 } from '@/hooks/artist/useStripeConnection';
 import { Loader2, CheckCircle, AlertCircle, ExternalLink } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface SettingsTabProps {
   profileVisibility: boolean;
@@ -115,8 +116,15 @@ const SettingsTab = ({
       const result = await getAuthLink.mutateAsync();
       if (result.data?.redirect) {
         window.location.href = result.data.redirect;
+      } else if (result.success === false) {
+        toast.error(result.message || 'Failed to authenticate Stripe. Please try again.');
       }
-    } catch (error) {
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        'Failed to complete Stripe setup. Please try again.';
+      toast.error(message);
       console.error('Failed to get Stripe auth link:', error);
     }
   };

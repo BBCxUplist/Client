@@ -49,6 +49,14 @@ export const useAuthInit = () => {
             clearAuth();
           }
         }
+      } else if (!accessToken && refreshToken) {
+        // Access token expired but refresh token still valid — silently restore session
+        try {
+          await authService.refreshToken();
+        } catch (error) {
+          console.error('Token refresh failed:', error);
+          clearAuth();
+        }
       } else if (accessToken && !refreshToken) {
         // We have access token but no refresh token, this is invalid
         clearAuth();
