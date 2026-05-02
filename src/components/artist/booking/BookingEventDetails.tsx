@@ -210,7 +210,7 @@ const BookingEventDetails = ({ control }: BookingEventDetailsProps) => {
             },
             min: {
               value: 1,
-              message: 'Budget must be at least £15',
+              message: 'Budget must be at least £1',
             },
           }}
           render={({ field }) => (
@@ -222,7 +222,7 @@ const BookingEventDetails = ({ control }: BookingEventDetailsProps) => {
                 <Input
                   type='number'
                   placeholder='500'
-                  min='15'
+                  min='1'
                   step='1'
                   className='bg-white/5 border-white/20 text-white placeholder:text-white/50'
                   onWheel={e => (e.target as HTMLInputElement).blur()}
