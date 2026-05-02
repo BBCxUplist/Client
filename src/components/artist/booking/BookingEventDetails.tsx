@@ -209,7 +209,7 @@ const BookingEventDetails = ({ control }: BookingEventDetailsProps) => {
               message: 'Budget must be a number only',
             },
             min: {
-              value: 15,
+              value: 1,
               message: 'Budget must be at least £15',
             },
           }}
